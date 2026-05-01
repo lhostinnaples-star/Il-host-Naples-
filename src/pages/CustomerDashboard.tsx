@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { Card, Button } from '../components/UI';
-import { Calendar, MapPin, CreditCard, Clock, CheckCircle2, Info, Car, Bike, Ship, Palmtree, UserCheck, Utensils, ChefHat, Sparkles, ShieldCheck, UtensilsCrossed, Star, X } from 'lucide-react';
+import { Calendar, MapPin, CreditCard, Clock, CheckCircle2, Info, Car, Bike, Ship, Palmtree, UserCheck, Utensils, ChefHat, Sparkles, ShieldCheck, UtensilsCrossed, Star, X, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -118,20 +118,50 @@ export const CustomerDashboard: React.FC = () => {
     }
   };
 
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'cancelled' | 'wishlist' | 'profile'>('upcoming');
+  
+  // Filter bookings based on activeTab
+  const filteredBookings = (Array.isArray(bookings) ? bookings : []).filter(b => {
+    const isPast = new Date(b.checkOut) < new Date();
+    if (activeTab === 'upcoming') return !isPast && b.status !== 'cancelled' && b.status !== 'rejected';
+    if (activeTab === 'past') return isPast && b.status !== 'cancelled' && b.status !== 'rejected';
+    if (activeTab === 'cancelled') return b.status === 'cancelled' || b.status === 'rejected';
+    return false;
+  });
+
   return (
     <div className="min-h-screen bg-neutral-50 pt-32 pb-20">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-12">
-          <h1 className="text-4xl font-bold tracking-tight">My Inquiries</h1>
-          <p className="text-neutral-500 text-lg">Track your booking requests and extra services</p>
-          <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-800 flex items-center gap-3">
-            <Info className="h-5 w-5 shrink-0" />
-            <p>Our system works by inquiry. No payment is required here. The host will receive your request and contact you directly via the email you provided.</p>
-          </div>
+          <h1 className="text-4xl font-bold tracking-tight">Welcome, {user?.name || 'Guest'}</h1>
+          <p className="text-neutral-500 text-lg mt-2">Manage your inquiries, saved lists, and profile settings</p>
         </div>
 
-        <div className="grid gap-8">
-          {(Array.isArray(bookings) ? bookings : []).map((booking) => (
+        {/* Tabs */}
+        <div className="flex overflow-x-auto gap-2 mb-8 bg-white p-2 rounded-2xl border border-neutral-100 shadow-sm hide-scrollbar">
+          {(['upcoming', 'past', 'cancelled', 'wishlist', 'profile'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 rounded-xl text-sm font-bold capitalize whitespace-nowrap transition-all ${
+                activeTab === tab ? 'bg-[#1e293b] text-white' : 'text-neutral-500 hover:bg-neutral-100'
+              }`}
+            >
+              {tab === 'upcoming' ? 'Upcoming Inquiries' : tab === 'past' ? 'Past Stays' : tab}
+            </button>
+          ))}
+        </div>
+
+        {['upcoming', 'past', 'cancelled'].includes(activeTab) && (
+          <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-800 flex items-center gap-3">
+            <Info className="h-5 w-5 shrink-0" />
+            <p>Our system works by inquiry. The host will receive your request and contact you directly via the email you provided.</p>
+          </div>
+        )}
+
+        {['upcoming', 'past', 'cancelled'].includes(activeTab) && (
+          <div className="grid gap-8">
+            {filteredBookings.map((booking) => (
             <motion.div key={booking.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
               <Card className="flex flex-col gap-8 md:flex-row md:items-center">
                 <div className="h-48 w-full shrink-0 overflow-hidden rounded-2xl bg-neutral-200 md:w-64">
@@ -164,7 +194,6 @@ export const CustomerDashboard: React.FC = () => {
                     <div className="text-right">
                       <p className="text-sm text-neutral-400 font-medium">Estimated Price</p>
                       <p className="text-2xl font-bold">{formatPrice(booking.totalPrice)}</p>
-                      <p className="text-[10px] text-neutral-400 italic">Pay directly to host</p>
                     </div>
                   </div>
 
@@ -237,13 +266,24 @@ export const CustomerDashboard: React.FC = () => {
                         Cancel Booking
                       </Button>
                     )}
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        toast.info("Booking details & map opened"); 
+                        // Simplified detail opening logic for now
+                      }}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 </div>
               </Card>
             </motion.div>
           ))}
 
-          {(Array.isArray(bookings) ? bookings : []).length === 0 && (
+          {(['upcoming', 'past', 'cancelled'].includes(activeTab) && filteredBookings.length === 0) && (
             <div className="rounded-3xl border-2 border-dashed border-neutral-200 py-24 text-center">
               <Calendar className="mx-auto mb-4 h-12 w-12 text-neutral-200" />
               <h3 className="text-xl font-bold">No inquiries yet</h3>
@@ -252,6 +292,46 @@ export const CustomerDashboard: React.FC = () => {
             </div>
           )}
         </div>
+        )}
+
+        {/* Wishlist Section */}
+        {activeTab === 'wishlist' && (
+          <div className="rounded-3xl border-2 border-dashed border-neutral-200 py-24 text-center">
+            <Heart className="mx-auto mb-4 h-12 w-12 text-neutral-200" />
+            <h3 className="text-xl font-bold">Your Wishlist is Empty</h3>
+            <p className="mb-8 text-neutral-500">Save your favorite properties for later.</p>
+            <Button onClick={() => window.location.href = '/'}>Start Exploring</Button>
+          </div>
+        )}
+
+        {/* Profile Settings */}
+        {activeTab === 'profile' && (
+          <div className="max-w-2xl bg-white rounded-3xl p-8 border border-neutral-100 shadow-sm">
+            <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">First Name</label>
+                  <input type="text" defaultValue={user?.name?.split(' ')[0]} className="w-full h-12 px-4 rounded-xl border border-neutral-200 focus:border-[#fbbf24] outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Last Name</label>
+                  <input type="text" defaultValue={user?.name?.split(' ')[1] || ''} className="w-full h-12 px-4 rounded-xl border border-neutral-200 focus:border-[#fbbf24] outline-none" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Email Address</label>
+                <input type="email" defaultValue={user?.email} className="w-full h-12 px-4 rounded-xl border border-neutral-200 focus:border-[#fbbf24] outline-none" disabled />
+                <p className="text-xs text-neutral-400 mt-1">Email cannot be changed directly.</p>
+              </div>
+              <div className="pt-6">
+                <Button className="w-full md:w-auto h-12 px-8 bg-[#1e293b] text-white font-bold rounded-xl" onClick={() => toast.success('Profile updated successfully')}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Review Modal */}

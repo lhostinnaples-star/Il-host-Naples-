@@ -13,7 +13,6 @@ export const store: { [key: string]: any[] } = {
   rooms: [],
   bookings: [],
   reviews: [],
-  payments: [],
   services: [
     {
       id: 's1',

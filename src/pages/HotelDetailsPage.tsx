@@ -8,7 +8,7 @@ import {
   Maximize, Bath, Wifi, Wind, UtensilsCrossed, 
   ArrowUpCircle, Waves, ChevronRight, ChevronLeft,
   Info, ShieldCheck, Map as MapIcon, ChevronDown, ChevronUp, X,
-  Share, Heart, Phone,
+  Share, Heart, Phone, Clock,
   Car, Bike, Ship, Palmtree, UserCheck, Utensils, ChefHat, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -21,6 +21,9 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
 import { useHotels } from '../contexts/HotelsContext';
+import { WishlistButton } from '../components/WishlistButton';
+import { ReviewCard } from '../components/ReviewCard';
+import { BookingWidget } from '../components/BookingWidget';
 
 const AmenityIcon: React.FC<{ name: string }> = ({ name }) => {
   const lower = name.toLowerCase();
@@ -36,7 +39,10 @@ export const HotelDetailsPage: React.FC = () => {
   const { id } = useParams();
   const { token, user } = useAuth();
   const { formatPrice } = useCurrency();
-  const { searchDates } = useHotels();
+  const { searchDates, hotels } = useHotels();
+
+  // For similar properties
+  const similarHotels = hotels.filter(h => h.id !== id).slice(0, 4);
   const navigate = useNavigate();
   const [hotel, setHotel] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -134,6 +140,15 @@ export const HotelDetailsPage: React.FC = () => {
             : ['rent_car', 'rent_scooter', 'bike_rental', 'taxi_services', 'ncc_private', 'boat_rental', 'coastline', 'private_tour', 'restaurant_booking', 'private_chef', 'cooking_class', 'spa_massage']
         };
         setHotel(enhancedData);
+
+        // Save to Recently Viewed
+        try {
+          const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+          const updated = [enhancedData, ...viewed.filter((h: any) => h.id !== enhancedData.id)].slice(0, 5);
+          localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recently viewed', e);
+        }
       });
 
     fetch(`/api/reviews/${id}`)
@@ -471,9 +486,18 @@ export const HotelDetailsPage: React.FC = () => {
                   {hotel.rating || 4.9} ({hotel.reviews || 120} reviews)
                 </div>
               </div>
-              <h1 className="mb-4 font-display text-3xl md:text-5xl font-bold text-[#1e293b]">
-                {hotel.name}
-              </h1>
+              <div className="flex items-start justify-between gap-4">
+                <h1 className="mb-4 font-display text-3xl md:text-5xl font-bold text-[#1e293b]">
+                  {hotel.name}
+                </h1>
+                <div className="flex gap-2">
+                  <button className="flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-bold shadow-sm transition-all hover:bg-neutral-50 hidden sm:flex">
+                    <Share className="h-4 w-4" />
+                    Share
+                  </button>
+                  <WishlistButton propertyId={hotel.id} className="p-2 sm:px-4 sm:py-2 rounded-full border border-neutral-200 shadow-sm transition-all hover:bg-neutral-50 flex items-center gap-2 bg-white" iconClassName="h-4 w-4 text-neutral-400" />
+                </div>
+              </div>
               <div className="flex items-center gap-2 text-neutral-500">
                 <MapPin className="h-4 w-4 md:h-5 md:w-5 text-[#fbbf24]" />
                 <span className="text-base md:text-lg">{hotel.address}, {hotel.city}</span>
@@ -683,7 +707,9 @@ export const HotelDetailsPage: React.FC = () => {
                 <div>
                   <h3 className="text-lg md:text-xl font-bold text-[#1e293b]">Host</h3>
                   <p className="text-sm font-bold text-[#fbbf24]">{hotel.owner?.name || 'Professional Host'}</p>
-                  <p className="text-xs text-neutral-400 mt-1">Joined in 2023 • {hotel.businessName || 'Lhost Naples'}</p>
+                  <p className="text-xs text-neutral-400 mt-1 flex items-center gap-1">
+                    Joined in 2023 • <Star className="h-3 w-3 fill-current text-[#fbbf24]" /> 4.9 Rating • {hotel.businessName || 'Lhost Naples'}
+                  </p>
                 </div>
               </div>
               <div className="mt-6 flex flex-col sm:flex-row gap-4">
@@ -708,7 +734,7 @@ export const HotelDetailsPage: React.FC = () => {
 
             {/* Reviews Section */}
             <div className="mb-8 md:mb-12 border-t border-neutral-100 pt-8 md:pt-12">
-              <div className="mb-8 flex items-center justify-between">
+              <div className="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
                   <h2 className="text-xl md:text-2xl font-bold text-[#1e293b]">Guest Reviews</h2>
                   <div className="mt-1 flex items-center gap-2">
@@ -720,34 +746,27 @@ export const HotelDetailsPage: React.FC = () => {
                     <span className="text-sm font-bold text-[#1e293b]">{hotel.rating || 4.9} • {reviews.length} reviews</span>
                   </div>
                 </div>
+
+                <div className="flex-1 max-w-sm w-full">
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                    const percent = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                    return (
+                      <div key={star} className="flex items-center gap-2 text-sm justify-end">
+                        <span className="w-4 font-medium text-neutral-500">{star}</span>
+                        <div className="h-2 w-full max-w-[120px] rounded-full bg-neutral-100 overflow-hidden">
+                          <div className="h-full bg-[#fbbf24] rounded-full" style={{ width: `${percent}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="grid gap-6">
                 {reviews.length > 0 ? (
                   reviews.map((review, idx) => (
-                    <div key={review.id || idx} className="rounded-2xl bg-neutral-50 p-6">
-                      <div className="mb-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 overflow-hidden rounded-full bg-neutral-200">
-                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${review.User?.name || 'Guest'}`} alt="User" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-[#1e293b]">{review.User?.name || 'Anonymous'}</p>
-                            <p className="text-[10px] uppercase font-bold tracking-widest text-neutral-400">
-                              {review.createdAt ? format(new Date(review.createdAt), 'MMM yyyy') : 'Recently'}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex text-[#fbbf24]">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className={`h-3 w-3 ${review.rating >= s ? 'fill-current' : 'opacity-20'}`} />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-sm md:text-base text-neutral-600 leading-relaxed italic">
-                        "{review.comment}"
-                      </p>
-                    </div>
+                    <ReviewCard key={review.id || idx} review={review} />
                   ))
                 ) : (
                   <div className="rounded-2xl border-2 border-dashed border-neutral-100 py-12 text-center text-neutral-400">
@@ -758,160 +777,67 @@ export const HotelDetailsPage: React.FC = () => {
               </div>
             </div>
 
+            {/* House Rules */}
+            <div className="mb-8 md:mb-12 border-t border-neutral-100 pt-8 md:pt-12">
+              <h2 className="mb-6 md:mb-8 font-display text-xl md:text-2xl font-bold text-[#1e293b]">House Rules</h2>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4 text-neutral-600 bg-neutral-50 p-4 rounded-xl">
+                  <Clock className="h-5 w-5 text-[#fbbf24]" />
+                  <span className="font-medium">Check-in: 15:00 - 22:00</span>
+                </div>
+                <div className="flex items-center gap-4 text-neutral-600 bg-neutral-50 p-4 rounded-xl">
+                  <Clock className="h-5 w-5 text-[#fbbf24]" />
+                  <span className="font-medium">Check-out: 10:00</span>
+                </div>
+                {hotel.houseRules && hotel.houseRules.map((rule: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-4 text-neutral-600 bg-neutral-50 p-4 rounded-xl">
+                    <Info className="h-5 w-5 text-[#fbbf24]" />
+                    <span className="font-medium">{rule}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="mb-8 md:mb-12 border-t border-neutral-100 pt-8 md:pt-12">
+              <h2 className="mb-6 md:mb-8 font-display text-xl md:text-2xl font-bold text-[#1e293b]">Cancellation Policy</h2>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 text-neutral-600 bg-neutral-50 p-4 rounded-xl">
+                  <ShieldCheck className="h-5 w-5 text-[#fbbf24] mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-[#1e293b]">{hotel.cancellationPolicy || 'Moderate'}</h4>
+                    <p className="mt-1 text-sm text-neutral-500">Free cancellation for 48 hours. After that, cancel up to 5 days before check-in and get a full refund, minus the service fee.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Legal Info */}
             <div className="flex flex-wrap items-center gap-3 md:gap-4 border-t border-neutral-100 pt-8 text-[10px] md:text-xs text-neutral-400">
-              <ShieldCheck className="h-3 w-3 md:h-4 md:w-4" />
+              <Info className="h-3 w-3 md:h-4 md:w-4" />
               <span>CIR Code: {hotel.cirCode}</span>
-              <span className="h-1 w-1 rounded-full bg-neutral-200" />
-              <span>Cancellation Policy: {hotel.cancellationPolicy}</span>
             </div>
           </div>
 
           {/* Right Sidebar (30%) - Desktop Only */}
           <aside className="hidden lg:block w-full lg:w-[400px]">
             <div className="sticky top-28">
-              <Card className="overflow-hidden border-neutral-100 p-0 shadow-[0_20px_50px_-12px_rgba(30,41,59,0.15)]">
-                <div className="bg-[#1e293b] p-8 text-white">
-                  <p className="mb-2 text-sm font-medium opacity-60 uppercase tracking-widest">
-                    {hotel.rooms?.[selectedRoomIdx]?.type || 'Starting from'}
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold">
-                      {formatPrice(hotel.rooms?.[selectedRoomIdx]?.price || hotel.price)}
-                    </span>
-                    <span className="text-sm opacity-60">/ night</span>
-                  </div>
-                </div>
-                
-                <div className="p-8">
-                  <div className="mb-6 space-y-4">
-                    <div className="space-y-4">
-                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Booking Summary</label>
-                      <div className="rounded-2xl bg-neutral-50 p-4 space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-neutral-500">Dates</span>
-                          <span className="font-bold text-[#1e293b]">{format(dateRange[0].startDate, 'MMM dd')} - {format(dateRange[0].endDate, 'MMM dd')}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-neutral-500">Stay</span>
-                          <span className="font-bold text-[#1e293b]">{nightsCount} nights</span>
-                        </div>
-                        {selectedExtraServices.length > 0 && (
-                          <div className="space-y-2 border-t border-neutral-200 pt-3">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#fbbf24]">Requested Services</span>
-                            <div className="flex flex-wrap gap-2">
-                              {selectedExtraServices.map(id => {
-                                const svc = guestServiceCategories.flatMap(c => c.services).find(s => s.id === id);
-                                return svc ? (
-                                  <span key={id} className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-[10px] font-bold text-amber-700">
-                                    <svc.icon className="h-3 w-3" />
-                                    {svc.label}
-                                  </span>
-                                ) : null;
-                              })}
-                            </div>
-                          </div>
-                        )}
-                        <div className="pt-3 border-t border-neutral-200 flex justify-between items-center">
-                          <span className="font-bold text-[#1e293b]">Estimated Total</span>
-                          <span className="text-xl font-bold text-[#1e293b]">{formatPrice((hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Select Dates</label>
-                      <div className="relative">
-                        <button 
-                          onClick={() => setShowDatePicker(!showDatePicker)}
-                          className="flex w-full items-center gap-3 rounded-xl border border-neutral-200 p-4 text-sm font-bold text-[#1e293b] hover:border-[#fbbf24] transition-colors"
-                        >
-                          <Calendar className="h-5 w-5 text-[#fbbf24]" />
-                          {format(dateRange[0].startDate, 'MMM dd')} - {format(dateRange[0].endDate, 'MMM dd, yyyy')}
-                        </button>
-                        
-                        <AnimatePresence>
-                          {showDatePicker && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 10 }}
-                              className="absolute right-0 top-full z-50 mt-2 rounded-2xl border border-neutral-100 bg-white p-4 shadow-2xl"
-                            >
-                              <DateRange
-                                editableDateInputs={true}
-                                onChange={(item: any) => setDateRange([item.selection])}
-                                moveRangeOnFirstSelection={false}
-                                ranges={dateRange}
-                                minDate={new Date()}
-                                disabledDates={disabledDates}
-                                rangeColors={['#fbbf24']}
-                              />
-                              <div className="mt-4 flex justify-end">
-                                <Button size="sm" onClick={() => setShowDatePicker(false)}>Done</Button>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Guests</label>
-                      <div className="relative">
-                        <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#fbbf24]" />
-                        <select 
-                          value={guestCount}
-                          onChange={(e) => setGuestCount(Number(e.target.value))}
-                          className="w-full appearance-none rounded-xl border border-neutral-200 py-3 pl-10 pr-4 text-sm font-bold outline-none focus:border-[#fbbf24] transition-colors bg-white"
-                        >
-                          {Array.from({ length: Number(hotel.rooms?.[selectedRoomIdx]?.capacity || hotel.guests) }).map((_, i) => (
-                            <option key={i + 1} value={i + 1}>{i + 1} {i === 0 ? 'Guest' : 'Guests'}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-8 space-y-3 rounded-2xl bg-neutral-50 p-4">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-neutral-500">Price x {nightsCount} nights</span>
-                      <span className="font-bold text-[#1e293b]">
-                        {formatPrice((hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount)}
-                      </span>
-                    </div>
-                    <div className="border-t border-neutral-200 pt-3 flex justify-between">
-                      <span className="font-bold text-[#1e293b]">Estimated Total</span>
-                      <span className="text-xl font-bold text-[#fbbf24]">
-                        {formatPrice((hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button 
-                    className="w-full bg-[#fbbf24] py-4 text-lg font-bold text-[#1e293b] hover:bg-[#f59e0b] shadow-[0_10px_20px_-5px_rgba(251,191,36,0.3)]"
-                    onClick={handleBook}
-                    disabled={bookingStatus === 'loading'}
-                  >
-                    {bookingStatus === 'loading' ? 'Processing...' : 'Request to Book'}
-                  </Button>
-
-                  <div className="mt-6 flex flex-col items-center justify-center gap-2 text-xs text-neutral-400">
-                    <div className="flex items-center gap-2">
-                      <Info className="h-3 w-3" />
-                      <span>Direct arrangement with host</span>
-                    </div>
-                    <p className="text-center italic mt-1 font-medium">No payment required now. You will pay the host directly.</p>
-                  </div>
-                </div>
-              </Card>
+              <BookingWidget
+                pricePerNight={hotel.rooms?.[selectedRoomIdx]?.price || hotel.price}
+                dates={dateRange}
+                onDateChange={(item: any) => setDateRange([item.selection])}
+                guestCount={guestCount}
+                onGuestChange={setGuestCount}
+                onBook={handleBook}
+                isBooking={bookingStatus === 'loading'}
+                extraServices={selectedExtraServices.map(id => {
+                  const svc = guestServiceCategories.flatMap(c => c.services).find(s => s.id === id);
+                  return svc ? { label: svc.label, price: 50 /* approximate price */ } : null;
+                }).filter((s): s is {label: string; price: number} => s !== null)}
+              />
 
               {/* Trust Badges */}
-              <div className="mt-8 grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-neutral-100 p-4 text-center">
-                  <ShieldCheck className="mx-auto mb-2 h-6 w-6 text-[#fbbf24]" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Secure Payment</p>
-                </div>
+              <div className="mt-8 grid grid-cols-1 gap-4">
                 <div className="rounded-2xl border border-neutral-100 p-4 text-center">
                   <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-[#fbbf24]" />
                   <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Verified Host</p>
@@ -919,6 +845,33 @@ export const HotelDetailsPage: React.FC = () => {
               </div>
             </div>
           </aside>
+        </div>
+
+        {/* Similar Properties */}
+        <div className="mt-16 md:mt-24 border-t border-neutral-100 pt-12 md:pt-16">
+          <h2 className="mb-8 font-display text-2xl font-bold text-[#1e293b]">Similar properties</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {similarHotels.map((smHotel) => (
+              <div 
+                key={smHotel.id} 
+                onClick={() => {
+                  window.scrollTo(0,0);
+                  navigate(`/hotel/${smHotel.id}`);
+                }}
+                className="group cursor-pointer"
+              >
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3">
+                  <img src={smHotel.imageUrl || `https://picsum.photos/seed/${smHotel.id}/400/300`} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                  <div className="absolute top-3 right-3 z-10">
+                    <WishlistButton propertyId={smHotel.id} className="p-1.5 rounded-full bg-white/50 backdrop-blur-md" iconClassName="h-4 w-4" />
+                  </div>
+                </div>
+                <h3 className="font-bold text-[#1e293b] line-clamp-1 group-hover:text-[#fbbf24] transition-colors">{smHotel.name}</h3>
+                <p className="text-sm text-neutral-500">{smHotel.city}</p>
+                <p className="mt-1 font-bold text-[#1e293b]">{formatPrice(smHotel.price)} <span className="text-xs font-normal text-neutral-500">/ night</span></p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

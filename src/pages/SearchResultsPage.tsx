@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
-import { Heart, Star, MapPin, X, ChevronDown } from 'lucide-react';
+import { Heart, Star, MapPin, X, ChevronDown, Map, List } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'motion/react';
 import { useHotels } from '../contexts/HotelsContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { WishlistButton } from '../components/WishlistButton';
 
 export const SearchResultsPage: React.FC = () => {
   const location = useLocation();
@@ -15,6 +16,7 @@ export const SearchResultsPage: React.FC = () => {
   
   const { hotels, selectedAreas, setSelectedAreas, priceRange, setPriceRange, setSearchDates, searchDates: contextSearchDates } = useHotels();
   const { formatPrice } = useCurrency();
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   // Extract state from location or set defaults
   const state = React.useMemo(() => (location.state as any) || {}, [location.state]);
@@ -57,7 +59,8 @@ export const SearchResultsPage: React.FC = () => {
     facilities: [],
     roomFacilities: [],
     policies: [],
-    priceRanges: []
+    priceRanges: [],
+    starRatings: []
   };
 
   const priceOptions = [
@@ -120,8 +123,11 @@ export const SearchResultsPage: React.FC = () => {
     if (activeFilters.roomFacilities.length > 0) {
       results = results.filter(h => activeFilters.roomFacilities.every(f => h.amenities?.includes(f)));
     }
-    if (activeFilters.policies.length > 0) {
+    if (activeFilters.policies && activeFilters.policies.length > 0) {
       results = results.filter(h => activeFilters.policies.every(p => h.policies?.includes(p)));
+    }
+    if (activeFilters.starRatings && activeFilters.starRatings.length > 0) {
+      results = results.filter(h => activeFilters.starRatings.includes(Math.round(h.rating || 5)));
     }
 
     if (sortBy === 'price-low') {
@@ -177,11 +183,29 @@ export const SearchResultsPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-neutral-500">Sort by:</span>
-            <div className="relative">
-              <select
-                value={sortBy}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex bg-neutral-100 rounded-lg p-1">
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-neutral-900' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                <List className="w-4 h-4" />
+                List
+              </button>
+              <button 
+                onClick={() => setViewMode('map')}
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-bold rounded-md transition-all ${viewMode === 'map' ? 'bg-white shadow-sm text-neutral-900' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                <Map className="w-4 h-4" />
+                Map
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-neutral-500 hidden sm:block">Sort by:</span>
+              <div className="relative">
+                <select
+                  value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="appearance-none rounded-lg border border-neutral-200 bg-white px-4 py-2 pr-10 text-sm font-bold text-neutral-900 outline-none transition-all hover:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
               >
@@ -191,6 +215,7 @@ export const SearchResultsPage: React.FC = () => {
               </select>
               <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
             </div>
+          </div>
           </div>
         </div>
 
@@ -206,7 +231,9 @@ export const SearchResultsPage: React.FC = () => {
                       propertyTypes: [],
                       facilities: [],
                       roomFacilities: [],
-                      policies: []
+                      policies: [],
+                      priceRanges: [],
+                      starRatings: []
                     });
                     setSelectedAreas([]);
                     setPriceRange(null);
@@ -215,6 +242,64 @@ export const SearchResultsPage: React.FC = () => {
                 >
                   Clear all
                 </button>
+              </div>
+
+              {/* Price Range Slider */}
+              <div className="space-y-3 border-b border-neutral-100 pb-6">
+                <h4 className="text-sm font-bold text-neutral-900">Price Range (per night)</h4>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <label className="text-[10px] uppercase font-bold text-neutral-400">Min Price</label>
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={priceRange?.min || 0}
+                      onChange={(e) => setPriceRange({ min: Number(e.target.value), max: priceRange?.max || 1000 })}
+                      className="w-full h-10 px-3 rounded-lg border border-neutral-200 text-sm font-bold mt-1"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[10px] uppercase font-bold text-neutral-400">Max Price</label>
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={priceRange?.max || 1000}
+                      onChange={(e) => setPriceRange({ min: priceRange?.min || 0, max: Number(e.target.value) })}
+                      className="w-full h-10 px-3 rounded-lg border border-neutral-200 text-sm font-bold mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Star Rating */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-neutral-900">Star Rating</h4>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map(star => {
+                    const isSelected = activeFilters.starRatings?.includes(star);
+                    return (
+                      <button
+                        key={star}
+                        onClick={() => {
+                          setActiveFilters(prev => ({
+                            ...prev,
+                            starRatings: isSelected 
+                              ? (prev.starRatings || []).filter(s => s !== star)
+                              : [...(prev.starRatings || []), star]
+                          }));
+                        }}
+                        className={`flex h-10 flex-1 items-center justify-center rounded-lg border transition-all ${
+                          isSelected 
+                            ? 'border-amber-500 bg-amber-500 text-white shadow-sm' 
+                            : 'border-neutral-200 bg-white text-neutral-600 hover:border-amber-500'
+                        }`}
+                      >
+                        <span className="text-xs font-bold">{star}</span>
+                        <Star className={`ml-1 h-3 w-3 ${isSelected ? 'fill-current' : ''}`} />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Your budget per night */}
@@ -346,47 +431,23 @@ export const SearchResultsPage: React.FC = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Reservation Policy */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold text-neutral-900">Reservation Policy</h4>
-                <div className="space-y-2">
-                  {['Free Cancellation', 'No Prepayment', 'Book without Credit Card'].map(item => (
-                    <label key={item} className="flex cursor-pointer items-center justify-between group">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
-                          activeFilters.policies.includes(item) ? 'border-amber-500 bg-amber-500' : 'border-neutral-300 group-hover:border-amber-500'
-                        }`}>
-                          {activeFilters.policies.includes(item) && <X className="h-3 w-3 text-white" />}
-                        </div>
-                        <input 
-                          type="checkbox" 
-                          className="hidden" 
-                          checked={activeFilters.policies.includes(item)}
-                          onChange={() => {
-                            setActiveFilters(prev => ({
-                              ...prev,
-                              policies: prev.policies.includes(item) 
-                                ? prev.policies.filter(t => t !== item)
-                                : [...prev.policies, item]
-                            }));
-                          }}
-                        />
-                        <span className="text-sm text-neutral-700">{item}</span>
-                      </div>
-                      <span className="text-xs text-neutral-400">{filterCounts.policies[item] || 0}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
           </aside>
 
-          {/* Results Grid */}
+          {/* Results Grid / Map */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {sortedResults.length > 0 ? (
-                sortedResults.map((hotel) => (
+            {viewMode === 'map' ? (
+              <div className="h-[calc(100vh-200px)] w-full rounded-2xl bg-neutral-100 overflow-hidden border border-neutral-200 flex items-center justify-center sticky top-24">
+                <div className="text-center">
+                  <Map className="h-12 w-12 mx-auto mb-4 text-neutral-400 opacity-50" />
+                  <p className="text-neutral-500 font-bold">Interactive Map View</p>
+                  <p className="text-sm text-neutral-400 max-w-sm mt-2">Map implementation would load here displaying coordinates of {sortedResults.length} properties.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {sortedResults.length > 0 ? (
+                  sortedResults.map((hotel) => (
                   <motion.div
                     key={hotel.id}
                     whileHover={{ y: -5 }}
@@ -401,14 +462,9 @@ export const SearchResultsPage: React.FC = () => {
                             className="h-full w-full object-cover"
                             referrerPolicy="no-referrer"
                           />
-                          <button 
-                            className="absolute right-3 top-3 rounded-full bg-white/80 p-2 text-neutral-600 backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500"
-                            onClick={(e) => {
-                              e.preventDefault(); // Prevent navigation when clicking heart
-                            }}
-                          >
-                            <Heart className="h-4 w-4" />
-                          </button>
+                          <div className="absolute right-3 top-3 z-10">
+                            <WishlistButton propertyId={hotel.id} className="p-2 sm:px-2 sm:py-2 rounded-full backdrop-blur-md shadow-sm transition-all hover:bg-neutral-50 flex items-center gap-2" iconClassName="h-4 w-4" />
+                          </div>
                           <div className="absolute left-3 top-3 flex flex-col gap-1">
                             {hotel.badges?.map((badge: string, i: number) => (
                               <span key={i} className={`w-fit rounded px-1.5 py-0.5 text-[10px] font-bold text-white ${
@@ -479,6 +535,7 @@ export const SearchResultsPage: React.FC = () => {
                 </div>
               )}
             </div>
+            )}
           </div>
         </div>
       </section>

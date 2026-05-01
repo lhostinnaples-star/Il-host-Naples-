@@ -12,6 +12,7 @@ export const AdminDashboard: React.FC = () => {
   const { formatPrice } = useCurrency();
   const { hotels } = useHotels();
   const [stats, setStats] = useState({ users: 0, hotels: 0, bookings: 0, revenue: 0 });
+  const [activeAdminTab, setActiveAdminTab] = useState<'approvals' | 'users' | 'bookings'>('approvals');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,23 +82,106 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-8">
             <Card className="border-white/10 bg-white/5 text-white">
-              <h3 className="mb-6 text-xl font-bold">Recent System Activity</h3>
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-white/10" />
-                      <div>
-                        <p className="text-sm font-bold">New Hotel Registration</p>
-                        <p className="text-xs text-neutral-500">Grand Plaza Resort requested approval</p>
+              <div className="mb-6 flex space-x-4 border-b border-white/10 pb-4">
+                <button 
+                  onClick={() => setActiveAdminTab('approvals')}
+                  className={`text-sm font-bold ${activeAdminTab === 'approvals' ? 'text-[#fbbf24]' : 'text-neutral-500 hover:text-white'}`}
+                >
+                  Pending Approvals
+                </button>
+                <button 
+                  onClick={() => setActiveAdminTab('users')}
+                  className={`text-sm font-bold ${activeAdminTab === 'users' ? 'text-[#fbbf24]' : 'text-neutral-500 hover:text-white'}`}
+                >
+                  All Users
+                </button>
+                <button 
+                  onClick={() => setActiveAdminTab('bookings')}
+                  className={`text-sm font-bold ${activeAdminTab === 'bookings' ? 'text-[#fbbf24]' : 'text-neutral-500 hover:text-white'}`}
+                >
+                  All Bookings
+                </button>
+              </div>
+
+              {activeAdminTab === 'approvals' && (
+                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                          <Hotel className="h-5 w-5 text-neutral-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold">Residenza {i}</p>
+                          <p className="text-xs text-neutral-500">Host: Giuseppe Rossi • Napoli</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="border-green-500/50 text-green-500 hover:bg-green-500 hover:text-white" onClick={() => window.confirm('Approve property?')}>Approve</Button>
+                        <Button variant="outline" size="sm" className="border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => window.confirm('Reject property?')}>Reject</Button>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">Review</Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
+
+              {activeAdminTab === 'users' && (
+                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
+                  {[
+                    {name: 'Admin User', role: 'admin'},
+                    {name: 'Luigi Mario', role: 'lister'},
+                    {name: 'Mario Bros', role: 'supplier'},
+                    {name: 'John Guest', role: 'customer'}
+                  ].map((u, i) => (
+                    <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                          <Users className="h-5 w-5 text-neutral-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold">{u.name}</p>
+                          <p className="text-xs text-neutral-500">{u.name.toLowerCase().replace(' ', '')}@email.com</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                          u.role === 'admin' ? 'bg-red-500/20 text-red-400' :
+                          u.role === 'lister' ? 'bg-blue-500/20 text-blue-400' :
+                          u.role === 'supplier' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-green-500/20 text-green-400'
+                        }`}>
+                          {u.role}
+                        </span>
+                        <select className="bg-white/10 border border-white/20 text-white text-xs rounded px-2 py-1 outline-none">
+                          <option value="customer">Customer</option>
+                          <option value="lister">Lister</option>
+                          <option value="supplier">Supplier</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeAdminTab === 'bookings' && (
+                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
+                      <div>
+                        <p className="text-sm font-bold">Booking #{1000 + i}</p>
+                        <p className="text-xs text-neutral-500">Villa Napoli • John Guest</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-[#fbbf24]">€{150 * i}</p>
+                        <p className="text-xs text-green-500">Confirmed</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
 

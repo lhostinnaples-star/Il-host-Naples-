@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { SERVICE_CATEGORIES } from '../constants';
+import { ImageUpload } from '../components/ImageUpload';
 
 export const ServiceProviderDashboard: React.FC = () => {
   const { user, token } = useAuth();
@@ -355,18 +356,21 @@ export const ServiceProviderDashboard: React.FC = () => {
                        )}
                        {formStep === 3 && (
                          <div className="space-y-6">
-                            <div className="space-y-2">
-                               <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Display Image URL</label>
-                               <Input placeholder="Paste image URL here..." value={newService.imageUrl} onChange={e => setNewService({...newService, imageUrl: e.target.value})} className="h-14 rounded-2xl" />
+                            <div className="space-y-4">
+                               <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Service Photos</label>
+                               <ImageUpload
+                                maxImages={3}
+                                storagePath={`services/${user?.id || 'new'}`}
+                                initialImages={newService.imageUrl ? [newService.imageUrl] : []}
+                                onImagesChange={(images) => {
+                                  setNewService((prev: any) => ({
+                                    ...prev,
+                                    imageUrl: images[0] || ''
+                                  }));
+                                }}
+                               />
                             </div>
-                            <div className="aspect-video rounded-[2rem] overflow-hidden border-2 border-dashed border-neutral-100 bg-neutral-50 flex items-center justify-center">
-                              {newService.imageUrl ? (
-                                <img src={newService.imageUrl} className="h-full w-full object-cover" />
-                              ) : (
-                                <Plus className="h-12 w-12 text-neutral-200" />
-                              )}
-                            </div>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 mt-8">
                                <Button type="button" variant="outline" onClick={() => setFormStep(2)} className="flex-1 h-14 rounded-2xl font-bold">Back</Button>
                                <Button type="submit" className="flex-1 h-14 bg-[#fbbf24] text-[#1e293b] rounded-2xl font-bold shadow-xl shadow-amber-200/20">Publish Listing</Button>
                             </div>

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Input } from '../components/UI';
 import { useAuth } from '../contexts/AuthContext';
+import { ImageUpload } from '../components/ImageUpload';
 
 const SERVICES = [
   { id: 'cleaning', label: 'Cleaning service', icon: Sparkles },
@@ -244,24 +245,14 @@ export const SupplierDashboard: React.FC = () => {
               <p className="text-xs font-bold text-[#fbbf24] bg-amber-50 px-3 py-1.5 rounded-full uppercase tracking-widest">6 Slots Available</p>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-              {portfolio.map((img, idx) => (
-                <div key={idx} className="group relative aspect-square rounded-3xl overflow-hidden bg-neutral-100 border-2 border-neutral-100 transition-all hover:border-[#fbbf24]">
-                  <img src={img} alt={`Work ${idx + 1}`} className="h-full w-full object-cover transition-transform group-hover:scale-110" referrerPolicy="no-referrer" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button className="h-10 w-10 rounded-xl bg-white text-red-500 flex items-center justify-center hover:scale-110 transition-transform">
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-2 border-dashed border-neutral-200 rounded-[2rem] p-10 text-center bg-white hover:border-[#fbbf24] transition-colors cursor-pointer">
-              <Plus className="h-10 w-10 mx-auto mb-4 text-neutral-300" />
-              <p className="font-bold text-[#1e293b]">Upload New Work</p>
-              <p className="text-sm text-neutral-400">Automatic smart resize enabled</p>
-            </div>
+            <ImageUpload 
+              maxImages={5}
+              storagePath={`suppliers/${user?.id || 'new'}`}
+              initialImages={portfolio}
+              onImagesChange={(images) => {
+                setPortfolio(images);
+              }}
+            />
           </motion.div>
         )}
 
@@ -283,13 +274,33 @@ export const SupplierDashboard: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="sm:border-l border-neutral-100 sm:pl-6">
+                  <div className="sm:border-l border-neutral-100 sm:pl-6 space-y-3">
+                    <div className="flex gap-2">
+                       <button 
+                         onClick={() => console.log(`[JOB]: Accepted job from ${lead.listerName}`)}
+                         className="flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 transition-all text-sm"
+                       >
+                         Accept Job
+                       </button>
+                       <button 
+                         onClick={() => console.log(`[JOB]: Rejected job from ${lead.listerName}`)}
+                         className="flex-1 flex items-center justify-center gap-2 px-4 h-10 rounded-xl bg-red-100 text-red-600 font-bold hover:bg-red-200 transition-all text-sm"
+                       >
+                         Reject
+                       </button>
+                    </div>
                     <button 
                       onClick={() => handleWhatsApp(lead.phone)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 h-12 rounded-xl bg-[#fbbf24] text-[#1e293b] font-bold hover:bg-[#f59e0b] transition-all shadow-lg shadow-[#fbbf24]/20"
+                      className="w-full flex items-center justify-center gap-2 px-6 h-10 rounded-xl border border-neutral-200 text-[#1e293b] font-bold hover:border-[#fbbf24] transition-all text-sm"
                     >
                       <Phone className="h-4 w-4" />
                       WhatsApp Contact
+                    </button>
+                    <button 
+                      onClick={() => console.log(`[INVOICE GENERATOR]: Generating auto-invoice for job ID ${lead.id}...`)}
+                      className="w-full flex items-center justify-center gap-2 px-6 h-10 rounded-xl bg-[#1e293b] text-white font-bold transition-all text-sm"
+                    >
+                      Generate Invoice
                     </button>
                   </div>
                 </Card>

@@ -17,6 +17,83 @@ import { SERVICE_CATEGORIES } from '../constants';
 
 import { useHotels } from '../contexts/HotelsContext';
 import { AreaSelection } from '../components/AreaSelection';
+import { WishlistButton } from '../components/WishlistButton';
+
+const JustBookedTicker: React.FC = () => {
+  const properties = ["Villa Napoli", "Vesuvius View Suite", "Centro Storico Loft", "Sorrento Coast Flat", "Pompei Residenza"];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % properties.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="fixed bottom-0 left-0 w-full bg-[#1e293b] text-white py-2 z-50 border-t border-[#fbbf24]/20 flex justify-center items-center overflow-hidden">
+      <div className="flex items-center gap-2 px-4">
+        <CheckCircle2 className="h-4 w-4 text-[#fbbf24]" />
+        <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">Just booked:</span>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={currentIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="text-sm font-bold text-white"
+          >
+            {properties[currentIndex]}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
+const RecentlyViewedProperties: React.FC = () => {
+  const [recent, setRecent] = useState<any[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+      setRecent(stored);
+    } catch {}
+  }, []);
+
+  if (recent.length === 0) return null;
+
+  return (
+    <section className="py-16 px-6 bg-neutral-50 overflow-hidden border-t border-neutral-100">
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-2xl font-extrabold text-[#0f172a] mb-8">Recently Viewed</h2>
+        <div className="flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
+          {recent.map((hotel: any) => (
+            <div 
+              key={hotel.id} 
+              className="w-72 shrink-0 cursor-pointer group bg-white p-2 rounded-2xl shadow-sm border border-neutral-100 hover:shadow-md transition-all"
+              onClick={() => navigate(`/hotel/${hotel.id}`)}
+            >
+              <div className="w-full h-40 rounded-xl overflow-hidden mb-3 relative">
+                <img 
+                  src={hotel.imageUrl || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945'} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              <div className="px-2 pb-2">
+                <h3 className="font-bold text-[#1e293b] truncate text-sm mb-1">{hotel.name}</h3>
+                <p className="text-xs font-bold text-[#fbbf24] truncate">
+                  €{hotel.price || hotel.rooms?.[0]?.price} /night
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const CounterRow: React.FC<{
   label: string;
@@ -667,7 +744,12 @@ export const LandingPage: React.FC = () => {
       </div>
 
       {/* Featured Properties Section */}
-      <section className="py-24 px-6 bg-neutral-50">
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-neutral-50"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
@@ -711,10 +793,8 @@ export const LandingPage: React.FC = () => {
                     alt={hotel.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute top-4 right-4">
-                    <button className="p-2 rounded-full bg-white/20 backdrop-blur-md text-white hover:bg-white hover:text-red-500 transition-all">
-                      <Heart className="h-5 w-5" />
-                    </button>
+                  <div className="absolute top-4 right-4 z-10">
+                    <WishlistButton propertyId={hotel.id} />
                   </div>
                   <div className="absolute bottom-4 left-4">
                     <span className="px-3 py-1 rounded-full bg-[#1e293b]/80 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest border border-white/20">
@@ -756,10 +836,18 @@ export const LandingPage: React.FC = () => {
             </Button>
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      {/* Recently Viewed Section */}
+      <RecentlyViewedProperties />
 
       {/* Experiences & Services Section */}
-      <section className="py-24 px-6 bg-white overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-white overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-4">Elevate Your Stay</h2>
@@ -806,10 +894,15 @@ export const LandingPage: React.FC = () => {
             })}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Booking Pool Teaser Section */}
-      <section className="py-24 px-6 bg-gradient-to-r from-[#1e293b] to-[#0f172a] text-white">
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-gradient-to-r from-[#1e293b] to-[#0f172a] text-white"
+      >
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-1/2">
             <h2 className="text-4xl md:text-5xl font-extrabold mb-8 italic">Never Lose a Booking Again</h2>
@@ -868,10 +961,15 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Testimonials Section */}
-      <section className="py-24 px-6 bg-white overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-white overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-6">What Our Community Says</h2>
@@ -923,10 +1021,15 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Naples City Guide Section */}
-      <section className="py-24 px-6 bg-neutral-50">
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-neutral-50"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] italic">Naples City Guide</h2>
@@ -977,10 +1080,15 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Partner/Join Section */}
-      <section className="py-24 px-6 bg-white border-t border-neutral-100">
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-white border-t border-neutral-100"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -1026,7 +1134,7 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer Section */}
       <footer className="bg-[#0f172a] text-white pt-24 pb-12 px-6">
@@ -1084,10 +1192,10 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs text-neutral-500 font-bold tracking-widest uppercase">
+            <p className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-10 md:mb-0">
               © 2026 IL HOST IN NAPLES. MADE WITH PASSION IN ITALY.
             </p>
-            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500">
+            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-10 md:mb-0">
               <a href="#" className="hover:text-white transition-colors">ITALIANO</a>
               <a href="#" className="hover:text-white transition-colors">ENGLISH</a>
               <a href="#" className="hover:text-white transition-colors">DEUTSCH</a>
@@ -1095,6 +1203,9 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Just Booked Ticker */}
+      <JustBookedTicker />
     </div>
   );
 };

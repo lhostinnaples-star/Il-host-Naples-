@@ -19,6 +19,7 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
 import { useHotels } from '../contexts/HotelsContext';
+import { ImageUpload } from '../components/ImageUpload';
 
 export const OwnerDashboard: React.FC = () => {
   const { token } = useAuth();
@@ -498,7 +499,7 @@ export const OwnerDashboard: React.FC = () => {
                 <div className="flex flex-row md:flex-row items-center justify-between md:justify-end gap-4 md:gap-4 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0">
                   <div className="text-left md:text-right md:mr-6">
                     <p className="text-lg md:text-xl font-bold text-[#1e293b]">{formatPrice(booking.totalPrice)}</p>
-                    <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Total Payout</p>
+                    <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Total Value</p>
                   </div>
                   <div className="flex gap-2">
                     <Button 
@@ -573,7 +574,7 @@ export const OwnerDashboard: React.FC = () => {
                       <div className="flex flex-col items-end justify-between border-t md:border-t-0 md:border-l border-neutral-100 pt-4 md:pt-0 md:pl-6">
                         <div className="text-right">
                           <p className="text-xl font-bold text-[#1e293b]">{formatPrice(booking.totalPrice)}</p>
-                          <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Est. Payout</p>
+                          <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Est. Value</p>
                         </div>
                         <div className="flex flex-col gap-2 w-full md:w-auto">
                           <Button 
@@ -1020,6 +1021,16 @@ export const OwnerDashboard: React.FC = () => {
                                 onChange={e => setNewHotel({...newHotel, spaceDescription: e.target.value})}
                               />
                             </div>
+                            <div className="space-y-4">
+                              <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">House Rules</label>
+                              <textarea 
+                                className="w-full rounded-2xl md:rounded-3xl border border-neutral-200 p-4 md:p-6 text-sm outline-none focus:border-[#fbbf24] transition-colors leading-relaxed min-h-[100px]"
+                                placeholder="e.g. No parties, quiet hours after 10 PM..."
+                                rows={4}
+                                value={newHotel.localTipsDescription} // Borrowing this unused field or I'll just change to use the unused generic description if need be
+                                onChange={e => setNewHotel({...newHotel, localTipsDescription: e.target.value})}
+                              />
+                            </div>
                           </motion.div>
                         )}
 
@@ -1114,67 +1125,18 @@ export const OwnerDashboard: React.FC = () => {
                             <div className="space-y-4">
                               <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">Property Photos</label>
                               
-                              <div 
-                                className="border-2 border-dashed border-neutral-200 rounded-2xl md:rounded-[2rem] p-6 md:p-10 text-center hover:border-[#fbbf24] transition-colors cursor-pointer bg-neutral-50 relative group"
-                                onDragOver={(e) => e.preventDefault()}
-                                onDrop={(e) => {
-                                  e.preventDefault();
-                                  const files = Array.from(e.dataTransfer.files);
-                                  files.forEach(file => {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                      const url = reader.result as string;
-                                      setNewHotel(prev => ({
-                                        ...prev,
-                                        images: [...prev.images, url],
-                                        imageUrl: prev.imageUrl || url
-                                      }));
-                                    };
-                                    reader.readAsDataURL(file);
-                                  });
+                              <ImageUpload
+                                maxImages={5}
+                                storagePath={`properties/new`}
+                                initialImages={newHotel.images}
+                                onImagesChange={(images) => {
+                                  setNewHotel((prev: any) => ({
+                                    ...prev,
+                                    images,
+                                    imageUrl: images[0] || ''
+                                  }));
                                 }}
-                                onClick={() => {
-                                  const input = document.createElement('input');
-                                  input.type = 'file';
-                                  input.multiple = true;
-                                  input.accept = 'image/*';
-                                  input.onchange = handleFileChange as any;
-                                  input.click();
-                                }}
-                              >
-                                <ArrowUpCircle className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 text-neutral-300 group-hover:text-[#fbbf24] transition-colors" />
-                                <p className="font-bold text-[#1e293b] text-sm md:text-base">Upload from Phone or Computer</p>
-                                <p className="text-xs md:text-sm text-neutral-400">Tap to browse or drag and drop images (Max 5MB)</p>
-                              </div>
-
-                              {newHotel.images.length > 0 && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mt-6">
-                                  {newHotel.images.map((img, idx) => (
-                                    <div key={idx} className="relative aspect-square rounded-xl md:rounded-2xl overflow-hidden group">
-                                      <img src={img} alt="Preview" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-                                      <button 
-                                        type="button"
-                                        className="absolute top-2 right-2 h-8 w-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setNewHotel(prev => ({
-                                            ...prev,
-                                            images: prev.images.filter((_, i) => i !== idx),
-                                            imageUrl: prev.imageUrl === img ? (prev.images[idx + 1] || prev.images[idx - 1] || '') : prev.imageUrl
-                                          }));
-                                        }}
-                                      >
-                                        <X className="h-4 w-4" />
-                                      </button>
-                                      {newHotel.imageUrl === img && (
-                                        <div className="absolute bottom-0 left-0 right-0 bg-[#fbbf24] text-[#1e293b] text-[8px] md:text-[10px] font-bold py-1 text-center">
-                                          MAIN IMAGE
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
+                              />
                               
                               <p className="text-[10px] md:text-xs text-neutral-400 italic">Tip: Use high-quality landscape photos for better conversion.</p>
                             </div>

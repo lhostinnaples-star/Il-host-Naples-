@@ -17,6 +17,8 @@ export const SharedBookingPool: React.FC = () => {
   const { token, user } = useAuth();
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [showModal, setShowModal] = useState(false);
 
   // High-quality demo data for the pool
   const MOCK_DEMO_BOOKINGS = [
@@ -73,23 +75,28 @@ export const SharedBookingPool: React.FC = () => {
     fetchPool();
   }, [fetchPool]);
 
-  const handleAccept = async (id: string) => {
+  const handleAccept = async (booking: any) => {
+    // Send mock email
+    console.log(`[EMAIL SYSTEM]: Sending email notification to host (${booking.userName}) and referring partner for booking ${booking.id}...`);
+    
     // Check if it's a demo booking
-    if (id.startsWith('demo-')) {
+    if (booking.id.startsWith('demo-')) {
       toast.success('Referral accepted! Demo details are now simulated in your dashboard.');
-      setBookings(bookings.filter(b => b.id !== id));
+      setBookings(bookings.filter(b => b.id !== booking.id));
+      setShowModal(false);
       setTimeout(() => navigate('/owner'), 1500);
       return;
     }
 
     try {
-      const res = await fetch(`/api/bookings/${id}/accept`, {
+      const res = await fetch(`/api/bookings/${booking.id}/accept`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         toast.success('Referral accepted! Details are now in your dashboard.');
-        setBookings(bookings.filter(b => b.id !== id));
+        setBookings(bookings.filter(b => b.id !== booking.id));
+        setShowModal(false);
         // Redirect after a short delay
         setTimeout(() => navigate('/owner'), 1500);
       } else {
@@ -99,6 +106,27 @@ export const SharedBookingPool: React.FC = () => {
     } catch (err) {
       toast.error('An error occurred');
     }
+  };
+
+  const handleRelease = (id: string) => {
+    setBookings(bookings.filter(b => b.id !== id));
+    toast.success('Booking released back to the general pool.');
+    setShowModal(false);
+  };
+
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 60000); // update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const getCountdown = (sharedAt: string) => {
+    const expiresAt = new Date(sharedAt).getTime() + (6 * 60 * 60 * 1000); // 6 hours
+    if (expiresAt < currentTime) return 'Expired';
+    const diff = expiresAt - currentTime;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m remaining`;
   };
 
   return (
@@ -198,7 +226,7 @@ export const SharedBookingPool: React.FC = () => {
                       <p className="text-sm font-bold text-[#1e293b]">{booking.Room?.Hotel?.area || 'Naples'}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Est. Payout</p>
+                      <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Est. Value</p>
                       <p className="text-sm font-bold text-green-600">€{booking.totalPrice}</p>
                     </div>
                   </div>
@@ -219,7 +247,7 @@ export const SharedBookingPool: React.FC = () => {
                        </div>
                        <div className="space-y-0.5">
                           <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest leading-none">Response Window</p>
-                          <p className="text-xs font-bold text-[#1e293b] tracking-wider">6 HOURS</p>
+                          <p className="text-xs font-bold text-[#1e293b] tracking-wider">{getCountdown(booking.sharedAt)}</p>
                        </div>
                     </div>
                   </div>
@@ -227,11 +255,21 @@ export const SharedBookingPool: React.FC = () => {
 
                 <div className="lg:border-l border-neutral-100 lg:pl-6 shrink-0 space-y-3">
                   <Button 
-                    onClick={() => handleAccept(booking.id)}
+                    onClick={() => {
+                      setSelectedBooking(booking);
+                      setShowModal(true);
+                    }}
                     className="w-full bg-[#fbbf24] text-[#1e293b] hover:bg-[#1e293b] hover:text-white font-bold h-14 px-8 rounded-2xl transition-all shadow-lg shadow-[#fbbf24]/10 flex items-center justify-center gap-2"
                   >
                     <CheckCircle2 className="h-5 w-5" />
-                    Accept Referral
+                    Review Details
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleRelease(booking.id)}
+                    className="w-full text-neutral-500 font-bold h-10 px-8 rounded-2xl transition-all flex items-center justify-center text-xs"
+                  >
+                    Release Referral
                   </Button>
                   <p className="text-[10px] text-center text-neutral-400 italic">No penalty for not closing within 6h</p>
                 </div>
@@ -255,6 +293,32 @@ export const SharedBookingPool: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Pool Booking Details Modal */}
+      {showModal && selectedBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1e293b]/80 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl relative">
+            <h2 className="text-2xl font-bold text-[#1e293b] mb-4">Referral Details</h2>
+            <div className="space-y-4 mb-8 text-neutral-600">
+               <p><strong>Property:</strong> {selectedBooking.Room?.Hotel?.name || 'Property'} - {selectedBooking.Room?.type || 'Stay'}</p>
+               <p><strong>Check-in:</strong> {format(new Date(selectedBooking.checkIn), 'MMM dd, yyyy')}</p>
+               <p><strong>Check-out:</strong> {format(new Date(selectedBooking.checkOut), 'MMM dd, yyyy')}</p>
+               <p><strong>Guests:</strong> {selectedBooking.guests || 2}</p>
+               <p><strong>Estimated Value:</strong> €{selectedBooking.totalPrice}</p>
+               <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-800">
+                 <p className="font-bold flex items-center gap-2 mb-1"><Info className="h-4 w-4" /> Next Steps</p>
+                 <p>By accepting this booking, you agree to contact the referring party quickly. If you fail to successfully fulfill the booking, the party will seek someone else.</p>
+               </div>
+            </div>
+            <div className="flex gap-4">
+              <Button onClick={() => setShowModal(false)} variant="outline" className="flex-1 rounded-xl h-12">Cancel</Button>
+              <Button onClick={() => handleAccept(selectedBooking)} className="flex-1 bg-[#fbbf24] text-[#1e293b] rounded-xl h-12 hover:bg-[#1e293b] hover:text-white transition-colors">
+                Confirm Accept
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
