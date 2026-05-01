@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { Card, Button } from '../components/UI';
@@ -24,6 +24,8 @@ import { useHotels } from '../contexts/HotelsContext';
 import { WishlistButton } from '../components/WishlistButton';
 import { ReviewCard } from '../components/ReviewCard';
 import { BookingWidget } from '../components/BookingWidget';
+import { SEOHead } from '../components/SEOHead';
+import { generatePropertySchema, generateSlug, generateBreadcrumbSchema } from '../utils/seo';
 
 const AmenityIcon: React.FC<{ name: string }> = ({ name }) => {
   const lower = name.toLowerCase();
@@ -36,7 +38,8 @@ const AmenityIcon: React.FC<{ name: string }> = ({ name }) => {
 };
 
 export const HotelDetailsPage: React.FC = () => {
-  const { id } = useParams();
+  const { id: idParam, slugWithId } = useParams();
+  const id = idParam || (slugWithId ? slugWithId.split('-').pop() : null);
   const { token, user } = useAuth();
   const { formatPrice } = useCurrency();
   const { searchDates, hotels } = useHotels();
@@ -252,8 +255,46 @@ export const HotelDetailsPage: React.FC = () => {
 
   const galleryImages = hotel.images && hotel.images.length > 0 ? hotel.images : [hotel.imageUrl];
 
+  const slug = generateSlug(hotel.name);
+  const typeSlug = generateSlug(hotel.type || 'holiday-house');
+  const areaSlug = generateSlug(hotel.area || 'naples');
+  const canonical = `/naples/${typeSlug}/${areaSlug}/${slug}-${hotel.id}`;
+  const seoTitle = `${hotel.name} - ${hotel.type || 'Holiday House'} in ${hotel.area || 'Naples'} Naples`;
+  
+  const breadcrumbItems = [
+    { name: 'Home', item: '/' },
+    { name: 'Naples', item: '/search' },
+    { name: hotel.area || 'Naples', item: `/naples/${areaSlug}` },
+    { name: hotel.name, item: canonical }
+  ];
+
   return (
     <div className="min-h-screen bg-white pt-32 pb-24 md:pb-0">
+      <SEOHead 
+        title={seoTitle}
+        description={`Book ${hotel.name} in ${hotel.area || 'Naples'}, Naples. ${hotel.bedrooms || 1} bedrooms. From ${formatPrice(hotel.price)}/night. ${hotel.cancellationPolicy || 'Moderate'}.`}
+        image={galleryImages[0]}
+        type="hotel.room"
+        canonical={canonical}
+        schema={[
+          generatePropertySchema(hotel),
+          generateBreadcrumbSchema(breadcrumbItems)
+        ]}
+      />
+
+      {/* Breadcrumbs */}
+      <nav className="mx-auto max-w-7xl px-6 py-4">
+        <ol className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+          <li><Link to="/" className="hover:text-black transition-colors">Home</Link></li>
+          <li><ChevronRight className="h-3 w-3" /></li>
+          <li><Link to="/search" className="hover:text-black transition-colors">Naples</Link></li>
+          <li><ChevronRight className="h-3 w-3" /></li>
+          <li><Link to={`/naples/${areaSlug}`} className="hover:text-black transition-colors">{hotel.area || 'Naples'}</Link></li>
+          <li><ChevronRight className="h-3 w-3 text-neutral-300" /></li>
+          <li className="text-black truncate max-w-[150px] md:max-w-none">{hotel.name}</li>
+        </ol>
+      </nav>
+
       {/* Hero Gallery - Responsive Layout */}
       <section className="mx-auto max-w-7xl px-0 md:px-6 py-0 md:py-8">
         {/* Mobile Slider / Desktop Grid */}

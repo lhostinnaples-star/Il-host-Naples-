@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, Link, useSearchParams, useParams } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
 import { Heart, Star, MapPin, X, ChevronDown, Map, List } from 'lucide-react';
 import { format } from 'date-fns';
@@ -7,12 +7,15 @@ import { motion } from 'motion/react';
 import { useHotels } from '../contexts/HotelsContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { WishlistButton } from '../components/WishlistButton';
+import { SEOHead } from '../components/SEOHead';
+import { generateSlug } from '../utils/seo';
 
 export const SearchResultsPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { area: areaParam } = useParams();
   const [searchParams] = useSearchParams();
-  const areaQuery = searchParams.get('area');
+  const areaQuery = areaParam || searchParams.get('area');
   
   const { hotels, selectedAreas, setSelectedAreas, priceRange, setPriceRange, setSearchDates, searchDates: contextSearchDates } = useHotels();
   const { formatPrice } = useCurrency();
@@ -169,8 +172,18 @@ export const SearchResultsPage: React.FC = () => {
     return counts;
   }, [searchResults]);
 
+  const typeLabel = activeFilters.propertyTypes.length === 1 ? activeFilters.propertyTypes[0] : 'Places to Stay';
+  const areaLabel = selectedAreas.length === 1 ? selectedAreas[0] : (areaQuery || 'Naples');
+  const typeSlug = generateSlug(typeLabel);
+  const areaSlug = generateSlug(areaLabel);
+  const canonical = `/naples/${typeSlug}/${areaSlug}`;
+
   return (
     <div className="min-h-screen bg-white pt-32">
+      <SEOHead 
+        title={`${typeLabel} in ${areaLabel} Naples`}
+        canonical={canonical}
+      />
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
@@ -453,7 +466,7 @@ export const SearchResultsPage: React.FC = () => {
                     whileHover={{ y: -5 }}
                     className="group"
                   >
-                    <Link to={`/hotel/${hotel.id}`}>
+                    <Link to={`/naples/${generateSlug(hotel.type || 'holiday-house')}/${generateSlug(hotel.area || 'naples')}/${generateSlug(hotel.name)}-${hotel.id}`}>
                       <Card className="h-full overflow-hidden border-neutral-100 p-0 shadow-sm transition-shadow hover:shadow-md">
                         <div className="relative aspect-[4/3]">
                           <img
@@ -461,6 +474,7 @@ export const SearchResultsPage: React.FC = () => {
                             alt={hotel.name}
                             className="h-full w-full object-cover"
                             referrerPolicy="no-referrer"
+                            loading="lazy"
                           />
                           <div className="absolute right-3 top-3 z-10">
                             <WishlistButton propertyId={hotel.id} className="p-2 sm:px-2 sm:py-2 rounded-full backdrop-blur-md shadow-sm transition-all hover:bg-neutral-50 flex items-center gap-2" iconClassName="h-4 w-4" />

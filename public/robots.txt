@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /naples/
+Allow: /experiences/
+Disallow: /dashboard/
+Disallow: /owner/
+Disallow: /supplier/
+Disallow: /service-dashboard/
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /verify-email
+Disallow: /search?
+Disallow: /suppliers/
+Disallow: /shared-pool/
+Disallow: /supplier-directory/
+
+Sitemap: https://www.ilhostinnaples.com/sitemap.xml

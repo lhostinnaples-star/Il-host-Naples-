@@ -1,0 +1,71 @@
+
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
+import { getDefaultMetaTags } from '../utils/seo';
+
+interface SEOHeadProps {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: string;
+  schema?: any;
+  canonical?: string;
+  noindex?: boolean;
+}
+
+export const SEOHead: React.FC<SEOHeadProps> = ({ 
+  title, 
+  description, 
+  image, 
+  type, 
+  schema, 
+  canonical,
+  noindex 
+}) => {
+  const location = useLocation();
+  const defaults = getDefaultMetaTags(location.pathname + location.search);
+
+  const finalTitle = title ? `${title} | Il Host in Naples` : defaults.title;
+  const finalDescription = description || defaults.description;
+  const finalImage = image || defaults.image;
+  const finalType = type || defaults.type;
+  const finalUrl = canonical ? `https://www.ilhostinnaples.com${canonical}` : defaults.url;
+  const shouldNoIndex = noindex !== undefined ? noindex : defaults.noindex;
+
+  return (
+    <Helmet>
+      {/* Basic Meta Tags */}
+      <title>{finalTitle}</title>
+      <meta name="description" content={finalDescription} />
+      {shouldNoIndex && <meta name="robots" content="noindex, nofollow" />}
+      {!shouldNoIndex && <meta name="robots" content="index, follow" />}
+      
+      {/* Canonical & Hreflang */}
+      <link rel="canonical" href={finalUrl} />
+      <link rel="alternate" hrefLang="en" href={finalUrl} />
+      {/* Simplified hreflang for now as we don't have separate /it/ paths yet */}
+      
+      {/* Open Graph / Facebook */}
+      <meta property="og:type" content={finalType} />
+      <meta property="og:url" content={finalUrl} />
+      <meta property="og:title" content={finalTitle} />
+      <meta property="og:description" content={finalDescription} />
+      <meta property="og:image" content={finalImage} />
+
+      {/* Twitter */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={finalUrl} />
+      <meta name="twitter:title" content={finalTitle} />
+      <meta name="twitter:description" content={finalDescription} />
+      <meta name="twitter:image" content={finalImage} />
+
+      {/* Structured Data */}
+      {schema && (
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
+      )}
+    </Helmet>
+  );
+};

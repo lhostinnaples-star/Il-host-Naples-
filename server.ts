@@ -5,6 +5,8 @@ import { createServer as createViteServer } from 'vite';
 import { db } from './backend/config/db';
 import authRoutes from './backend/routes/authRoutes';
 import coreRoutes from './backend/routes/coreRoutes';
+import { generateSitemapXML } from './src/utils/sitemap';
+import Service from './backend/models/Service';
 
 import bcrypt from 'bcryptjs';
 import User, { UserRole } from './backend/models/User';
@@ -54,6 +56,19 @@ async function startServer() {
   // API Routes
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Lhost in Naples API is running' });
+  });
+
+  app.get('/sitemap.xml', async (req, res) => {
+    try {
+      const hotels = await Hotel.findAll();
+      const services = await Service.findAll();
+      const xml = generateSitemapXML(hotels, services);
+      res.header('Content-Type', 'application/xml');
+      res.send(xml);
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
   });
 
   // Vite Middleware for Development

@@ -9,6 +9,7 @@ import { LandingPage } from './pages/LandingPage';
 import { SearchResultsPage } from './pages/SearchResultsPage';
 import { HotelDetailsPage } from './pages/HotelDetailsPage';
 import { MapPage } from './pages/MapPage';
+import { ExperienceDetailsPage } from './pages/ExperienceDetailsPage';
 import { LoginPage, RegisterPage } from './pages/AuthPages';
 import { CustomerDashboard } from './pages/CustomerDashboard';
 import { OwnerDashboard } from './pages/OwnerDashboard';
@@ -40,7 +41,17 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/search" element={<SearchResultsPage />} />
+        
+        {/* SEO Friendly Area Pages */}
+        <Route path="/naples/:area" element={<SearchResultsPage />} />
+        
+        {/* SEO Friendly Property Pages */}
+        <Route path="/naples/:type/:area/:slugWithId" element={<HotelDetailsPage />} />
         <Route path="/hotel/:id" element={<HotelDetailsPage />} />
+        
+        {/* SEO Friendly Experience Pages */}
+        <Route path="/experiences/naples/:category/:slugWithId" element={<ExperienceDetailsPage />} />
+        
         <Route path="/map" element={<MapPage />} />
         <Route path="/services" element={<ServiceDirectory />} />
         <Route path="/login" element={<LoginPage />} />
@@ -92,19 +103,23 @@ function AppContent() {
   );
 }
 
+import { HelmetProvider } from 'react-helmet-async';
+
 export default function App() {
   return (
-    <LanguageProvider>
-      <CurrencyProvider>
-        <AuthProvider>
-          <HotelsProvider>
-            <Router>
-              <Toaster position="top-center" richColors />
-              <AppContent />
-            </Router>
-          </HotelsProvider>
-        </AuthProvider>
-      </CurrencyProvider>
-    </LanguageProvider>
+    <HelmetProvider>
+      <LanguageProvider>
+        <CurrencyProvider>
+          <AuthProvider>
+            <HotelsProvider>
+              <Router>
+                <Toaster position="top-center" richColors />
+                <AppContent />
+              </Router>
+            </HotelsProvider>
+          </AuthProvider>
+        </CurrencyProvider>
+      </LanguageProvider>
+    </HelmetProvider>
   );
 }

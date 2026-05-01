@@ -18,6 +18,8 @@ import { SERVICE_CATEGORIES } from '../constants';
 import { useHotels } from '../contexts/HotelsContext';
 import { AreaSelection } from '../components/AreaSelection';
 import { WishlistButton } from '../components/WishlistButton';
+import { SEOHead } from '../components/SEOHead';
+import { generateOrganizationSchema, generateSlug } from '../utils/seo';
 
 const JustBookedTicker: React.FC = () => {
   const properties = ["Villa Napoli", "Vesuvius View Suite", "Centro Storico Loft", "Sorrento Coast Flat", "Pompei Residenza"];
@@ -73,11 +75,18 @@ const RecentlyViewedProperties: React.FC = () => {
             <div 
               key={hotel.id} 
               className="w-72 shrink-0 cursor-pointer group bg-white p-2 rounded-2xl shadow-sm border border-neutral-100 hover:shadow-md transition-all"
-              onClick={() => navigate(`/hotel/${hotel.id}`)}
+              onClick={() => {
+                const typeSlug = generateSlug(hotel.type || 'holiday-house');
+                const areaSlug = generateSlug(hotel.area || 'naples');
+                const slug = generateSlug(hotel.name);
+                navigate(`/naples/${typeSlug}/${areaSlug}/${slug}-${hotel.id}`);
+              }}
             >
               <div className="w-full h-40 rounded-xl overflow-hidden mb-3 relative">
                 <img 
                   src={hotel.imageUrl || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945'} 
+                  alt={hotel.name}
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
@@ -378,6 +387,9 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-32 bg-white">
+      <SEOHead 
+        schema={generateOrganizationSchema()}
+      />
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-[#0f172a] to-[#1e293b] px-6 py-24 text-white md:py-32">
         {/* Subtle SVG Grid Pattern Overlay */}
@@ -785,12 +797,18 @@ export const LandingPage: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
                 className="group cursor-pointer"
-                onClick={() => navigate(`/hotel/${hotel.id}`)}
+                onClick={() => {
+                  const typeSlug = generateSlug(hotel.type || 'holiday-house');
+                  const areaSlug = generateSlug(hotel.area || 'naples');
+                  const slug = generateSlug(hotel.name);
+                  navigate(`/naples/${typeSlug}/${areaSlug}/${slug}-${hotel.id}`);
+                }}
               >
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 shadow-lg">
                   <img 
                     src={hotel.imageUrl || `https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80`} 
                     alt={hotel.name}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute top-4 right-4 z-10">
