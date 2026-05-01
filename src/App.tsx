@@ -19,19 +19,18 @@ import { SupplierDirectory } from './pages/SupplierDirectory';
 import { SharedBookingPool } from './pages/SharedBookingPool';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Toaster } from 'sonner';
+import { StatusGate } from './components/StatusGate';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: UserRole[] }> = ({ children, roles }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  if (isLoading) return <div className="flex h-screen items-center justify-center bg-neutral-950 text-white">Loading...</div>;
   
-  // For preview purposes, if no user is logged in, we allow viewing dashboards
-  // In a real app, we would strictly redirect to login
-  if (!user) return <>{children}</>;
+  if (!user) return <Navigate to="/login" />;
   
   if (roles && !roles.includes(user.role)) return <Navigate to="/" />;
 
-  return <>{children}</>;
+  return <StatusGate>{children}</StatusGate>;
 };
 
 function AppContent() {

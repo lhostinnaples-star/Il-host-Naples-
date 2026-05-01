@@ -8,11 +8,22 @@ export enum UserRole {
   SERVICE_PROVIDER = 'service_provider'
 }
 
+export enum UserStatus {
+  PENDING_VERIFICATION = 'pending_verification',
+  PENDING_APPROVAL = 'pending_approval',
+  ACTIVE = 'active',
+  REJECTED = 'rejected',
+  SUSPENDED = 'suspended'
+}
+
 interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  status: UserStatus;
+  phone?: string;
+  roleDetails?: any;
 }
 
 interface AuthContextType {

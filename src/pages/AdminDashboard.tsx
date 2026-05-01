@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { Card, Button } from '../components/UI';
-import { Shield, Users, Hotel, CreditCard, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Shield, Users, Hotel, CreditCard, AlertCircle, CheckCircle2, Home, Wrench, Car } from 'lucide-react';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 
 import { useHotels } from '../contexts/HotelsContext';
+import { UserRole } from '../contexts/AuthContext';
 
 export const AdminDashboard: React.FC = () => {
   const { token } = useAuth();
@@ -106,21 +108,85 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {activeAdminTab === 'approvals' && (
-                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                          <Hotel className="h-5 w-5 text-neutral-400" />
+                <div className="space-y-6 max-h-[600px] overflow-y-auto custom-scrollbar pr-4">
+                  {[
+                    { id: 1, name: 'Luigi Esposito', role: UserRole.HOTEL_OWNER, details: { propertyType: 'BnB', address: 'Via Roma, 5', cirCode: '882233', bio: 'Experienced host in the heart of Naples.' }, email: 'luigi@napoli.com' },
+                    { id: 2, name: 'Cleaning Pros', role: UserRole.SUPPLIER, details: { companyName: 'Cleaning Pros Naples', vatNumber: 'IT123456789', categories: ['Cleaning', 'Linen'], serviceAreas: ['Centro Storico', 'Chiaia'] }, email: 'contact@cleaningpros.it' },
+                    { id: 3, name: 'Vesuvius Tours', role: UserRole.SERVICE_PROVIDER, details: { businessName: 'Vesuvius Tours', serviceType: 'City Tour', basePricing: '€45', license: 'LICENSE-9900' }, email: 'info@vesuviustours.com' }
+                  ].map((app) => (
+                    <div key={app.id} className="rounded-2xl border border-white/5 bg-white/5 p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center">
+                            {app.role === UserRole.HOTEL_OWNER ? <Home className="h-6 w-6 text-purple-400" /> : app.role === UserRole.SUPPLIER ? <Wrench className="h-6 w-6 text-yellow-400" /> : <Car className="h-6 w-6 text-green-400" />}
+                          </div>
+                          <div>
+                            <p className="text-lg font-bold">{app.name}</p>
+                            <p className="text-xs text-neutral-500 uppercase tracking-widest">{app.role.replace('_', ' ')} • {app.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold">Residenza {i}</p>
-                          <p className="text-xs text-neutral-500">Host: Giuseppe Rossi • Napoli</p>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            className="bg-green-500 text-white hover:bg-green-600"
+                            onClick={() => {
+                                console.log(`[ADMIN] Approved user: ${app.name}. Sending email to ${app.email}`);
+                                toast.success(`${app.name} approved successfully`);
+                            }}
+                          >
+                            Approve
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white"
+                            onClick={() => {
+                                const reason = prompt('Enter rejection reason:');
+                                if (reason) {
+                                    console.log(`[ADMIN] Rejected user: ${app.name}. Reason: ${reason}. Sending email to ${app.email}`);
+                                    toast.error(`Application rejected and email sent.`);
+                                }
+                            }}
+                          >
+                            Reject
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-neutral-400 hover:text-white"
+                            onClick={() => {
+                                console.log(`[ADMIN] Requested more info from: ${app.name}. Sending email to ${app.email}`);
+                                toast.info('Request for documents sent.');
+                            }}
+                          >
+                            Request Info
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="border-green-500/50 text-green-500 hover:bg-green-500 hover:text-white" onClick={() => window.confirm('Approve property?')}>Approve</Button>
-                        <Button variant="outline" size="sm" className="border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => window.confirm('Reject property?')}>Reject</Button>
+
+                      <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                        <div>
+                          <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Application Details</p>
+                          {Object.entries(app.details).map(([key, value]) => (
+                            <div key={key} className="flex justify-between text-sm py-1 border-b border-white/5 last:border-0">
+                                <span className="text-neutral-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                <span className="font-medium">{Array.isArray(value) ? value.join(', ') : String(value)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Verification Documents</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="aspect-video rounded-lg bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">
+                                <AlertCircle className="h-6 w-6 text-neutral-500" />
+                                <span className="ml-2 text-[10px] font-bold">ID_DOC.JPG</span>
+                            </div>
+                            <div className="aspect-video rounded-lg bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">
+                                <AlertCircle className="h-6 w-6 text-neutral-500" />
+                                <span className="ml-2 text-[10px] font-bold">LICENSE.PDF</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}

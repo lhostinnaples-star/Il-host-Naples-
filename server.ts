@@ -35,7 +35,8 @@ async function startServer() {
       name: 'Admin User',
       email: adminEmail,
       password: hashedPassword,
-      role: UserRole.ADMIN
+      role: UserRole.ADMIN,
+      status: 'active'
     });
     console.log('Seeded admin user: admin@stayease.com / admin123');
 
