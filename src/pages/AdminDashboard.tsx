@@ -1,282 +1,318 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, UserRole } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { Card, Button } from '../components/UI';
-import { Shield, Users, Hotel, CreditCard, AlertCircle, CheckCircle2, Home, Wrench, Car } from 'lucide-react';
-import { motion } from 'motion/react';
-import { toast } from 'sonner';
-
 import { useHotels } from '../contexts/HotelsContext';
-import { UserRole } from '../contexts/AuthContext';
+import { Button, Card, Input } from '../components/UI';
+import { 
+  Users, Home, Calendar, BarChart3, Star, MessageSquare, 
+  Settings, Shield, Clock, CheckCircle2, XCircle, Search,
+  Filter, Plus, MoreVertical, ExternalLink, Trash2, Edit2,
+  TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
+  Globe, Palette, FileText, Mail, Bell, ShieldCheck,
+  ChevronRight, LayoutGrid, Eye, SearchCode
+} from 'lucide-react';
+import { cn } from '../lib/utils';
+import { DashboardLayout } from '../components/DashboardLayout';
+import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { MOCK_USERS } from '../contexts/AuthContext';
 
 export const AdminDashboard: React.FC = () => {
-  const { token } = useAuth();
+  const { token, isDemoMode } = useAuth();
   const { formatPrice } = useCurrency();
   const { hotels } = useHotels();
-  const [stats, setStats] = useState({ users: 0, hotels: 0, bookings: 0, revenue: 0 });
-  const [activeAdminTab, setActiveAdminTab] = useState<'approvals' | 'users' | 'bookings'>('approvals');
+  const [searchParams] = useSearchParams();
+  const section = searchParams.get('section') || 'overview';
+
+  const [stats, setStats] = useState({ 
+    users: 124, 
+    hotels: 42, 
+    bookings: 156, 
+    revenue: 28500,
+    userGrowth: 12,
+    bookingGrowth: 8,
+    revenueGrowth: -3
+  });
+  
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [usersRes, bookingsRes] = await Promise.all([
-          fetch('/api/auth/users', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('/api/bookings/all', { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
+    if (isDemoMode) {
+      import('../utils/mockData').then(({ MOCK_ADMIN_APPROVALS }) => {
+        setApprovals(MOCK_ADMIN_APPROVALS);
+        setAllUsers(Object.values(MOCK_USERS));
+      });
+    }
+  }, [isDemoMode]);
 
-        if (usersRes.ok && bookingsRes.ok) {
-          const users = await usersRes.json();
-          const bookings = await bookingsRes.json();
-          
-          const usersArray = Array.isArray(users) ? users : [];
-          const bookingsArray = Array.isArray(bookings) ? bookings : [];
-          
-          const totalRevenue = bookingsArray
-            .filter((b: any) => b.status === 'confirmed')
-            .reduce((acc: number, b: any) => acc + b.totalPrice, 0);
+  const StatCard = ({ title, value, growth, icon: Icon, color }: any) => (
+    <Card className="p-6 border-white/5 bg-white/5 flex items-center justify-between group hover:border-[#fbbf24]/30 transition-all">
+      <div className="space-y-1">
+        <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{title}</p>
+        <h3 className="text-2xl font-bold text-white">{value}</h3>
+        <div className={cn(
+          "flex items-center gap-1 text-[10px] font-bold",
+          growth > 0 ? "text-green-500" : "text-red-500"
+        )}>
+          {growth > 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+          {Math.abs(growth)}% from last month
+        </div>
+      </div>
+      <div className={cn("p-4 rounded-2xl bg-opacity-10", color)}>
+        <Icon className={cn("h-6 w-6", color.replace('bg-', 'text-'))} />
+      </div>
+    </Card>
+  );
 
-          setStats({
-            users: usersArray.length,
-            hotels: hotels.length,
-            bookings: bookingsArray.length,
-            revenue: totalRevenue
-          });
-        }
-      } catch (err) {
-        console.error('Failed to fetch admin stats', err);
-      }
-    };
+  const renderOverview = () => (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Users" value={stats.users} growth={stats.userGrowth} icon={Users} color="bg-blue-500" />
+        <StatCard title="Total Properties" value={hotels.length || stats.hotels} growth={stats.bookingGrowth} icon={Home} color="bg-purple-500" />
+        <StatCard title="Active Bookings" value={stats.bookings} growth={stats.bookingGrowth} icon={Calendar} color="bg-orange-500" />
+        <StatCard title="Total Revenue" value={formatPrice(stats.revenue)} growth={stats.revenueGrowth} icon={BarChart3} color="bg-green-500" />
+      </div>
 
-    fetchData();
-  }, [token, hotels]);
-
-  return (
-    <div className="min-h-screen bg-neutral-950 pt-32 pb-20 text-white">
-      <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-12 flex items-center gap-4">
-          <div className="rounded-full bg-white/10 p-3">
-            <Shield className="h-8 w-8 text-white" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white">Recent Activity</h2>
+            <Button variant="outline" size="sm" className="text-xs h-8 border-white/10 hover:bg-white/5">View All</Button>
           </div>
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight">System Administration</h1>
-            <p className="text-neutral-500 text-lg">Global platform oversight and management</p>
-          </div>
+          <Card className="border-white/5 bg-white/5 overflow-hidden">
+            <div className="divide-y divide-white/5">
+              {[
+                { type: 'user', text: 'New user registered: Marco Rossi', time: '2 mins ago', icon: Users, color: 'text-blue-400' },
+                { type: 'booking', text: 'New booking confirmed for Villa Roma', time: '1 hour ago', icon: Calendar, color: 'text-green-400' },
+                { type: 'review', text: 'New review posted for Casa Mare', time: '3 hours ago', icon: Star, color: 'text-yellow-400' },
+                { type: 'property', text: 'New property submitted: Posillipo View', time: '5 hours ago', icon: Home, color: 'text-purple-400' },
+              ].map((item, i) => (
+                <div key={i} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer group">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("p-2 rounded-lg bg-white/5", item.color)}>
+                      <item.icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white group-hover:text-[#fbbf24] transition-colors">{item.text}</p>
+                      <p className="text-[10px] text-neutral-500 uppercase tracking-tighter mt-0.5">{item.time}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
 
-        {/* Admin Stats */}
-        <div className="mb-12 grid gap-6 md:grid-cols-4">
-          {[
-            { label: 'Total Users', value: stats.users.toLocaleString(), icon: Users, color: 'text-blue-400' },
-            { label: 'Active Hotels', value: stats.hotels.toLocaleString(), icon: Hotel, color: 'text-purple-400' },
-            { label: 'Total Bookings', value: stats.bookings.toLocaleString(), icon: CheckCircle2, color: 'text-green-400' },
-            { label: 'Platform Revenue', value: formatPrice(stats.revenue), icon: CreditCard, color: 'text-yellow-400' },
-          ].map((stat, idx) => (
-            <Card key={idx} className="border-white/10 bg-white/5 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">{stat.label}</p>
-                  <p className="text-3xl font-bold">{stat.value}</p>
-                </div>
-                <stat.icon className={cn("h-8 w-8 opacity-40", stat.color)} />
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
-            <Card className="border-white/10 bg-white/5 text-white">
-              <div className="mb-6 flex space-x-4 border-b border-white/10 pb-4">
-                <button 
-                  onClick={() => setActiveAdminTab('approvals')}
-                  className={`text-sm font-bold ${activeAdminTab === 'approvals' ? 'text-[#fbbf24]' : 'text-neutral-500 hover:text-white'}`}
-                >
-                  Pending Approvals
-                </button>
-                <button 
-                  onClick={() => setActiveAdminTab('users')}
-                  className={`text-sm font-bold ${activeAdminTab === 'users' ? 'text-[#fbbf24]' : 'text-neutral-500 hover:text-white'}`}
-                >
-                  All Users
-                </button>
-                <button 
-                  onClick={() => setActiveAdminTab('bookings')}
-                  className={`text-sm font-bold ${activeAdminTab === 'bookings' ? 'text-[#fbbf24]' : 'text-neutral-500 hover:text-white'}`}
-                >
-                  All Bookings
-                </button>
-              </div>
-
-              {activeAdminTab === 'approvals' && (
-                <div className="space-y-6 max-h-[600px] overflow-y-auto custom-scrollbar pr-4">
-                  {[
-                    { id: 1, name: 'Luigi Esposito', role: UserRole.HOTEL_OWNER, details: { propertyType: 'BnB', address: 'Via Roma, 5', cirCode: '882233', bio: 'Experienced host in the heart of Naples.' }, email: 'luigi@napoli.com' },
-                    { id: 2, name: 'Cleaning Pros', role: UserRole.SUPPLIER, details: { companyName: 'Cleaning Pros Naples', vatNumber: 'IT123456789', categories: ['Cleaning', 'Linen'], serviceAreas: ['Centro Storico', 'Chiaia'] }, email: 'contact@cleaningpros.it' },
-                    { id: 3, name: 'Vesuvius Tours', role: UserRole.SERVICE_PROVIDER, details: { businessName: 'Vesuvius Tours', serviceType: 'City Tour', basePricing: '€45', license: 'LICENSE-9900' }, email: 'info@vesuviustours.com' }
-                  ].map((app) => (
-                    <div key={app.id} className="rounded-2xl border border-white/5 bg-white/5 p-6 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center">
-                            {app.role === UserRole.HOTEL_OWNER ? <Home className="h-6 w-6 text-purple-400" /> : app.role === UserRole.SUPPLIER ? <Wrench className="h-6 w-6 text-yellow-400" /> : <Car className="h-6 w-6 text-green-400" />}
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold">{app.name}</p>
-                            <p className="text-xs text-neutral-500 uppercase tracking-widest">{app.role.replace('_', ' ')} • {app.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            className="bg-green-500 text-white hover:bg-green-600"
-                            onClick={() => {
-                                console.log(`[ADMIN] Approved user: ${app.name}. Sending email to ${app.email}`);
-                                toast.success(`${app.name} approved successfully`);
-                            }}
-                          >
-                            Approve
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white"
-                            onClick={() => {
-                                const reason = prompt('Enter rejection reason:');
-                                if (reason) {
-                                    console.log(`[ADMIN] Rejected user: ${app.name}. Reason: ${reason}. Sending email to ${app.email}`);
-                                    toast.error(`Application rejected and email sent.`);
-                                }
-                            }}
-                          >
-                            Reject
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className="text-neutral-400 hover:text-white"
-                            onClick={() => {
-                                console.log(`[ADMIN] Requested more info from: ${app.name}. Sending email to ${app.email}`);
-                                toast.info('Request for documents sent.');
-                            }}
-                          >
-                            Request Info
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/5">
-                        <div>
-                          <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Application Details</p>
-                          {Object.entries(app.details).map(([key, value]) => (
-                            <div key={key} className="flex justify-between text-sm py-1 border-b border-white/5 last:border-0">
-                                <span className="text-neutral-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                <span className="font-medium">{Array.isArray(value) ? value.join(', ') : String(value)}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Verification Documents</p>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="aspect-video rounded-lg bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">
-                                <AlertCircle className="h-6 w-6 text-neutral-500" />
-                                <span className="ml-2 text-[10px] font-bold">ID_DOC.JPG</span>
-                            </div>
-                            <div className="aspect-video rounded-lg bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">
-                                <AlertCircle className="h-6 w-6 text-neutral-500" />
-                                <span className="ml-2 text-[10px] font-bold">LICENSE.PDF</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activeAdminTab === 'users' && (
-                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
-                  {[
-                    {name: 'Admin User', role: 'admin'},
-                    {name: 'Luigi Mario', role: 'lister'},
-                    {name: 'Mario Bros', role: 'supplier'},
-                    {name: 'John Guest', role: 'customer'}
-                  ].map((u, i) => (
-                    <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
-                      <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
-                          <Users className="h-5 w-5 text-neutral-400" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold">{u.name}</p>
-                          <p className="text-xs text-neutral-500">{u.name.toLowerCase().replace(' ', '')}@email.com</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                          u.role === 'admin' ? 'bg-red-500/20 text-red-400' :
-                          u.role === 'lister' ? 'bg-blue-500/20 text-blue-400' :
-                          u.role === 'supplier' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-green-500/20 text-green-400'
-                        }`}>
-                          {u.role}
-                        </span>
-                        <select className="bg-white/10 border border-white/20 text-white text-xs rounded px-2 py-1 outline-none">
-                          <option value="customer">Customer</option>
-                          <option value="lister">Lister</option>
-                          <option value="supplier">Supplier</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {activeAdminTab === 'bookings' && (
-                <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0">
-                      <div>
-                        <p className="text-sm font-bold">Booking #{1000 + i}</p>
-                        <p className="text-xs text-neutral-500">Villa Napoli • John Guest</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-[#fbbf24]">€{150 * i}</p>
-                        <p className="text-xs text-green-500">Confirmed</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-white">Pending</h2>
+            <span className="text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">{approvals.length} Urgent</span>
           </div>
-
-          <div className="space-y-8">
-            <Card className="border-yellow-500/20 bg-yellow-500/5 text-white">
-              <div className="mb-4 flex items-center gap-2 text-yellow-500">
-                <AlertCircle className="h-5 w-5" />
-                <h3 className="font-bold">System Alerts</h3>
-              </div>
-              <p className="text-sm text-neutral-400">3 pending hotel verifications required.</p>
-              <Button className="mt-4 w-full bg-yellow-500 text-black hover:bg-yellow-400">View Alerts</Button>
-            </Card>
-            
-            <Card className="border-white/10 bg-white/5 text-white">
-              <h3 className="mb-4 font-bold">Quick Actions</h3>
-              <div className="grid gap-2">
-                <Button variant="outline" className="justify-start border-white/10 text-white hover:bg-white/10">Export Data</Button>
-                <Button variant="outline" className="justify-start border-white/10 text-white hover:bg-white/10">User Audit</Button>
-                <Button variant="outline" className="justify-start border-white/10 text-white hover:bg-white/10">System Settings</Button>
-              </div>
-            </Card>
+          <div className="space-y-4">
+            {approvals.slice(0, 3).map((app) => (
+              <Card key={app.id} className="p-4 border-white/5 bg-white/5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-[#fbbf24]/10 flex items-center justify-center text-[#fbbf24] font-bold uppercase">
+                    {app.name[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white leading-none">{app.name}</p>
+                    <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-tighter mt-1">{app.role.replace('_', ' ')}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1 h-8 text-[10px] font-black uppercase bg-green-600 hover:bg-green-700">Approve</Button>
+                  <Button size="sm" variant="outline" className="flex-1 h-8 text-[10px] font-black uppercase border-white/10 hover:bg-red-500/10 hover:text-red-500 transition-colors">Reject</Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
     </div>
   );
-};
 
-// Helper for Admin Dashboard
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
-}
+  const renderUsers = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
+          <Input 
+            placeholder="Search users..." 
+            className="pl-10 h-11 bg-white/5 border-white/10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="h-11 border-white/10 hover:bg-white/5 gap-2 px-4">
+            <Filter className="h-4 w-4" /> Filter
+          </Button>
+          <Button className="h-11 bg-[#fbbf24] text-black font-black uppercase tracking-widest gap-2 px-6">
+            <Plus className="h-4 w-4" /> Add User
+          </Button>
+        </div>
+      </div>
+
+      <Card className="border-white/5 bg-white/5 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-white/[0.02] border-b border-white/5">
+              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">User</th>
+              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Role</th>
+              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {allUsers.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u) => (
+              <tr key={u.id} className="hover:bg-white/[0.01] transition-colors group">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-[#fbbf24]">
+                      {u.name[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{u.name}</p>
+                      <p className="text-xs text-neutral-500">{u.email}</p>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                   <div className={cn(
+                     "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                     u.role === UserRole.ADMIN ? "bg-red-500/10 text-red-500" :
+                     u.role === UserRole.HOTEL_OWNER ? "bg-purple-500/10 text-purple-500" :
+                     u.role === UserRole.SUPPLIER ? "bg-yellow-500/10 text-yellow-500" :
+                     "bg-blue-500/10 text-blue-500"
+                   )}>
+                     {u.role === UserRole.ADMIN && <Shield className="h-3 w-3" />}
+                     {u.role.replace('_', ' ')}
+                   </div>
+                </td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Active</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex items-center justify-end gap-2 text-neutral-500">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-white"><Edit2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (section) {
+      case 'overview': return renderOverview();
+      case 'users': return renderUsers();
+      case 'seo':
+        return (
+          <div className="max-w-4xl space-y-8">
+            <Card className="p-8 border-white/5 bg-white/5 space-y-8">
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-white border-b border-white/5 pb-4">SEO Configuration</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Meta Title</label>
+                    <Input defaultValue="StayEase Naples" className="bg-white/5 border-white/10" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Meta Description</label>
+                    <textarea className="w-full h-24 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-[#fbbf24] outline-none" defaultValue="Naples' premier luxury property management platform." />
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Save SEO Settings</Button>
+            </Card>
+          </div>
+        );
+      case 'appearance':
+        return (
+          <div className="max-w-4xl space-y-8">
+            <Card className="p-8 border-white/5 bg-white/5 space-y-8">
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-white border-b border-white/5 pb-4">Theme Configuration</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Primary Color</p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded bg-[#fbbf24]"></div>
+                      <span className="font-mono text-xs text-white">#fbbf24</span>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Secondary Color</p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded bg-[#121826]"></div>
+                      <span className="font-mono text-xs text-white">#121826</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Apply Branding</Button>
+            </Card>
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="max-w-4xl space-y-8">
+            <Card className="p-8 border-white/5 bg-white/5 space-y-8">
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-white border-b border-white/5 pb-4">General Platform Settings</h3>
+                <div className="grid grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Site Name</label>
+                    <Input defaultValue="StayEase Naples" className="bg-white/5 border-white/10" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Admin Email</label>
+                    <Input defaultValue="admin@stayease.it" className="bg-white/5 border-white/10" />
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Save General Settings</Button>
+            </Card>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+             <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+               <ShieldCheck className="h-10 w-10 text-neutral-600" />
+             </div>
+             <h2 className="text-2xl font-bold text-white mb-2">{section.toUpperCase()} Command</h2>
+             <p className="text-neutral-500 max-w-sm">This professional management module is currently being optimized for WordPress style admin control.</p>
+           </div>
+        );
+    }
+  };
+
+  return (
+    <DashboardLayout title={section === 'overview' ? 'Admin Central' : section.charAt(0).toUpperCase() + section.slice(1)}>
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+           <div>
+             <h1 className="text-3xl font-bold text-white capitalize">{section === 'overview' ? 'Dashboard' : section}</h1>
+             <p className="text-neutral-500 text-sm mt-1">Full control over the platform's infrastructure and users.</p>
+           </div>
+        </div>
+
+        {renderContent()}
+      </div>
+    </DashboardLayout>
+  );
+};

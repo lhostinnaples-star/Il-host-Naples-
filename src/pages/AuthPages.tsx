@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, UserRole, UserStatus } from '../contexts/AuthContext';
 import { Button, Input, Card } from '../components/UI';
 import { motion, AnimatePresence } from 'motion/react';
-import { Hotel, User, Home, Wrench, Car, ArrowRight, ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle } from 'lucide-react';
+import { Hotel, User, Home, Wrench, Car, ArrowRight, ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle, Shield, Settings } from 'lucide-react';
 import { ImageUpload } from '../components/ImageUpload';
 import { toast } from 'sonner';
 
@@ -12,8 +12,18 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginAsDemo } = useAuth();
   const navigate = useNavigate();
+
+  const handleDemoLogin = (role: UserRole) => {
+    loginAsDemo(role);
+    if (role === UserRole.ADMIN) navigate('/admin');
+    else if (role === UserRole.HOTEL_OWNER) navigate('/owner');
+    else if (role === UserRole.SUPPLIER) navigate('/supplier');
+    else if (role === UserRole.SERVICE_PROVIDER) navigate('/service-dashboard');
+    else navigate('/dashboard');
+    toast.success(`Logged in as Demo ${role}`);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +109,60 @@ export const LoginPage: React.FC = () => {
           </form>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        {/* Demo Login Section */}
+        <div className="mt-10">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-neutral-950 px-2 text-neutral-500 font-bold tracking-widest">Demo Sandbox</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+            <button 
+              onClick={() => handleDemoLogin(UserRole.CUSTOMER)}
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-blue-500/50 hover:bg-blue-500/5"
+            >
+              <User className="h-5 w-5 text-blue-400" />
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Customer</span>
+            </button>
+            <button 
+              onClick={() => handleDemoLogin(UserRole.HOTEL_OWNER)}
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-purple-500/50 hover:bg-purple-500/5"
+            >
+              <Home className="h-5 w-5 text-purple-400" />
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Lister</span>
+            </button>
+            <button 
+              onClick={() => handleDemoLogin(UserRole.SUPPLIER)}
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-yellow-500/50 hover:bg-yellow-500/5"
+            >
+              <Wrench className="h-5 w-5 text-yellow-400" />
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Supplier</span>
+            </button>
+            <button 
+              onClick={() => handleDemoLogin(UserRole.SERVICE_PROVIDER)}
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-green-500/50 hover:bg-green-500/5"
+            >
+              <Car className="h-5 w-5 text-green-400" />
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Provider</span>
+            </button>
+            <button 
+              onClick={() => handleDemoLogin(UserRole.ADMIN)}
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-red-500/50 hover:bg-red-500/5 col-span-2 md:col-span-1"
+            >
+              <Shield className="h-5 w-5 text-red-500" />
+              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Admin</span>
+            </button>
+          </div>
+          <p className="mt-4 text-center text-[10px] text-neutral-600 font-medium">
+            Instantly switch accounts to test different roles and features.
+          </p>
+        </div>
+
+        <p className="mt-10 text-center text-sm text-neutral-500">
           Don't have an account? <Link to="/register" className="font-bold text-[#fbbf24] hover:underline">Sign up</Link>
         </p>
       </motion.div>

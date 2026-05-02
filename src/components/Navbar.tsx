@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isDemoMode } = useAuth();
   const { globalCategory, setGlobalCategory } = useHotels();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +29,12 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1e293b] text-white shadow-lg">
+      {/* Demo Mode Badge */}
+      {isDemoMode && (
+        <div className="bg-[#fbbf24] text-[#1e293b] text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center animate-pulse">
+          Active Demo Mode — No Database Connection
+        </div>
+      )}
       {/* Top Header */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <Link to="/" className="flex items-center gap-1.5 md:gap-2 text-xl md:text-2xl font-serif font-bold tracking-tight shrink-0">

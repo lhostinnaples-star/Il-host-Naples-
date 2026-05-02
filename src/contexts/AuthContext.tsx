@@ -30,19 +30,77 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (token: string, user: User) => void;
+  loginAsDemo: (role: UserRole) => void;
   logout: () => void;
   isLoading: boolean;
+  isDemoMode: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const MOCK_USERS: Record<string, User> = {
+  customer: {
+    id: 'demo-customer',
+    name: 'Marco Rossi',
+    email: 'customer@demo.com',
+    role: UserRole.CUSTOMER,
+    status: UserStatus.ACTIVE,
+    phone: '+39 333 123 4567'
+  },
+  lister: {
+    id: 'demo-lister',
+    name: 'Sofia Esposito',
+    email: 'lister@demo.com',
+    role: UserRole.HOTEL_OWNER,
+    status: UserStatus.ACTIVE,
+    phone: '+39 333 765 4321'
+  },
+  supplier: {
+    id: 'demo-supplier',
+    name: 'Pulizie Napoli Srl',
+    email: 'supplier@demo.com',
+    role: UserRole.SUPPLIER,
+    status: UserStatus.ACTIVE,
+    phone: '+39 081 555 1122'
+  },
+  service_provider: {
+    id: 'demo-provider',
+    name: 'Naples Tours & Transfers',
+    email: 'provider@demo.com',
+    role: UserRole.SERVICE_PROVIDER,
+    status: UserStatus.ACTIVE,
+    phone: '+39 081 999 8877'
+  },
+  admin: {
+    id: 'demo-admin',
+    name: 'Admin',
+    email: 'admin@demo.com',
+    role: UserRole.ADMIN,
+    status: UserStatus.ACTIVE
+  }
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(localStorage.getItem('isDemoMode') === 'true');
 
   useEffect(() => {
     const fetchUser = async () => {
+      if (isDemoMode) {
+        const demoUserRole = localStorage.getItem('demoRole');
+        if (demoUserRole) {
+          const userKey = demoUserRole === UserRole.HOTEL_OWNER ? 'lister' : 
+                         demoUserRole === UserRole.SERVICE_PROVIDER ? 'service_provider' : 
+                         demoUserRole;
+          
+          setUser(MOCK_USERS[userKey] || null);
+        }
+        setIsLoading(false);
+        return;
+      }
+
       if (!token) {
         setIsLoading(false);
         return;
@@ -69,22 +127,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     fetchUser();
-  }, [token]);
+  }, [token, isDemoMode]);
 
   const login = (newToken: string, newUser: User) => {
+    localStorage.removeItem('isDemoMode');
+    localStorage.removeItem('demoRole');
+    setIsDemoMode(false);
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(newUser);
   };
 
+  const loginAsDemo = (role: UserRole) => {
+    localStorage.setItem('isDemoMode', 'true');
+    localStorage.setItem('demoRole', role);
+    setIsDemoMode(true);
+    
+    const userKey = role === UserRole.HOTEL_OWNER ? 'lister' : 
+                   role === UserRole.SERVICE_PROVIDER ? 'service_provider' : 
+                   role;
+    
+    setUser(MOCK_USERS[userKey]);
+    setToken('demo-token');
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('isDemoMode');
+    localStorage.removeItem('demoRole');
     setToken(null);
     setUser(null);
+    setIsDemoMode(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, loginAsDemo, logout, isLoading, isDemoMode }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,0 +1,323 @@
+
+import React, { useState, useEffect } from 'react';
+import { 
+  LayoutDashboard, Users, Home, Map, Wrench, Calendar, 
+  Star, MessageSquare, BarChart3, Globe, Settings, Eye,
+  Palette, FileText, ChevronLeft, ChevronRight, Bell, Search, 
+  Plus, User as UserIcon, LogOut, Menu, X, CheckCircle2, AlertCircle
+} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth, UserRole } from '../contexts/AuthContext';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '../lib/utils';
+import { Button } from './UI';
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: any;
+  href?: string;
+  badge?: number;
+  subItems?: { id: string, label: string, href: string }[];
+}
+
+export const DashboardSidebar: React.FC<{ 
+  isCollapsed: boolean, 
+  setIsCollapsed: (v: boolean) => void,
+  mobileOpen: boolean,
+  setMobileOpen: (v: boolean) => void
+}> = ({ isCollapsed, setIsCollapsed, mobileOpen, setMobileOpen }) => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const getNavItems = (): NavItem[] => {
+    if (!user) return [];
+
+    switch (user.role) {
+      case UserRole.ADMIN:
+        return [
+          { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+          { 
+            id: 'users', label: 'Users', icon: Users, 
+            subItems: [
+              { id: 'all-users', label: 'All Users', href: '/admin?section=users' },
+              { id: 'pending-users', label: 'Pending Approvals', href: '/admin?section=users&tab=pending' }
+            ]
+          },
+          { 
+            id: 'properties', label: 'Properties', icon: Home,
+            subItems: [
+              { id: 'all-props', label: 'All Properties', href: '/admin?section=properties' },
+              { id: 'pending-props', label: 'Pending Review', href: '/admin?section=properties&tab=pending' }
+            ]
+          },
+          { id: 'experiences', label: 'Experiences', icon: Map, href: '/admin?section=experiences' },
+          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/admin?section=suppliers' },
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/admin?section=bookings' },
+          { id: 'reviews', label: 'Reviews', icon: Star, href: '/admin?section=reviews' },
+          { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin?section=analytics' },
+          { id: 'seo', label: 'SEO Settings', icon: Globe, href: '/admin?section=seo' },
+          { id: 'appearance', label: 'Appearance', icon: Palette, href: '/admin?section=appearance' },
+          { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
+        ];
+      case UserRole.HOTEL_OWNER:
+        return [
+          { id: 'overview', label: 'My Properties', icon: Home, href: '/owner' },
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' },
+          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/owner?section=suppliers' },
+          { id: 'revenue', label: 'Revenue', icon: BarChart3, href: '/owner?section=revenue' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' },
+        ];
+      case UserRole.CUSTOMER:
+        return [
+          { id: 'overview', label: 'My Bookings', icon: Calendar, href: '/dashboard' },
+          { id: 'wishlist', label: 'Wishlist', icon: Star, href: '/dashboard?section=wishlist' },
+          { id: 'experiences', label: 'Experiences', icon: Map, href: '/dashboard?section=experiences' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/dashboard?section=profile' },
+        ];
+      case UserRole.SERVICE_PROVIDER:
+        return [
+          { id: 'overview', label: 'My Services', icon: Map, href: '/service-dashboard' },
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/service-dashboard?section=bookings' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/service-dashboard?section=profile' },
+        ];
+      case UserRole.SUPPLIER:
+        return [
+          { id: 'overview', label: 'My Services', icon: Wrench, href: '/supplier' },
+          { id: 'orders', label: 'Orders', icon: Calendar, href: '/supplier?section=orders' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/supplier?section=profile' },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const navItems = getNavItems();
+
+  const SidebarContent = (
+    <div className="flex flex-col h-full bg-[#1c2431] text-neutral-400">
+      <div className="p-6">
+        <Link to="/" className="flex items-center gap-3 text-white">
+          <div className="bg-[#fbbf24] p-2 rounded-lg">
+            <Home className="h-5 w-5 text-black" />
+          </div>
+          {!isCollapsed && <span className="font-serif font-bold text-xl tracking-tight">StayEase</span>}
+        </Link>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1 custom-scrollbar">
+        {navItems.map((item) => {
+          const isActive = location.pathname + location.search === item.href;
+          const isExpanded = expandedItems.includes(item.id);
+
+          return (
+            <div key={item.id}>
+              {item.subItems ? (
+                <div>
+                  <button
+                    onClick={() => toggleExpand(item.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors hover:bg-white/5",
+                      isExpanded && "text-white"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!isCollapsed && (
+                      <>
+                        <span className="flex-1 text-left text-sm font-medium">{item.label}</span>
+                        {isExpanded ? <ChevronLeft className="h-4 w-4 rotate-[-90deg]" /> : <ChevronRight className="h-4 w-4" />}
+                      </>
+                    )}
+                  </button>
+                  {!isCollapsed && isExpanded && (
+                    <div className="mt-1 ml-8 space-y-1">
+                      {item.subItems.map(sub => (
+                        <Link
+                          key={sub.id}
+                          to={sub.href}
+                          className={cn(
+                            "block px-3 py-1.5 text-xs rounded-md transition-colors hover:text-white",
+                            location.pathname + location.search === sub.href ? "text-white font-bold" : "text-neutral-500"
+                          )}
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to={item.href || '#'}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
+                    isActive ? "bg-white/10 text-white shadow-sm" : "hover:bg-white/5 hover:text-neutral-200"
+                  )}
+                >
+                  <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-[#fbbf24]")} />
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1 text-sm font-medium">{item.label}</span>
+                      {item.badge && (
+                        <span className="bg-[#fbbf24] text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Link>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="p-4 border-t border-white/5 space-y-2">
+        <button 
+          onClick={() => logout()}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          <LogOut className="h-5 w-5 shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Logout</span>}
+        </button>
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden md:flex w-full items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+        >
+          {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+          {!isCollapsed && <span className="text-sm font-medium">Collapse Menu</span>}
+        </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 z-40 bg-black/60 md:hidden backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 z-50 w-72 md:hidden"
+            >
+              {SidebarContent}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar */}
+      <div className={cn(
+        "hidden md:block h-screen fixed top-0 left-0 z-30 transition-all duration-300 border-r border-white/5",
+        isCollapsed ? "w-20" : "w-64"
+      )}>
+        {SidebarContent}
+      </div>
+    </>
+  );
+};
+
+export const DashboardHeader: React.FC<{ 
+  setMobileOpen: (v: boolean) => void,
+  title: string
+}> = ({ setMobileOpen, title }) => {
+  const { user, isDemoMode } = useAuth();
+  const navigate = useNavigate();
+
+  return (
+    <header className="sticky top-0 z-20 h-16 bg-[#121826] border-b border-white/5 px-4 flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <button 
+          onClick={() => setMobileOpen(true)}
+          className="p-2 md:hidden text-neutral-400 hover:text-white"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+        
+        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-neutral-500">
+          <Link to="/" className="hover:text-white transition-colors">Site</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-neutral-300">{title}</span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {isDemoMode && (
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-black uppercase">
+            <AlertCircle className="h-3 w-3" />
+            Demo Mode
+          </div>
+        )}
+
+        <div className="relative group">
+          <button className="p-2 text-neutral-400 hover:text-white transition-colors relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-2 right-2 h-2 w-2 bg-red-500 rounded-full border-2 border-[#121826]"></span>
+          </button>
+        </div>
+
+        <div className="h-8 w-px bg-white/5 mx-1"></div>
+
+        <div className="flex items-center gap-3 pl-2">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-bold text-white leading-none">{user?.name}</p>
+            <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-tighter mt-1">{user?.role.replace('_', ' ')}</p>
+          </div>
+          <button 
+            onClick={() => navigate('/profile')}
+            className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:border-[#fbbf24]/50 transition-all overflow-hidden"
+          >
+            <UserIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export const DashboardLayout: React.FC<{ children: React.ReactNode, title: string }> = ({ children, title }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-[#0f172a]">
+      <DashboardSidebar 
+        isCollapsed={isCollapsed} 
+        setIsCollapsed={setIsCollapsed}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+      />
+      
+      <div className={cn(
+        "transition-all duration-300",
+        isCollapsed ? "md:pl-20" : "md:pl-64"
+      )}>
+        <DashboardHeader title={title} setMobileOpen={setMobileOpen} />
+        
+        <main className="p-4 md:p-8">
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
