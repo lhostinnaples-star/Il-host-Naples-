@@ -23,11 +23,11 @@ interface SiteSettings {
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: 'StayEase Naples',
-  tagline: 'Authentic Stays in the Heart of Italy',
+  siteName: 'Il Host in Naples',
+  tagline: 'Made with ❤️ in Naples',
   logo: '',
   primaryColor: '#fbbf24',
-  contactEmail: 'contact@stayease.it',
+  contactEmail: 'contact@ilhostinnaples.it',
   supportPhone: '+39 081 123 4567',
   heroTitle: 'Discover Authentic Naples',
   heroSubtitle: 'Luxury apartments and unique experiences curated for the discerning traveler.',
@@ -39,8 +39,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
     newsletter: true,
   },
   seo: {
-    title: 'StayEase Naples - Luxury Property Management',
-    description: 'Find the best luxury apartments and experiences in Naples, Italy.',
+    title: 'Il Host in Naples - Luxury Property Management',
+    description: 'Find authentic holiday houses, B&Bs and experiences in Naples, Italy',
   }
 };
 

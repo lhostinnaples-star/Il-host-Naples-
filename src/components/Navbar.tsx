@@ -9,6 +9,7 @@ import {
   MapPin, Menu, X, Share2, Briefcase, Sparkles 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Logo } from './Logo';
 
 export const Navbar: React.FC = () => {
   const { user, logout, isDemoMode } = useAuth();
@@ -43,13 +44,7 @@ export const Navbar: React.FC = () => {
           {settings.logo ? (
             <img src={settings.logo} alt={settings.siteName} className="h-8 md:h-10 object-contain" />
           ) : (
-            <>
-              <span className="text-[#fbbf24]">{settings.siteName.split(' ')[0]}</span>
-              <div className="flex flex-col -gap-1 leading-none">
-                <span className="text-[10px] md:text-sm font-sans font-medium opacity-80 decoration-[#fbbf24] underline underline-offset-2">in</span>
-                <span>{settings.siteName.split(' ').slice(1).join(' ') || 'Naples'}</span>
-              </div>
-            </>
+            <Logo className="h-8 md:h-10 w-auto" />
           )}
         </Link>
 

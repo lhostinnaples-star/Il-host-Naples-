@@ -108,7 +108,7 @@ export const DashboardSidebar: React.FC<{
           <div className="bg-[#fbbf24] p-2 rounded-lg">
             <Home className="h-5 w-5 text-black" />
           </div>
-          {!isCollapsed && <span className="font-serif font-bold text-xl tracking-tight">StayEase</span>}
+          {!isCollapsed && <span className="font-serif font-bold text-xl tracking-tight">Il Host in Naples</span>}
         </Link>
       </div>
 

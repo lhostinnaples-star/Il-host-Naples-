@@ -20,6 +20,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { AreaSelection } from '../components/AreaSelection';
 import { WishlistButton } from '../components/WishlistButton';
 import { SEOHead } from '../components/SEOHead';
+import { Logo } from '../components/Logo';
 import { generateOrganizationSchema, generateSlug } from '../utils/seo';
 
 const JustBookedTicker: React.FC = () => {
@@ -1312,8 +1313,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-16">
             <div className="col-span-2 md:col-span-1 lg:col-span-2">
               <div className="flex items-center gap-2 mb-8">
-                <div className="h-10 w-10 bg-amber-500 rounded-xl flex items-center justify-center font-black text-[#0f172a] text-lg italic mt-[-4px]">H</div>
-                <span className="text-2xl font-black italic text-white">Il Host <span className="text-amber-500">in</span> Naples</span>
+                <Logo height={48} className="w-auto" />
               </div>
               <p className="text-neutral-400 text-sm leading-relaxed mb-8 max-w-sm font-medium">
                 The first comprehensive ecosystem for Neapolitan hospitality. We connect guests with the heart of Naples through a network of trusted hosts and premium local service providers.
