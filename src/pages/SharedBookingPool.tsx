@@ -10,107 +10,41 @@ import { Card, Button } from '../components/UI';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useHotels } from '../contexts/HotelsContext';
 import { toast } from 'sonner';
 
 export const SharedBookingPool: React.FC = () => {
   const navigate = useNavigate();
-  const { token, user } = useAuth();
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const { bookings: allBookings, updateBooking } = useHotels();
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // High-quality demo data for the pool
-  const MOCK_DEMO_BOOKINGS = [
-    {
-      id: 'demo-1',
-      Room: { 
-        Hotel: { name: 'Naples Grand Hotel', area: 'Seafront', category: 'hotel' },
-        type: 'Deluxe Suite'
-      },
-      checkIn: '2024-05-15',
-      checkOut: '2024-05-20',
-      guests: 4,
-      totalPrice: 1250,
-      sharedAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-      userName: 'Marco R. (Masked)',
-      isDemo: true
-    },
-    {
-      id: 'demo-2',
-      Room: { 
-        Hotel: { name: 'Centro Storico B&B', area: 'Historical Center', category: 'bnb' },
-        type: 'Queen Room'
-      },
-      checkIn: '2024-06-01',
-      checkOut: '2024-06-04',
-      guests: 2,
-      totalPrice: 450,
-      sharedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      userName: 'Giulia B. (Masked)',
-      isDemo: true
-    }
-  ];
-
-  const fetchPool = React.useCallback(async () => {
-    try {
-      const res = await fetch('/api/bookings/pool', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Merge real bookings with demo data
-        setBookings([...MOCK_DEMO_BOOKINGS, ...data]);
-      } else {
-        setBookings(MOCK_DEMO_BOOKINGS);
-      }
-    } catch (err) {
-      setBookings(MOCK_DEMO_BOOKINGS);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    fetchPool();
-  }, [fetchPool]);
+  // Filter for real shared bookings NOT owned by the current user
+  const poolBookings = allBookings.filter(b => b.status === 'SHARED' && b.ownerId !== user?.id);
 
   const handleAccept = async (booking: any) => {
-    // Send mock email
-    console.log(`[EMAIL SYSTEM]: Sending email notification to host (${booking.userName}) and referring partner for booking ${booking.id}...`);
-    
-    // Check if it's a demo booking
-    if (booking.id.startsWith('demo-')) {
-      toast.success('Referral accepted! Demo details are now simulated in your dashboard.');
-      setBookings(bookings.filter(b => b.id !== booking.id));
-      setShowModal(false);
-      setTimeout(() => navigate('/owner'), 1500);
-      return;
-    }
-
     try {
-      const res = await fetch(`/api/bookings/${booking.id}/accept`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
+      // Logic for claiming common pool referral
+      updateBooking(booking.id, { 
+        status: 'ACCEPTED',
+        ownerId: user?.id,
+        originalListerId: booking.ownerId,
+        acceptedAt: new Date().toISOString()
       });
-      if (res.ok) {
-        toast.success('Referral accepted! Details are now in your dashboard.');
-        setBookings(bookings.filter(b => b.id !== booking.id));
-        setShowModal(false);
-        // Redirect after a short delay
-        setTimeout(() => navigate('/owner'), 1500);
-      } else {
-        const error = await res.json();
-        toast.error(error.error || 'Failed to accept referral');
-      }
+      
+      toast.success('Referral claimed successfully!');
+      setShowModal(false);
+      setTimeout(() => navigate('/owner'), 1000);
     } catch (err) {
-      toast.error('An error occurred');
+      toast.error('Could not claim booking');
     }
   };
 
   const handleRelease = (id: string) => {
-    setBookings(bookings.filter(b => b.id !== id));
-    toast.success('Booking released back to the general pool.');
+    // In a real app, this might mark it as ignored for this user
+    toast.info('Booking dismissed from your view');
+    // For now we just close or filter it out locally if we had local state
     setShowModal(false);
   };
 
@@ -172,12 +106,12 @@ export const SharedBookingPool: React.FC = () => {
               Available Referrals
             </h2>
             <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-              {bookings.length} Potential Referrals
+              {poolBookings.length} Potential Referrals
             </div>
           </div>
 
           <div className="grid gap-6">
-            {bookings.map((booking) => (
+            {poolBookings.map((booking) => (
               <Card key={booking.id} className="relative overflow-hidden border-none shadow-sm hover:shadow-xl transition-all group p-6 flex flex-col lg:flex-row lg:items-center gap-6 bg-white rounded-3xl">
                 {/* Status Badge */}
                 <div className="absolute top-0 left-0 w-2 h-full bg-[#fbbf24]" />
@@ -189,10 +123,10 @@ export const SharedBookingPool: React.FC = () => {
                         <Share2 className="h-6 w-6 text-[#fbbf24]" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg text-[#1e293b]">{booking.Room?.Hotel?.name || 'Property'} - {booking.Room?.type || 'Stay'}</h3>
+                        <h3 className="font-bold text-lg text-[#1e293b]">{booking.itemName || 'Property'}</h3>
                         <div className="flex items-center gap-2 mt-0.5">
                            <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-[10px] font-bold text-neutral-500 uppercase tracking-wider">
-                            {booking.Room?.Hotel?.category === 'bnb' ? 'BnB' : 'Holiday House'}
+                            {booking.bookingType === 'PROPERTY' ? 'Stay' : 'Experience'}
                           </span>
                           <span className="text-xs font-medium text-neutral-400">Shared via Referral Pool</span>
                         </div>
@@ -210,7 +144,7 @@ export const SharedBookingPool: React.FC = () => {
                         <Calendar className="h-3 w-3" /> Stay Period
                       </p>
                       <p className="text-sm font-bold text-[#1e293b]">
-                        {format(new Date(booking.checkIn), 'MMM dd')} - {format(new Date(booking.checkOut), 'MMM dd')}
+                        {format(new Date(booking.startDate), 'MMM dd')}{booking.endDate ? ` - ${format(new Date(booking.endDate), 'MMM dd')}` : ''}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -223,7 +157,7 @@ export const SharedBookingPool: React.FC = () => {
                       <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest flex items-center gap-1">
                         <MapPin className="h-3 w-3" /> Area
                       </p>
-                      <p className="text-sm font-bold text-[#1e293b]">{booking.Room?.Hotel?.area || 'Naples'}</p>
+                      <p className="text-sm font-bold text-[#1e293b]">{booking.area || 'Naples'}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Est. Value</p>
@@ -238,7 +172,7 @@ export const SharedBookingPool: React.FC = () => {
                        </div>
                        <div className="space-y-0.5">
                           <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest leading-none">Guest Info</p>
-                          <p className="text-xs font-bold text-[#1e293b] tracking-wider">{booking.userName}</p>
+                          <p className="text-xs font-bold text-[#1e293b] tracking-wider">{booking.customerName}</p>
                        </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -276,19 +210,12 @@ export const SharedBookingPool: React.FC = () => {
               </Card>
             ))}
 
-            {!isLoading && bookings.length === 0 && (
+            {poolBookings.length === 0 && (
               <div className="text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-neutral-100">
                 <Search className="mx-auto h-16 w-16 opacity-10 mb-6" />
                 <h3 className="text-xl font-bold text-[#1e293b] mb-2">The shared pool is empty</h3>
                 <p className="text-neutral-400">Collaborate with others when business is booming!</p>
               </div>
-            )}
-            
-            {isLoading && (
-               <div className="text-center py-20">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#fbbf24] mx-auto"></div>
-                  <p className="mt-4 text-neutral-500 font-medium tracking-wide">Loading referrals...</p>
-               </div>
             )}
           </div>
         </div>
@@ -300,9 +227,8 @@ export const SharedBookingPool: React.FC = () => {
           <div className="bg-white rounded-3xl w-full max-w-lg p-8 shadow-2xl relative">
             <h2 className="text-2xl font-bold text-[#1e293b] mb-4">Referral Details</h2>
             <div className="space-y-4 mb-8 text-neutral-600">
-               <p><strong>Property:</strong> {selectedBooking.Room?.Hotel?.name || 'Property'} - {selectedBooking.Room?.type || 'Stay'}</p>
-               <p><strong>Check-in:</strong> {format(new Date(selectedBooking.checkIn), 'MMM dd, yyyy')}</p>
-               <p><strong>Check-out:</strong> {format(new Date(selectedBooking.checkOut), 'MMM dd, yyyy')}</p>
+               <p><strong>Property:</strong> {selectedBooking.itemName}</p>
+               <p><strong>Dates:</strong> {format(new Date(selectedBooking.startDate), 'MMM dd, yyyy')} {selectedBooking.endDate ? `- ${format(new Date(selectedBooking.endDate), 'MMM dd, yyyy')}` : ''}</p>
                <p><strong>Guests:</strong> {selectedBooking.guests || 2}</p>
                <p><strong>Estimated Value:</strong> €{selectedBooking.totalPrice}</p>
                <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-100 text-sm text-amber-800">

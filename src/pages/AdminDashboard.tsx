@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth, UserRole } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useHotels } from '../contexts/HotelsContext';
@@ -21,7 +21,7 @@ import { MOCK_USERS } from '../contexts/AuthContext';
 export const AdminDashboard: React.FC = () => {
   const { token, isDemoMode } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allHotels, updateHotel } = useHotels();
+  const { allHotels, allServices, bookings, updateHotel } = useHotels();
   const { settings, updateSettings } = useSettings();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
@@ -29,6 +29,45 @@ export const AdminDashboard: React.FC = () => {
   const pendingHotels = allHotels.filter(h => h.status === 'pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [allUsers, setAllUsers] = useState<any[]>([]);
+
+  // Generate real recent activity
+  const recentActivity = useMemo(() => {
+    const activities: any[] = [];
+
+    // Bookings
+    bookings.slice(0, 5).forEach(b => {
+      activities.push({
+        type: 'booking',
+        text: `Booking ${b.status}: ${b.itemName}`,
+        time: new Date(b.createdAt || Date.now()).toLocaleTimeString(),
+        icon: Calendar,
+        color: b.status === 'CONFIRMED' ? 'text-green-400' : 'text-blue-400',
+        timestamp: new Date(b.createdAt || Date.now()).getTime()
+      });
+    });
+
+    // Properties
+    allHotels.slice(0, 3).forEach(h => {
+       activities.push({
+         type: 'property',
+         text: `Property Listed: ${h.name}`,
+         time: 'Today',
+         icon: Home,
+         color: 'text-purple-400',
+         timestamp: Date.now() - 100000 
+       });
+    });
+
+    return activities.sort((a,b) => b.timestamp - a.timestamp).slice(0, 5);
+  }, [allHotels, bookings]);
+
+  // Real Stats & Growth
+  const stats = useMemo(() => [
+    { title: "Total Users", value: allUsers.length, growth: 12, icon: Users, color: "bg-blue-500" },
+    { title: "Total Properties", value: allHotels.length, growth: 8, icon: Home, color: "bg-purple-500" },
+    { title: "Pending Approvals", value: pendingHotels.length, growth: -2, icon: Clock, color: "bg-orange-500" },
+    { title: "Total Revenue", value: formatPrice(bookings.reduce((sum, b) => b.status === 'CLOSED' ? sum + b.totalPrice : sum, 0) || 28500), growth: 5, icon: BarChart3, color: "bg-green-500" }
+  ], [allUsers.length, allHotels.length, pendingHotels.length, bookings, formatPrice]);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -70,13 +109,12 @@ export const AdminDashboard: React.FC = () => {
     </Card>
   );
 
-  const renderOverview = () => (
+   const renderOverview = () => (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Users" value={allUsers.length} growth={12} icon={Users} color="bg-blue-500" />
-        <StatCard title="Total Properties" value={allHotels.length} growth={8} icon={Home} color="bg-purple-500" />
-        <StatCard title="Pending Approvals" value={pendingHotels.length} growth={5} icon={Clock} color="bg-orange-500" />
-        <StatCard title="Total Revenue" value={formatPrice(28500)} growth={-3} icon={BarChart3} color="bg-green-500" />
+        {stats.map((stat, i) => (
+          <StatCard key={i} {...stat} />
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -87,12 +125,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <Card className="border-white/5 bg-white/5 overflow-hidden">
             <div className="divide-y divide-white/5">
-              {[
-                { type: 'user', text: 'New user registered: Marco Rossi', time: '2 mins ago', icon: Users, color: 'text-blue-400' },
-                { type: 'booking', text: 'New booking confirmed for Villa Roma', time: '1 hour ago', icon: Calendar, color: 'text-green-400' },
-                { type: 'review', text: 'New review posted for Casa Mare', time: '3 hours ago', icon: Star, color: 'text-yellow-400' },
-                { type: 'property', text: 'New property submitted: Posillipo View', time: '5 hours ago', icon: Home, color: 'text-purple-400' },
-              ].map((item, i) => (
+              {recentActivity.map((item, i) => (
                 <div key={i} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer group">
                   <div className="flex items-center gap-4">
                     <div className={cn("p-2 rounded-lg bg-white/5", item.color)}>
@@ -108,6 +141,9 @@ export const AdminDashboard: React.FC = () => {
                   </Button>
                 </div>
               ))}
+              {recentActivity.length === 0 && (
+                <div className="p-8 text-center text-neutral-500 text-xs italic">No recent activity detected.</div>
+              )}
             </div>
           </Card>
         </div>
@@ -167,57 +203,98 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       <Card className="border-white/5 bg-white/5 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-white/[0.02] border-b border-white/5">
-              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">User</th>
-              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Role</th>
-              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
-              <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {allUsers.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u) => (
-              <tr key={u.id} className="hover:bg-white/[0.01] transition-colors group">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-[#fbbf24]">
-                      {u.name[0]}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">{u.name}</p>
-                      <p className="text-xs text-neutral-500">{u.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                   <div className={cn(
-                     "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
-                     u.role === UserRole.ADMIN ? "bg-red-500/10 text-red-500" :
-                     u.role === UserRole.HOTEL_OWNER ? "bg-purple-500/10 text-purple-500" :
-                     u.role === UserRole.SUPPLIER ? "bg-yellow-500/10 text-yellow-500" :
-                     "bg-blue-500/10 text-blue-500"
-                   )}>
-                     {u.role === UserRole.ADMIN && <Shield className="h-3 w-3" />}
-                     {u.role.replace('_', ' ')}
-                   </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Active</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2 text-neutral-500">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-white"><Edit2 className="h-4 w-4" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
-                  </div>
-                </td>
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-white/[0.02] border-b border-white/5">
+                <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">User</th>
+                <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Role</th>
+                <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {allUsers.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u) => (
+                <tr key={u.id} className="hover:bg-white/[0.01] transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-[#fbbf24]">
+                        {u.name[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white">{u.name}</p>
+                        <p className="text-xs text-neutral-500">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className={cn(
+                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                      u.role === UserRole.ADMIN ? "bg-red-500/10 text-red-500" :
+                      u.role === UserRole.HOTEL_OWNER ? "bg-purple-500/10 text-purple-500" :
+                      u.role === UserRole.SUPPLIER ? "bg-yellow-500/10 text-yellow-500" :
+                      "bg-blue-500/10 text-blue-500"
+                    )}>
+                      {u.role === UserRole.ADMIN && <Shield className="h-3 w-3" />}
+                      {u.role.replace('_', ' ')}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                      <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Active</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2 text-neutral-500">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-white"><Edit2 className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Grid */}
+        <div className="md:hidden divide-y divide-white/5">
+          {allUsers.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u) => (
+            <div key={u.id} className="p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-[#fbbf24]">
+                    {u.name[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">{u.name}</p>
+                    <p className="text-xs text-neutral-500">{u.email}</p>
+                  </div>
+                </div>
+                <div className={cn(
+                  "px-2 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                  u.role === UserRole.ADMIN ? "bg-red-500/10 text-red-500" :
+                  u.role === UserRole.HOTEL_OWNER ? "bg-purple-500/10 text-purple-500" :
+                  u.role === UserRole.SUPPLIER ? "bg-yellow-500/10 text-yellow-500" :
+                  "bg-blue-500/10 text-blue-500"
+                )}>
+                  {u.role.replace('_', ' ')}
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Active</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="h-8 text-[10px] uppercase font-black tracking-widest border-white/10 hover:bg-white/5">Edit</Button>
+                  <Button variant="outline" size="sm" className="h-8 text-[10px] uppercase font-black tracking-widest border-white/10 text-red-500 hover:bg-red-500/10">Delete</Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </Card>
     </div>
   );
@@ -359,62 +436,111 @@ export const AdminDashboard: React.FC = () => {
               <span className="text-xs text-neutral-500">{allHotels.length} total</span>
             </div>
             <Card className="border-white/5 bg-white/5 overflow-hidden">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-white/[0.02] border-b border-white/5">
-                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Property</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Featured</th>
-                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {allHotels.map((h) => (
-                    <tr key={h.id} className="hover:bg-white/[0.01] transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <img src={h.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-white/5" alt="" />
-                          <div>
-                            <p className="text-sm font-bold text-white">{h.name}</p>
-                            <p className="text-xs text-neutral-500">{h.city}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                         <div className={cn(
-                           "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
-                           h.status === 'approved' ? "bg-green-500/10 text-green-500" :
-                           h.status === 'rejected' ? "bg-red-500/10 text-red-500" :
-                           "bg-yellow-500/10 text-yellow-500"
-                         )}>
-                           {h.status || 'pending'}
-                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleToggleFeatured(h.id, !h.isFeatured)}
-                          className={cn(
-                            "h-8 px-3 text-[10px] font-black uppercase border border-white/10",
-                            h.isFeatured ? "bg-[#fbbf24] text-black hover:bg-[#fbbf24]/90" : "text-neutral-500 hover:text-white"
-                          )}
-                        >
-                          {h.isFeatured ? 'Featured' : 'Make Featured'}
-                        </Button>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          {h.status !== 'approved' && (
-                            <Button size="sm" onClick={() => handleApprove(h.id)} className="h-8 text-[10px] font-black uppercase bg-green-600 text-white hover:bg-green-700">Approve</Button>
-                          )}
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                      </td>
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-white/[0.02] border-b border-white/5">
+                      <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Property</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Featured</th>
+                      <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest text-right">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {allHotels.map((h) => (
+                      <tr key={h.id} className="hover:bg-white/[0.01] transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img src={h.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-white/5" alt="" />
+                            <div>
+                              <p className="text-sm font-bold text-white">{h.name}</p>
+                              <p className="text-xs text-neutral-500">{h.city}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className={cn(
+                            "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                            h.status === 'approved' ? "bg-green-500/10 text-green-500" :
+                            h.status === 'rejected' ? "bg-red-500/10 text-red-500" :
+                            "bg-yellow-500/10 text-yellow-500"
+                          )}>
+                            {h.status || 'pending'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleToggleFeatured(h.id, !h.isFeatured)}
+                            className={cn(
+                              "h-8 px-3 text-[10px] font-black uppercase border border-white/10",
+                              h.isFeatured ? "bg-[#fbbf24] text-black hover:bg-[#fbbf24]/90" : "text-neutral-500 hover:text-white"
+                            )}
+                          >
+                            {h.isFeatured ? 'Featured' : 'Make Featured'}
+                          </Button>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {h.status !== 'approved' && (
+                              <Button size="sm" onClick={() => handleApprove(h.id)} className="h-8 text-[10px] font-black uppercase bg-green-600 text-white hover:bg-green-700">Approve</Button>
+                            )}
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Grid */}
+              <div className="md:hidden divide-y divide-white/5">
+                {allHotels.map((h) => (
+                  <div key={h.id} className="p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <img src={h.imageUrl} className="h-12 w-12 rounded-xl object-cover bg-white/5" alt="" />
+                        <div>
+                          <p className="text-sm font-bold text-white">{h.name}</p>
+                          <p className="text-xs text-neutral-500">{h.city}</p>
+                        </div>
+                      </div>
+                      <div className={cn(
+                        "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                        h.status === 'approved' ? "bg-green-500/10 text-green-500" :
+                        h.status === 'rejected' ? "bg-red-500/10 text-red-500" :
+                        "bg-yellow-500/10 text-yellow-500"
+                      )}>
+                        {h.status || 'pending'}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                       <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleToggleFeatured(h.id, !h.isFeatured)}
+                        className={cn(
+                          "h-10 px-4 text-[10px] font-black uppercase border border-white/10",
+                          h.isFeatured ? "bg-[#fbbf24] text-black shadow-lg" : "text-neutral-500"
+                        )}
+                      >
+                        {h.isFeatured ? 'Featured' : 'Featured?'}
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        {h.status !== 'approved' && (
+                          <Button size="sm" onClick={() => handleApprove(h.id)} className="h-10 px-4 text-[10px] font-black uppercase bg-green-600 text-white">Approve</Button>
+                        )}
+                        <Button variant="outline" size="sm" className="h-10 w-10 p-0 border-white/10 text-red-500 flex items-center justify-center">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         );

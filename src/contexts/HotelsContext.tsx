@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { AREA_COORDINATES } from '../constants';
 
 interface Hotel {
   id: string;
@@ -56,6 +57,7 @@ export interface Service {
   rating?: number;
   status?: 'pending' | 'approved' | 'rejected';
   isFeatured?: boolean;
+  serviceType?: 'B2C' | 'B2B';
 }
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SHARED' | 'ACCEPTED' | 'CLOSED' | 'EXPIRED';
@@ -63,17 +65,18 @@ export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SHARED' | '
 export interface Booking {
   id: string;
   reference: string;
-  propertyId: string;
-  propertyName: string;
-  propertyImage?: string;
+  bookingType: 'PROPERTY' | 'SERVICE';
+  itemId: string; // hotelId or serviceId
+  itemName: string;
+  itemImage?: string;
   customerId: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  ownerId: string;
-  startDate: string; // ISO
-  endDate: string; // ISO
-  nights: number;
+  ownerId: string; // listerId or providerId
+  startDate: string; // ISO (also used for service date)
+  endDate?: string; // ISO (optional for services)
+  nights?: number;
   guests: number;
   totalPrice: number;
   status: BookingStatus;
@@ -83,6 +86,10 @@ export interface Booking {
   sharedAt?: string;
   sharedBy?: string;
   originalListerId?: string;
+  acceptedAt?: string;
+  time?: string; // For services
+  meetingPoint?: string; // For services
+  area?: string; // For pool bookings
 }
 
 export interface HotelsContextType {
@@ -97,8 +104,11 @@ export interface HotelsContextType {
   updateHotel: (id: string, updates: Partial<Hotel>) => void;
   addService: (service: Service) => void;
   updateService: (id: string, updates: Partial<Service>) => void;
+  deleteService: (id: string) => void;
   addBooking: (booking: Booking) => void;
   updateBooking: (id: string, updates: Partial<Booking>) => void;
+  deleteBooking: (id: string) => void;
+  deleteHotel: (id: string) => void;
   globalCategory: string | null;
   setGlobalCategory: (category: string | null) => void;
   selectedAreas: string[];
@@ -170,6 +180,71 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (savedBookings) {
         setBookings(JSON.parse(savedBookings));
+      } else {
+        const demoBookings: Booking[] = [
+          {
+            id: 'demo-pool-1',
+            reference: 'REF-POOL-1',
+            bookingType: 'PROPERTY',
+            status: 'SHARED',
+            itemId: 'dummy1',
+            itemName: 'Villa Partenope',
+            customerId: 'user-guest-1',
+            customerName: 'James W.',
+            customerEmail: 'james.w@example.com',
+            customerPhone: '+44 7700 900077',
+            ownerId: 'demo-owner',
+            startDate: '2026-06-15T12:00:00Z',
+            endDate: '2026-06-19T10:00:00Z',
+            guests: 2,
+            totalPrice: 720,
+            createdAt: new Date().toISOString(),
+            area: 'Seafront (Chiaia - Posillipo)',
+            sharedAt: new Date().toISOString()
+          },
+          {
+            id: 'demo-pool-2',
+            reference: 'REF-POOL-2',
+            bookingType: 'PROPERTY',
+            status: 'SHARED',
+            itemId: 'dummy2',
+            itemName: 'Centro Storico B&B',
+            customerId: 'user-guest-2',
+            customerName: 'Sophie M.',
+            customerEmail: 'sophie.m@example.com',
+            customerPhone: '+33 6 12 34 56 78',
+            ownerId: 'demo-owner',
+            startDate: '2026-07-01T14:00:00Z',
+            endDate: '2026-07-05T10:00:00Z',
+            guests: 3,
+            totalPrice: 450,
+            createdAt: new Date().toISOString(),
+            area: 'Center (Centro Storico)',
+            sharedAt: new Date().toISOString()
+          },
+          {
+            id: 'demo-pool-3',
+            reference: 'REF-POOL-3',
+            bookingType: 'PROPERTY',
+            status: 'SHARED',
+            itemId: 'dummy3',
+            itemName: 'Chiaia Sea View',
+            customerId: 'user-guest-3',
+            customerName: 'Roberto K.',
+            customerEmail: 'roberto.k@example.com',
+            customerPhone: '+49 151 23456789',
+            ownerId: 'demo-owner',
+            startDate: '2026-07-10T15:00:00Z',
+            endDate: '2026-07-14T11:00:00Z',
+            guests: 3,
+            totalPrice: 850,
+            createdAt: new Date().toISOString(),
+            area: 'Seafront (Chiaia - Posillipo)',
+            sharedAt: new Date().toISOString()
+          }
+        ];
+        setBookings(demoBookings);
+        localStorage.setItem('stay_ease_bookings', JSON.stringify(demoBookings));
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -180,7 +255,12 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const addHotel = useCallback((hotel: Hotel) => {
     setAllHotels(prev => {
-      const updated = [...prev, hotel];
+      const hotelWithCoords = { ...hotel };
+      if ((!hotelWithCoords.lat || !hotelWithCoords.lng) && hotelWithCoords.area && AREA_COORDINATES[hotelWithCoords.area]) {
+        hotelWithCoords.lat = AREA_COORDINATES[hotelWithCoords.area].lat;
+        hotelWithCoords.lng = AREA_COORDINATES[hotelWithCoords.area].lng;
+      }
+      const updated = [...prev, hotelWithCoords];
       localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
       return updated;
     });
@@ -210,6 +290,22 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
+  const deleteService = useCallback((id: string) => {
+    setAllServices(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      localStorage.setItem('stay_ease_services', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const deleteHotel = useCallback((id: string) => {
+    setAllHotels(prev => {
+      const updated = prev.filter(h => h.id !== id);
+      localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const addBooking = useCallback((booking: Booking) => {
     setBookings(prev => {
       const updated = [booking, ...prev];
@@ -221,6 +317,14 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const updateBooking = useCallback((id: string, updates: Partial<Booking>) => {
     setBookings(prev => {
       const updated = prev.map(b => b.id === id ? { ...b, ...updates } : b);
+      localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const deleteBooking = useCallback((id: string) => {
+    setBookings(prev => {
+      const updated = prev.filter(b => b.id !== id);
       localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
       return updated;
     });
@@ -297,8 +401,11 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     updateHotel,
     addService,
     updateService,
+    deleteService,
     addBooking,
     updateBooking,
+    deleteBooking,
+    deleteHotel,
     globalCategory, 
     setGlobalCategory,
     selectedAreas,

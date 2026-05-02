@@ -71,7 +71,7 @@ export const DashboardSidebar: React.FC<{
         return [
           { id: 'overview', label: 'My Properties', icon: Home, href: '/owner' },
           { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' },
-          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/owner?section=suppliers' },
+          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/supplier-directory' },
           { id: 'revenue', label: 'Revenue', icon: BarChart3, href: '/owner?section=revenue' },
           { id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' },
         ];
@@ -296,9 +296,82 @@ export const DashboardHeader: React.FC<{
 export const DashboardLayout: React.FC<{ children: React.ReactNode, title: string }> = ({ children, title }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const getNavItems = (): NavItem[] => {
+    if (!user) return [];
+
+    switch (user.role) {
+      case UserRole.ADMIN:
+        return [
+          { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/admin?section=bookings' },
+          { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin?section=analytics' },
+          { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
+        ];
+      case UserRole.HOTEL_OWNER:
+        return [
+          { id: 'overview', label: 'Home', icon: Home, href: '/owner' },
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' },
+          { id: 'revenue', label: 'Revenue', icon: BarChart3, href: '/owner?section=revenue' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' },
+        ];
+      case UserRole.CUSTOMER:
+        return [
+          { id: 'overview', label: 'Bookings', icon: Calendar, href: '/dashboard' },
+          { id: 'wishlist', label: 'Wishlist', icon: Star, href: '/dashboard?section=wishlist' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/dashboard?section=profile' },
+          { id: 'search', label: 'Search', icon: Search, href: '/search' },
+        ];
+      case UserRole.SERVICE_PROVIDER:
+        return [
+          { id: 'overview', label: 'Services', icon: Map, href: '/service-dashboard' },
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/service-dashboard?section=bookings' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/service-dashboard?section=profile' },
+        ];
+      case UserRole.SUPPLIER:
+        return [
+          { id: 'overview', label: 'Services', icon: Wrench, href: '/supplier' },
+          { id: 'orders', label: 'Orders', icon: Calendar, href: '/supplier?section=orders' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/supplier?section=profile' },
+        ];
+      default:
+        return [];
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
-    <div className="min-h-screen bg-[#0f172a]">
+    <div className="min-h-screen bg-[#0f172a] pb-24 md:pb-0">
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#1c2431] border-t border-white/5 px-4 py-3 flex items-center justify-between shadow-2xl">
+        {navItems.slice(0, 4).map((item) => {
+          const isActive = location.pathname + location.search === item.href;
+          return (
+            <Link 
+              key={item.id} 
+              to={item.href || '#'} 
+              className={cn(
+                "flex flex-col items-center gap-1 transition-colors flex-1 text-center truncate",
+                isActive ? "text-[#fbbf24]" : "text-neutral-500"
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-[9px] font-bold uppercase tracking-tighter w-full truncate px-1">{item.label}</span>
+            </Link>
+          );
+        })}
+        <button 
+          onClick={() => setMobileOpen(true)}
+          className="flex flex-col items-center gap-1 text-neutral-500 flex-1 text-center"
+        >
+          <Menu className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-tighter">More</span>
+        </button>
+      </div>
+
       <DashboardSidebar 
         isCollapsed={isCollapsed} 
         setIsCollapsed={setIsCollapsed}
@@ -308,7 +381,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
       
       <div className={cn(
         "transition-all duration-300",
-        isCollapsed ? "md:pl-20" : "md:pl-64"
+        isCollapsed ? "md:pl-20" : "lg:pl-64 md:pl-20"
       )}>
         <DashboardHeader title={title} setMobileOpen={setMobileOpen} />
         

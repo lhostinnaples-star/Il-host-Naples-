@@ -3,12 +3,27 @@ import { useLocation, useNavigate, Link, useSearchParams, useParams } from 'reac
 import { Card, Button } from '../components/UI';
 import { Heart, Star, MapPin, X, ChevronDown, Map, List } from 'lucide-react';
 import { format } from 'date-fns';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useHotels } from '../contexts/HotelsContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { WishlistButton } from '../components/WishlistButton';
 import { SEOHead } from '../components/SEOHead';
 import { generateSlug } from '../utils/seo';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { divIcon } from 'leaflet';
+import { ArrowLeft } from 'lucide-react';
+
+import { PROPERTY_AREAS } from '../constants';
+
+const createMarkerIcon = (price: string) => {
+  return divIcon({
+    html: `<div class="bg-white px-2 py-1 rounded-full border-2 border-[#fbbf24] shadow-md font-bold text-xs text-[#1e293b]">€${price}</div>`,
+    className: 'bg-transparent border-none',
+    iconSize: [40, 24],
+    iconAnchor: [20, 12]
+  });
+};
 
 export const SearchResultsPage: React.FC = () => {
   const location = useLocation();
@@ -84,6 +99,7 @@ export const SearchResultsPage: React.FC = () => {
 
   const [sortBy, setSortBy] = useState('price-high');
   const [activeFilters, setActiveFilters] = useState(initialFilters);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Scroll to top on mount or when URL changes
   useEffect(() => {
@@ -206,6 +222,13 @@ export const SearchResultsPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
+            <button 
+              onClick={() => setShowMobileFilters(true)}
+              className="lg:hidden flex items-center gap-2 px-4 py-2 border border-neutral-200 rounded-lg text-sm font-bold text-neutral-900"
+            >
+              <List className="w-4 h-4" />
+              Filters
+            </button>
             <div className="flex bg-neutral-100 rounded-lg p-1">
               <button 
                 onClick={() => setViewMode('list')}
@@ -242,8 +265,8 @@ export const SearchResultsPage: React.FC = () => {
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row">
-          {/* Filter Sidebar */}
-          <aside className="w-full shrink-0 lg:w-64">
+          {/* Filter Sidebar - Hidden on Mobile */}
+          <aside className="hidden lg:block w-full shrink-0 lg:w-64">
             <div className="sticky top-24 space-y-8">
               <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
                 <h3 className="text-lg font-bold text-neutral-900">Filters</h3>
@@ -355,6 +378,37 @@ export const SearchResultsPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Areas */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-neutral-900">Area</h4>
+                <div className="space-y-2">
+                  {PROPERTY_AREAS.map(area => (
+                    <label key={area} className="flex cursor-pointer items-center justify-between group">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+                          selectedAreas.includes(area) ? 'border-amber-500 bg-amber-500' : 'border-neutral-300 group-hover:border-amber-500'
+                        }`}>
+                          {selectedAreas.includes(area) && <X className="h-3 w-3 text-white" />}
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          className="hidden" 
+                          checked={selectedAreas.includes(area)}
+                          onChange={() => {
+                            setSelectedAreas(
+                              selectedAreas.includes(area)
+                                ? selectedAreas.filter(a => a !== area)
+                                : [...selectedAreas, area]
+                            );
+                          }}
+                        />
+                        <span className="text-sm text-neutral-700">{area}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Property Type */}
               <div className="space-y-3">
                 <h4 className="text-sm font-bold text-neutral-900">Property Type</h4>
@@ -456,18 +510,207 @@ export const SearchResultsPage: React.FC = () => {
             </div>
           </aside>
 
+          {/* Mobile Filters Drawer */}
+          {showMobileFilters && (
+            <div className="fixed inset-0 z-[200] flex flex-col bg-white lg:hidden">
+              <div className="flex items-center justify-between p-6 border-b border-neutral-100">
+                <h3 className="text-xl font-bold text-neutral-900">Filters</h3>
+                <button onClick={() => setShowMobileFilters(false)}>
+                  <X className="h-6 w-6 text-neutral-500" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                {/* Redefine filter sections for mobile - or reuse components if possible */}
+                {/* Simplified for mobile drawer */}
+                <div className="space-y-8 pb-32">
+                   {/* Star Rating (Mobile) */}
+                   <div className="space-y-4">
+                    <h4 className="font-bold text-neutral-900">Star Rating</h4>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[1, 2, 3, 4, 5].map(star => {
+                        const isSelected = activeFilters.starRatings?.includes(star);
+                        return (
+                          <button
+                            key={star}
+                            onClick={() => {
+                              setActiveFilters(prev => ({
+                                ...prev,
+                                starRatings: isSelected 
+                                  ? (prev.starRatings || []).filter(s => s !== star)
+                                  : [...(prev.starRatings || []), star]
+                              }));
+                            }}
+                            className={`flex h-12 items-center justify-center rounded-xl border transition-all ${
+                              isSelected 
+                                ? 'border-[#fbbf24] bg-[#fbbf24] text-neutral-900 shadow-sm' 
+                                : 'border-neutral-200 bg-white text-neutral-600'
+                            }`}
+                          >
+                            <span className="text-sm font-bold">{star}</span>
+                            <Star className={`ml-1 h-4 w-4 ${isSelected ? 'fill-current' : ''}`} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Price Ranges (Mobile) */}
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-neutral-900">Price per night</h4>
+                    <div className="grid gap-3">
+                      {priceOptions.map(option => (
+                        <button
+                          key={option.id}
+                          onClick={() => {
+                            if (priceRange?.min === option.min && priceRange?.max === option.max) {
+                              setPriceRange(null);
+                            } else {
+                              setPriceRange({ min: option.min, max: option.max });
+                            }
+                          }}
+                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
+                            priceRange?.min === option.min && priceRange?.max === option.max
+                              ? 'border-[#fbbf24] bg-[#fbbf24]/5'
+                              : 'border-neutral-100'
+                          }`}
+                        >
+                          <span className="font-bold text-neutral-900">{option.label}</span>
+                          {priceRange?.min === option.min && priceRange?.max === option.max && <X className="h-5 w-5 text-[#fbbf24]" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Areas (Mobile) */}
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-neutral-900">Area</h4>
+                    <div className="grid gap-3">
+                      {PROPERTY_AREAS.map(area => (
+                        <button
+                          key={area}
+                          onClick={() => {
+                            setSelectedAreas(
+                              selectedAreas.includes(area)
+                                ? selectedAreas.filter(a => a !== area)
+                                : [...selectedAreas, area]
+                            );
+                          }}
+                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
+                            selectedAreas.includes(area)
+                              ? 'border-[#fbbf24] bg-[#fbbf24]/5'
+                              : 'border-neutral-100'
+                          }`}
+                        >
+                          <span className="font-bold text-neutral-900 text-sm">{area}</span>
+                          {selectedAreas.includes(area) && <X className="h-5 w-5 text-[#fbbf24]" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Property Type (Mobile) */}
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-neutral-900">Property Type</h4>
+                    <div className="grid gap-3">
+                      {['Holiday House', 'Bed & Breakfast'].map(type => (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            setActiveFilters(prev => ({
+                              ...prev,
+                              propertyTypes: prev.propertyTypes.includes(type) 
+                                ? prev.propertyTypes.filter(t => t !== type)
+                                : [...prev.propertyTypes, type]
+                            }));
+                          }}
+                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
+                            activeFilters.propertyTypes.includes(type)
+                              ? 'border-[#fbbf24] bg-[#fbbf24]/5'
+                              : 'border-neutral-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                             <span className="font-bold text-neutral-900 text-sm">{type}</span>
+                             <span className="text-xs text-neutral-400">({filterCounts.propertyTypes[type] || 0})</span>
+                          </div>
+                          {activeFilters.propertyTypes.includes(type) && <X className="h-5 w-5 text-[#fbbf24]" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="fixed bottom-0 left-0 right-0 p-6 border-t border-neutral-100 bg-white">
+                <Button 
+                  onClick={() => setShowMobileFilters(false)}
+                  className="w-full h-14 bg-[#0f172a] text-white font-black uppercase tracking-widest rounded-2xl"
+                >
+                  Show {sortedResults.length} Results
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Results Grid / Map */}
           <div className="flex-1">
             {viewMode === 'map' ? (
-              <div className="h-[calc(100vh-200px)] w-full rounded-2xl bg-neutral-100 overflow-hidden border border-neutral-200 flex items-center justify-center sticky top-24">
-                <div className="text-center">
-                  <Map className="h-12 w-12 mx-auto mb-4 text-neutral-400 opacity-50" />
-                  <p className="text-neutral-500 font-bold">Interactive Map View</p>
-                  <p className="text-sm text-neutral-400 max-w-sm mt-2">Map implementation would load here displaying coordinates of {sortedResults.length} properties.</p>
-                </div>
+              <div className={`w-full rounded-2xl bg-neutral-100 overflow-hidden border border-neutral-200 relative z-0 ${
+                window.innerWidth < 1024 
+                  ? 'fixed inset-0 z-[250] !rounded-none !border-none' 
+                  : 'h-[calc(100vh-200px)] sticky top-24'
+              }`}>
+                {window.innerWidth < 1024 && (
+                  <div className="absolute top-4 left-4 z-[300] flex items-center gap-2">
+                    <button 
+                      onClick={() => setViewMode('list')}
+                      className="p-3 rounded-full bg-white shadow-xl border border-neutral-100 text-neutral-900"
+                    >
+                      <ArrowLeft className="h-6 w-6" />
+                    </button>
+                    <div className="bg-white px-4 py-2 rounded-full shadow-xl border border-neutral-100 text-xs font-bold text-neutral-900">
+                      {sortedResults.length} properties found
+                    </div>
+                  </div>
+                )}
+                <MapContainer 
+                  center={[40.8518, 14.2681]} 
+                  zoom={13} 
+                  className="w-full h-full"
+                >
+                  <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  {sortedResults.map(hotel => {
+                    if (!hotel.lat || !hotel.lng) return null;
+                    return (
+                      <Marker 
+                        key={hotel.id} 
+                        position={[hotel.lat, hotel.lng]}
+                        icon={createMarkerIcon(hotel.price.toString())}
+                      >
+                        <Popup className="rounded-xl overflow-hidden border-none shadow-2xl">
+                          <div className="p-0 min-w-[200px]">
+                            <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-24 object-cover mb-2" />
+                            <div className="p-2">
+                              <h3 className="font-bold text-sm text-[#1e293b] mb-1">{hotel.name}</h3>
+                              <p className="text-xs text-neutral-500 mb-2">{hotel.area}</p>
+                              <div className="flex items-center justify-between">
+                                <p className="font-bold text-[#fbbf24]">€{hotel.price}</p>
+                                <Link 
+                                  to={`/naples/${generateSlug(hotel.type || 'holiday-house')}/${generateSlug(hotel.area || 'naples')}/${generateSlug(hotel.name)}-${hotel.id}`}
+                                  className="text-[10px] font-black uppercase tracking-widest text-[#1e293b] underline"
+                                >
+                                  View
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
+                </MapContainer>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                 {sortedResults.length > 0 ? (
                   sortedResults.map((hotel) => (
                   <motion.div

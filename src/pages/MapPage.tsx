@@ -8,12 +8,12 @@ import { ArrowRight, CheckCircle2, Clock, Briefcase, Luggage, Activity, Car, Sho
 
 const areas = [
   { id: 'Everyone', label: 'Everyone', activeBg: 'bg-[#1e293b]', activeText: 'text-[#fbbf24]' },
-  { id: 'CENTER', label: 'Center', activeBg: 'bg-[#fbbf24]', activeText: 'text-[#1e293b]' },
-  { id: 'SEAFRONT', label: 'Seafront', activeBg: 'bg-[#0284c7]', activeText: 'text-white' },
-  { id: 'STADIUM', label: 'Stadium', activeBg: 'bg-[#10b981]', activeText: 'text-white' },
-  { id: 'STATION', label: 'Station', activeBg: 'bg-[#ef4444]', activeText: 'text-white' },
-  { id: 'ISLANDS', label: 'Islands', activeBg: 'bg-[#14b8a6]', activeText: 'text-white' },
-  { id: 'VOMERO', label: 'Vomero', activeBg: 'bg-[#8b5cf6]', activeText: 'text-white' }
+  { id: 'Center (Centro Storico)', label: 'Center', activeBg: 'bg-[#fbbf24]', activeText: 'text-[#1e293b]' },
+  { id: 'Seafront (Chiaia - Posillipo)', label: 'Seafront', activeBg: 'bg-[#0284c7]', activeText: 'text-white' },
+  { id: 'Stadium (Fuorigrotta - Fair)', label: 'Stadium', activeBg: 'bg-[#10b981]', activeText: 'text-white' },
+  { id: 'Station (Piazza Garibaldi)', label: 'Station', activeBg: 'bg-[#ef4444]', activeText: 'text-white' },
+  { id: 'Islands (Ischia & Procida)', label: 'Islands', activeBg: 'bg-[#14b8a6]', activeText: 'text-white' },
+  { id: 'Vomero', label: 'Vomero', activeBg: 'bg-[#8b5cf6]', activeText: 'text-white' }
 ];
 
 const services = [
@@ -29,12 +29,12 @@ const services = [
 // Custom marker icon based on area
 const getAreaColor = (areaId: string) => {
   switch(areaId) {
-    case 'CENTER': return '#fbbf24'; // Gold
-    case 'SEAFRONT': return '#0284c7'; // Deep Blue
-    case 'STADIUM': return '#10b981'; // Emerald
-    case 'STATION': return '#ef4444'; // Red
-    case 'ISLANDS': return '#14b8a6'; // Teal
-    case 'VOMERO': return '#8b5cf6'; // Purple
+    case 'Center (Centro Storico)': return '#fbbf24'; // Gold
+    case 'Seafront (Chiaia - Posillipo)': return '#0284c7'; // Deep Blue
+    case 'Stadium (Fuorigrotta - Fair)': return '#10b981'; // Emerald
+    case 'Station (Piazza Garibaldi)': return '#ef4444'; // Red
+    case 'Islands (Ischia & Procida)': return '#14b8a6'; // Teal
+    case 'Vomero': return '#8b5cf6'; // Purple
     default: return '#1e293b'; // Deep Slate
   }
 };

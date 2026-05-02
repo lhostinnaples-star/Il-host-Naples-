@@ -110,56 +110,109 @@ export const Navbar: React.FC = () => {
 
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden absolute top-16 left-0 right-0 bg-[#1e293b] border-t border-white/10 shadow-2xl overflow-hidden"
-          >
-            <div className="px-4 py-6 space-y-3">
-              <Link 
-                to="/owner" 
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
-              >
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24]">
-                  <Home className="h-5 w-5" />
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="md:hidden fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="md:hidden fixed top-0 right-0 bottom-0 z-[70] w-full max-w-xs bg-[#1e293b] shadow-2xl overflow-y-auto"
+            >
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-6 border-b border-white/10">
+                  <span className="text-xl font-serif font-bold text-[#fbbf24]">Menu</span>
+                  <button 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 text-white"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-white">List your Property</p>
-                  <p className="text-[10px] text-neutral-400">For BnB and Holiday House owners</p>
-                </div>
-              </Link>
+                
+                <div className="flex-1 px-4 py-8 space-y-4">
+                  <Link 
+                    to="/owner" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
+                  >
+                    <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24] shrink-0">
+                      <Home className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-white">List your Property</p>
+                      <p className="text-xs text-neutral-400">For BnB and Holiday House owners</p>
+                    </div>
+                  </Link>
 
-              <Link 
-                to="/service-dashboard" 
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 w-full p-4 rounded-2xl bg-[#fbbf24]/5 border border-[#fbbf24]/20 hover:border-[#fbbf24] transition-all"
-              >
-                <div className="h-10 w-10 rounded-xl bg-[#fbbf24] flex items-center justify-center text-[#1e293b]">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-white">List your Service</p>
-                  <p className="text-[10px] text-[#fbbf24]">Transport, Tours & Food</p>
-                </div>
-              </Link>
+                  <Link 
+                    to="/service-dashboard" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-[#fbbf24]/5 border border-[#fbbf24]/20 hover:border-[#fbbf24] transition-all"
+                  >
+                    <div className="h-12 w-12 rounded-xl bg-[#fbbf24] flex items-center justify-center text-[#1e293b] shrink-0">
+                      <Sparkles className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-white">List your Service</p>
+                      <p className="text-xs text-[#fbbf24]">Transport, Tours & Food</p>
+                    </div>
+                  </Link>
 
-              <Link 
-                to="/supplier" 
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
-              >
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24]">
-                  <Briefcase className="h-5 w-5" />
+                  <Link 
+                    to="/supplier" 
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
+                  >
+                    <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24] shrink-0">
+                      <Briefcase className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-white">Join as Supplier</p>
+                      <p className="text-xs text-neutral-400">Services for property owners</p>
+                    </div>
+                  </Link>
+
+                  <div className="pt-8 space-y-4 border-t border-white/10">
+                    {user ? (
+                      <>
+                        <Link 
+                          to={getDashboardLink()} 
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center gap-4 text-white hover:text-[#fbbf24] transition-colors p-2"
+                        >
+                          <LayoutDashboard className="h-5 w-5" />
+                          <span className="font-bold">Dashboard</span>
+                        </Link>
+                        <button 
+                          onClick={() => { logout(); setIsMenuOpen(false); navigate('/'); }}
+                          className="flex items-center gap-4 text-red-400 hover:text-red-300 transition-colors p-2 w-full text-left"
+                        >
+                          <LogOut className="h-5 w-5" />
+                          <span className="font-bold">Logout</span>
+                        </button>
+                      </>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                          <Button variant="ghost" className="w-full text-white border border-white/20 h-12">Sign in</Button>
+                        </Link>
+                        <Link to="/register" onClick={() => setIsMenuOpen(false)}>
+                          <Button className="w-full bg-[#fbbf24] text-[#1e293b] h-12">Register</Button>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-white">Join as Supplier</p>
-                  <p className="text-[10px] text-neutral-400">Services for property owners</p>
-                </div>
-              </Link>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

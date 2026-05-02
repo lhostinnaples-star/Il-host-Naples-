@@ -5,7 +5,7 @@ import {
   ChevronDown, Home, Euro, Car, Bike, Ship, Plane, 
   ChefHat, Quote, Facebook, Instagram, Twitter, Linkedin, 
   ArrowRight, ShieldCheck, Briefcase, Clock, CheckCircle2,
-  Map, UserCheck, ArrowUpCircle
+  Map, UserCheck, ArrowUpCircle, X
 } from 'lucide-react';
 import { DateRange, RangeKeyDict } from 'react-date-range';
 import { format, addDays } from 'date-fns';
@@ -13,7 +13,7 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { SERVICE_CATEGORIES } from '../constants';
+import { SERVICE_CATEGORIES, PROPERTY_AREAS } from '../constants';
 
 import { useHotels } from '../contexts/HotelsContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -240,8 +240,6 @@ export const LandingPage: React.FC = () => {
     }
   ]);
 
-  const areaOptions = ['Center', 'Islands', 'Seafront', 'Station', 'Vomero'];
-
   const priceOptions = [
     { label: 'All prices', min: 0, max: 1000000 },
     { label: '€80 - €120', min: 80, max: 120 },
@@ -411,10 +409,10 @@ export const LandingPage: React.FC = () => {
             className="mb-12"
           >
             <h1 className="mb-4 text-5xl font-extrabold tracking-tight md:text-7xl">
-              {settings.heroTitle}
+              Live Naples <span className="text-[#F5A623]">Like a Local</span>
             </h1>
             <p className="text-xl font-light text-neutral-300">
-              {settings.heroSubtitle}
+              Authentic stays, real experiences, trusted local hosts in Naples
             </p>
           </motion.div>
 
@@ -423,16 +421,16 @@ export const LandingPage: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="relative z-30 -mb-48 lg:-mb-32"
+            className="relative z-30 -mb-64 lg:-mb-32"
           >
-            <div className="flex flex-col lg:flex-row bg-white rounded-xl shadow-2xl border border-neutral-100">
+            <div className="flex flex-col lg:flex-row bg-white rounded-3xl shadow-2xl border border-neutral-100 overflow-hidden">
               {/* Block 1: Search by Dates */}
               <div 
-                className="date-picker-container flex flex-col items-center justify-center p-6 w-full lg:w-48 border-b lg:border-b-0 lg:border-r border-neutral-200 hover:bg-neutral-50 cursor-pointer group transition-colors rounded-t-xl lg:rounded-l-xl lg:rounded-tr-none"
+                className="date-picker-container flex flex-col items-center justify-center p-6 w-full lg:w-48 border-b lg:border-b-0 lg:border-r border-neutral-200 hover:bg-neutral-50 cursor-pointer group transition-colors lg:rounded-l-3xl"
                 onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
               >
                 <Calendar className="h-8 w-8 text-[#1e293b] mb-3 group-hover:text-[#fbbf24] transition-colors" />
-                <span className="text-sm font-bold text-[#1e293b] text-center">SEARCH BY DATES</span>
+                <span className="text-xs font-black text-[#1e293b] text-center uppercase tracking-widest leading-tight">SEARCH BY DATES</span>
               </div>
 
               {/* Block 2: Discover the Areas */}
@@ -441,24 +439,24 @@ export const LandingPage: React.FC = () => {
                 onClick={() => {
                   const element = document.getElementById('area-selection-section');
                   if (element) {
-                    const y = element.getBoundingClientRect().top + window.scrollY - 80; // 80px offset for fixed navbar
+                    const y = element.getBoundingClientRect().top + window.scrollY - 80; 
                     window.scrollTo({ top: y, behavior: 'smooth' });
                   }
                 }}
               >
                 <MapPin className="h-8 w-8 text-[#1e293b] mb-3 group-hover:text-[#fbbf24] transition-colors" />
-                <span className="text-sm font-bold text-[#1e293b] text-center">DISCOVER THE AREAS</span>
+                <span className="text-xs font-black text-[#1e293b] text-center uppercase tracking-widest leading-tight">DISCOVER AREAS</span>
               </div>
 
               {/* Block 3: Main Filters */}
-              <div className="flex-1 p-6 bg-neutral-50/50 rounded-b-xl lg:rounded-r-xl lg:rounded-bl-none">
+              <div className="flex-1 p-4 lg:p-6 bg-neutral-50/50">
                 <div className="flex flex-col gap-4">
                   {/* Row 1 */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                     {/* All areas */}
                     <div className="area-dropdown-container relative">
                       <div 
-                        className={`flex items-center gap-3 bg-white border rounded-md px-4 py-3 transition-colors cursor-pointer group ${isAreaDropdownOpen ? 'border-[#fbbf24]' : 'border-neutral-200 hover:border-[#fbbf24]'}`}
+                        className={`flex items-center h-12 lg:h-14 gap-3 bg-white border rounded-xl px-4 transition-colors cursor-pointer group ${isAreaDropdownOpen ? 'border-[#fbbf24]' : 'border-neutral-200 hover:border-[#fbbf24]'}`}
                         onClick={() => setIsAreaDropdownOpen(!isAreaDropdownOpen)}
                       >
                         <MapPin className={`h-5 w-5 transition-colors shrink-0 ${isAreaDropdownOpen ? 'text-[#fbbf24]' : 'text-slate-500 group-hover:text-[#fbbf24]'}`} />
@@ -473,10 +471,10 @@ export const LandingPage: React.FC = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute left-0 top-full z-[100] mt-2 w-64 rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                            className="absolute left-0 right-0 lg:right-auto lg:w-64 top-full z-[100] mt-2 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
                           >
                             <div className="space-y-3">
-                              {areaOptions.map((area) => (
+                              {PROPERTY_AREAS.map((area) => (
                                 <label 
                                   key={area} 
                                   className="flex items-center gap-3 cursor-pointer group"
@@ -515,7 +513,7 @@ export const LandingPage: React.FC = () => {
                     {/* All types */}
                     <div className="type-dropdown-container relative">
                       <div 
-                        className={`flex items-center gap-3 bg-white border rounded-md px-4 py-3 transition-colors cursor-pointer group ${isTypeDropdownOpen ? 'border-[#fbbf24]' : 'border-neutral-200 hover:border-[#fbbf24]'}`}
+                        className={`flex items-center h-12 lg:h-14 gap-3 bg-white border rounded-xl px-4 transition-colors cursor-pointer group ${isTypeDropdownOpen ? 'border-[#fbbf24]' : 'border-neutral-200 hover:border-[#fbbf24]'}`}
                         onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
                       >
                         <Home className={`h-5 w-5 transition-colors shrink-0 ${isTypeDropdownOpen || globalCategory ? 'text-[#fbbf24]' : 'text-slate-500 group-hover:text-[#fbbf24]'}`} />
@@ -530,7 +528,7 @@ export const LandingPage: React.FC = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute left-0 top-full z-[100] mt-2 w-64 rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                            className="absolute left-0 right-0 lg:right-auto lg:w-64 top-full z-[100] mt-2 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
                           >
                             <div className="space-y-1">
                               <button
@@ -567,7 +565,7 @@ export const LandingPage: React.FC = () => {
                     </div>
                     {/* Guests */}
                     <div 
-                      className="occupancy-modal-container flex items-center gap-3 bg-white border border-neutral-200 rounded-md px-4 py-3 hover:border-[#fbbf24] transition-colors cursor-pointer group"
+                      className="occupancy-modal-container flex items-center h-12 lg:h-14 gap-3 bg-white border border-neutral-200 rounded-xl px-4 hover:border-[#fbbf24] transition-colors cursor-pointer group"
                       onClick={() => setShowOccupancyModal(!showOccupancyModal)}
                     >
                       <User className="h-5 w-5 text-slate-500 group-hover:text-[#fbbf24] transition-colors shrink-0" />
@@ -578,7 +576,7 @@ export const LandingPage: React.FC = () => {
                     {/* Price Range / Budget */}
                     <div className="price-dropdown-container relative">
                       <div 
-                        className={`flex items-center gap-3 bg-white border rounded-md px-4 py-3 transition-colors cursor-pointer group ${isPriceDropdownOpen ? 'border-[#fbbf24]' : 'border-neutral-200 hover:border-[#fbbf24]'}`}
+                        className={`flex items-center h-12 lg:h-14 gap-3 bg-white border rounded-xl px-4 transition-colors cursor-pointer group ${isPriceDropdownOpen ? 'border-[#fbbf24]' : 'border-neutral-200 hover:border-[#fbbf24]'}`}
                         onClick={() => setIsPriceDropdownOpen(!isPriceDropdownOpen)}
                       >
                         <Euro className={`h-5 w-5 transition-colors shrink-0 ${isPriceDropdownOpen || (priceRange && priceRange.min > 0) ? 'text-[#fbbf24]' : 'text-slate-500 group-hover:text-[#fbbf24]'}`} />
@@ -593,7 +591,7 @@ export const LandingPage: React.FC = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute left-0 top-full z-[100] mt-2 w-64 rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                            className="absolute left-0 right-0 lg:right-auto lg:w-64 top-full z-[100] mt-2 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
                           >
                             <div className="space-y-1">
                               {priceOptions.map((opt, idx) => (
@@ -620,18 +618,18 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   {/* Row 2 */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-4">
-                    {/* Everyone/Rating (kept as is for layout consistency) */}
-                    <div className="flex items-center gap-3 bg-white border border-neutral-200 rounded-md px-4 py-3 hover:border-[#fbbf24] transition-colors cursor-pointer group">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 lg:mt-4">
+                    {/* Everyone/Rating */}
+                    <div className="hidden md:flex items-center h-12 lg:h-14 gap-3 bg-white border border-neutral-200 rounded-xl px-4 hover:border-[#fbbf24] transition-colors cursor-pointer group">
                       <Star className="h-5 w-5 text-slate-500 group-hover:text-[#fbbf24] transition-colors shrink-0" />
                       <span className="text-sm font-medium text-neutral-500">Everyone</span>
                     </div>
                     {/* SEARCH Button */}
                     <Button
-                      className="bg-[#1e293b] text-white font-bold text-lg hover:bg-[#fbbf24] hover:text-[#1e293b] transition-colors h-full py-3 rounded-md w-full"
+                      className="bg-[#1e293b] text-white font-black text-sm lg:text-lg hover:bg-[#fbbf24] hover:text-[#1e293b] transition-colors h-14 lg:h-14 rounded-xl w-full uppercase tracking-widest"
                       onClick={handleSearch}
                     >
-                      SEARCH
+                      SEARCH NOW
                     </Button>
                   </div>
                 </div>
@@ -641,113 +639,139 @@ export const LandingPage: React.FC = () => {
             {/* Modals (Date Picker & Occupancy) */}
             <AnimatePresence>
               {isDatePickerOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="date-picker-container absolute left-0 top-full z-[100] mt-4 rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-black/5 lg:left-0"
-                >
-                  <DateRange
-                    editableDateInputs={true}
-                    onChange={handleDateChange}
-                    moveRangeOnFirstSelection={false}
-                    ranges={dates}
-                    minDate={new Date()}
-                    maxDate={new Date('2027-12-31')}
-                    rangeColors={['#fbbf24']}
-                    months={windowWidth < 1024 ? 1 : 2}
-                    direction={windowWidth < 1024 ? 'vertical' : 'horizontal'}
-                    showMonthAndYearPickers={false}
-                    className="rounded-xl border-none"
+                <div className="fixed inset-0 z-[110] lg:absolute lg:inset-auto lg:left-0 lg:top-full mt-4 flex items-center justify-center p-4 lg:p-0">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setIsDatePickerOpen(false)}
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden"
                   />
-                  <div className="mt-4 flex justify-end border-t border-neutral-100 pt-4">
-                    <Button 
-                      size="sm" 
-                      className="bg-[#1e293b] text-white"
-                      onClick={() => setIsDatePickerOpen(false)}
-                    >
-                      Done
-                    </Button>
-                  </div>
-                </motion.div>
+                    <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="relative z-10 w-full h-full lg:h-auto lg:max-w-none md:rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-black/5 flex flex-col overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-between mb-4 lg:hidden">
+                      <h3 className="font-bold text-lg">Select Dates</h3>
+                      <button onClick={() => setIsDatePickerOpen(false)} className="p-2"><X className="h-6 w-6" /></button>
+                    </div>
+                    <DateRange
+                      editableDateInputs={true}
+                      onChange={handleDateChange}
+                      moveRangeOnFirstSelection={false}
+                      ranges={dates}
+                      minDate={new Date()}
+                      maxDate={new Date('2027-12-31')}
+                      rangeColors={['#fbbf24']}
+                      months={windowWidth < 1024 ? 1 : 2}
+                      direction="vertical"
+                      showMonthAndYearPickers={false}
+                      className="rounded-xl border-none mx-auto"
+                    />
+                    <div className="mt-4 flex justify-end border-t border-neutral-100 pt-4">
+                      <Button 
+                        size="sm" 
+                        className="bg-[#1e293b] text-white h-12 px-8 rounded-xl font-bold"
+                        onClick={() => setIsDatePickerOpen(false)}
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </motion.div>
+                </div>
               )}
             </AnimatePresence>
 
             <AnimatePresence>
               {showOccupancyModal && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="occupancy-modal-container absolute right-0 top-full z-[100] mt-4 w-80 rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5"
-                >
-                  <div className="space-y-6">
-                    <CounterRow 
-                      label="Adults" 
-                      value={guestOptions.adults} 
-                      onDec={() => handleGuestOptionChange('adults', 'dec')}
-                      onInc={() => handleGuestOptionChange('adults', 'inc')}
-                      min={1}
-                    />
-                    <CounterRow 
-                      label="Children" 
-                      value={guestOptions.children} 
-                      onDec={() => handleGuestOptionChange('children', 'dec')}
-                      onInc={() => handleGuestOptionChange('children', 'inc')}
-                      min={0}
-                    />
-                    <CounterRow 
-                      label="Rooms" 
-                      value={guestOptions.rooms} 
-                      onDec={() => handleGuestOptionChange('rooms', 'dec')}
-                      onInc={() => handleGuestOptionChange('rooms', 'inc')}
-                      min={1}
-                    />
+                <div className="fixed inset-0 z-[110] lg:absolute lg:inset-auto lg:right-0 lg:top-full mt-4 flex items-center justify-center p-4 lg:p-0">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowOccupancyModal(false)}
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="relative z-10 w-full h-full md:h-auto md:max-w-sm md:rounded-[2rem] bg-white p-8 shadow-2xl ring-1 ring-black/5 flex flex-col overflow-y-auto"
+                  >
+                    <div className="flex items-center justify-between mb-6 lg:hidden">
+                      <h3 className="font-bold text-lg">Guest Selection</h3>
+                      <button onClick={() => setShowOccupancyModal(false)} className="p-2"><X className="h-6 w-6" /></button>
+                    </div>
+                    <div className="space-y-6">
+                      <CounterRow 
+                        label="Adults" 
+                        value={guestOptions.adults} 
+                        onDec={() => handleGuestOptionChange('adults', 'dec')}
+                        onInc={() => handleGuestOptionChange('adults', 'inc')}
+                        min={1}
+                      />
+                      <CounterRow 
+                        label="Children" 
+                        value={guestOptions.children} 
+                        onDec={() => handleGuestOptionChange('children', 'dec')}
+                        onInc={() => handleGuestOptionChange('children', 'inc')}
+                        min={0}
+                      />
+                      <CounterRow 
+                        label="Rooms" 
+                        value={guestOptions.rooms} 
+                        onDec={() => handleGuestOptionChange('rooms', 'dec')}
+                        onInc={() => handleGuestOptionChange('rooms', 'inc')}
+                        min={1}
+                      />
 
-                    {guestOptions.children > 0 && (
-                      <div className="space-y-4 border-t border-neutral-100 pt-6">
-                        <div className="grid grid-cols-2 gap-3">
-                          {guestOptions.childAges.map((age, index) => (
-                            <ChildAgeDropdown 
-                              key={index}
-                              index={index}
-                              value={age}
-                              onChange={(age) => handleChildAgeChange(index, age)}
-                            />
-                          ))}
+                      {guestOptions.children > 0 && (
+                        <div className="space-y-4 border-t border-neutral-100 pt-6">
+                          <div className="grid grid-cols-2 gap-3">
+                            {guestOptions.childAges.map((age, index) => (
+                              <ChildAgeDropdown 
+                                key={index}
+                                index={index}
+                                value={age}
+                                onChange={(age) => handleChildAgeChange(index, age)}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-[11px] leading-relaxed text-neutral-500">
+                            To find you a place to stay that fits your entire group along with correct prices, we need to know how old your child will be at check-out
+                          </p>
                         </div>
-                        <p className="text-[11px] leading-relaxed text-neutral-500">
-                          To find you a place to stay that fits your entire group along with correct prices, we need to know how old your child will be at check-out
-                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between border-t border-neutral-100 pt-6">
+                        <span className="text-sm font-medium text-neutral-900">Traveling with pets?</span>
+                        <button 
+                          onClick={() => setGuestOptions(prev => ({ ...prev, pets: !prev.pets }))}
+                          className={`relative h-6 w-11 rounded-full transition-colors ${guestOptions.pets ? 'bg-[#fbbf24]' : 'bg-neutral-200'}`}
+                        >
+                          <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${guestOptions.pets ? 'translate-x-5' : ''}`} />
+                        </button>
                       </div>
-                    )}
 
-                    <div className="flex items-center justify-between border-t border-neutral-100 pt-6">
-                      <span className="text-sm font-medium text-neutral-900">Traveling with pets?</span>
-                      <button 
-                        onClick={() => setGuestOptions(prev => ({ ...prev, pets: !prev.pets }))}
-                        className={`relative h-6 w-11 rounded-full transition-colors ${guestOptions.pets ? 'bg-[#fbbf24]' : 'bg-neutral-200'}`}
-                      >
-                        <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${guestOptions.pets ? 'translate-x-5' : ''}`} />
-                      </button>
+                      <div className="flex justify-end pt-2">
+                        <Button 
+                          size="sm" 
+                          className="bg-[#1e293b] text-white w-full h-12 rounded-xl font-bold"
+                          onClick={() => {
+                            const hasMissingAges = guestOptions.childAges.some(age => age === null);
+                            if (!hasMissingAges) {
+                              setShowOccupancyModal(false);
+                            }
+                          }}
+                        >
+                          Confirm Selection
+                        </Button>
+                      </div>
                     </div>
-
-                    <div className="flex justify-end pt-2">
-                      <Button 
-                        size="sm" 
-                        className="bg-[#1e293b] text-white"
-                        onClick={() => {
-                          const hasMissingAges = guestOptions.childAges.some(age => age === null);
-                          if (!hasMissingAges) {
-                            setShowOccupancyModal(false);
-                          }
-                        }}
-                      >
-                        Done
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </motion.div>
@@ -769,7 +793,7 @@ export const LandingPage: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">Featured Properties</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">Handpicked Stays in Naples</h2>
                 <p className="text-neutral-500 max-w-2xl">Hand-picked stays in the most beautiful corners of Naples, from cozy B&Bs to luxury holiday houses.</p>
               </div>
               <div className="flex bg-white p-1 rounded-xl shadow-sm border border-neutral-200 self-start">
@@ -789,11 +813,11 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {allHotels
                 .filter(h => h.status === 'approved' && h.isFeatured)
                 .filter(h => featuredFilter === 'all' || h.category === featuredFilter)
-                .slice(0, 6)
+                .slice(0, 8)
                 .map((hotel, idx) => (
               <motion.div
                 key={hotel.id}
@@ -816,6 +840,11 @@ export const LandingPage: React.FC = () => {
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
+                  <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                    <span className="px-3 py-1 rounded-full bg-green-500/90 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest border border-white/20 flex items-center gap-1 shadow-sm">
+                      <ShieldCheck className="h-3 w-3" /> Il Host Verified
+                    </span>
+                  </div>
                   <div className="absolute top-4 right-4 z-10">
                     <WishlistButton propertyId={hotel.id} />
                   </div>
@@ -836,6 +865,8 @@ export const LandingPage: React.FC = () => {
                   <div className="flex items-center gap-1.5 text-neutral-500">
                     <MapPin className="h-3.5 w-3.5" />
                     <span className="text-xs">{hotel.area || 'Napoli'}, Italy</span>
+                    <span className="text-xs text-neutral-300 mx-1">•</span>
+                    <span className="text-xs">{(Math.random() * 3 + 0.5).toFixed(1)} km from center</span>
                   </div>
                   <div className="flex items-center justify-between pt-2">
                     <div className="flex items-baseline gap-1">
@@ -866,6 +897,77 @@ export const LandingPage: React.FC = () => {
       {/* Recently Viewed Section */}
       <RecentlyViewedProperties />
 
+      {/* Napoli Packages */}
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-[#0f172a] border-t border-[#1e293b]"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">Curated Naples Experiences</h2>
+            <p className="text-lg text-[#F5A623] max-w-2xl mx-auto font-medium">Stay + Experience Bundles</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Weekend Escape",
+                icon: "🌆",
+                includes: ["2 nights stay", "Naples city tour"],
+                perfectFor: "First time visitors",
+                price: "€299/person"
+              },
+              {
+                title: "Foodie Naples",
+                icon: "🍕",
+                includes: ["3 nights stay", "Street food tour", "Private chef dinner"],
+                perfectFor: "Food lovers",
+                price: "€450/person"
+              },
+              {
+                title: "Island Adventure",
+                icon: "🛥️",
+                includes: ["2 nights stay", "Capri boat tour", "Vespa city tour"],
+                perfectFor: "Adventure seekers",
+                price: "€380/person"
+              }
+            ].map((pkg, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-[#1e293b] rounded-[2rem] border border-[#F5A623]/30 p-8 hover:border-[#F5A623] transition-colors relative flex flex-col h-full"
+              >
+                <div className="text-4xl mb-6">{pkg.icon}</div>
+                <h3 className="text-2xl font-bold text-white mb-2">{pkg.title}</h3>
+                <p className="text-sm text-[#F5A623] font-medium mb-6">Perfect for: {pkg.perfectFor}</p>
+                
+                <ul className="mb-8 space-y-3 flex-1 text-neutral-300">
+                  {pkg.includes.map((item, i) => (
+                     <li key={i} className="flex items-start gap-2 text-sm italic">
+                        <CheckCircle2 className="h-4 w-4 text-[#F5A623] mt-0.5 shrink-0" />
+                        {item}
+                     </li>
+                  ))}
+                </ul>
+                
+                <div className="pt-6 border-t border-white/10 mt-auto">
+                  <div className="text-xs text-neutral-400 uppercase tracking-widest font-bold mb-1">From</div>
+                  <div className="text-2xl font-extrabold text-white mb-6">{pkg.price}</div>
+                  <Button className="w-full bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0f172a] font-bold rounded-xl h-12">
+                    Explore Package
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
       {/* Experiences & Services Section */}
       {settings.sections.featuredExperiences && (
         <motion.section 
@@ -876,26 +978,21 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-4">Elevate Your Stay</h2>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-4">Authentic Naples Experiences</h2>
             <p className="text-lg text-neutral-500 max-w-2xl mx-auto italic">More than just a room. Discover our premium services curated for the ultimate Naples experience.</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {allServices.slice(0, 6).map((service, idx) => {
-              // Find the icon based on subCategory from our constants
-              const subCat = SERVICE_CATEGORIES
-                .flatMap(c => c.subCategories)
-                .find(sc => sc.id === service.subCategory);
-              
-              const IconComponent = subCat?.icon || Star;
-              
-              // Dynamic color based on category
-              const colorMap: Record<string, string> = {
-                'Transport': 'bg-blue-50 text-blue-600',
-                'Tours': 'bg-amber-50 text-amber-600',
-                'Lifestyle': 'bg-rose-50 text-rose-600',
-              };
-              const colorClass = colorMap[service.category] || 'bg-neutral-50 text-neutral-600';
+            {[
+              { id: '1', name: "Capri Boat Tour", price: 85, priceUnit: "person", category: 'Tours', icon: Ship, colorClass: 'bg-amber-50 text-amber-600' },
+              { id: '2', name: "Naples Food Tour", price: 45, priceUnit: "person", category: 'Tours', icon: ChefHat, colorClass: 'bg-amber-50 text-amber-600' },
+              { id: '3', name: "Airport Transfer", price: 35, priceUnit: "trip", category: 'Transport', icon: Plane, colorClass: 'bg-blue-50 text-blue-600' },
+              { id: '4', name: "Private Chef", price: 120, priceUnit: "person", category: 'Lifestyle', icon: ChefHat, colorClass: 'bg-rose-50 text-rose-600' },
+              { id: '5', name: "Vespa City Tour", price: 65, priceUnit: "person", category: 'Tours', icon: Bike, colorClass: 'bg-amber-50 text-amber-600' },
+              { id: '6', name: "Sunset Sailing", price: 95, priceUnit: "person", category: 'Tours', icon: Ship, colorClass: 'bg-amber-50 text-amber-600' }
+            ].map((service, idx) => {
+              const IconComponent = service.icon;
+              const colorClass = service.colorClass;
 
               return (
                 <motion.div
@@ -932,12 +1029,13 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-1/2">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-8 italic">Never Lose a Booking Again</h2>
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 italic">Never Lose a Booking Again</h2>
+            <p className="text-lg text-neutral-400 mb-8 max-w-xl">Our exclusive Host Network ensures every guest finds their perfect stay</p>
             <div className="space-y-6">
               {[
-                { title: 'The Shared Pool', desc: 'When your property is busy, refer your guests to the community pool and help them find an alternative.' },
-                { title: 'Earn from Referrals', desc: 'Get rewarded for every booking that comes from your referral.' },
-                { title: 'Zero Vacancy', desc: 'Fill your empty dates by accepting referrals from other trust listers.' }
+                { title: 'When one host is full, another helps', desc: 'When your property is busy, refer your guests to the community pool and help them find an alternative.' },
+                { title: 'Earn commission on every referral', desc: 'Get rewarded for every booking that comes from your referral.' },
+                { title: 'Zero vacancy in Naples - guaranteed', desc: 'Fill your empty dates by accepting referrals from other trust listers.' }
               ].map((item, i) => (
                 <div key={i} className="flex gap-4">
                   <div className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#fbbf24] text-[#0f172a]">
@@ -990,6 +1088,51 @@ export const LandingPage: React.FC = () => {
         </div>
       </motion.section>
 
+      {/* Il Host Verified Section */}
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="py-24 px-6 bg-[#0f172a] text-white"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-4">Every Stay is Il Host Verified</h2>
+            <p className="text-lg text-[#F5A623] max-w-2xl mx-auto font-medium">We go beyond standard checks to ensure your perfect Naples experience</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: "CIR Code Verified",
+                desc: "All properties have valid Italian tourist registration"
+              },
+              {
+                title: "Host Background Checked",
+                desc: "Every host is personally verified by our Naples team"
+              },
+              {
+                title: "In-Person Inspection",
+                desc: "We visit every property before listing"
+              },
+              {
+                title: "Guest Reviews Monitored",
+                desc: "We actively monitor all reviews and respond to issues"
+              }
+            ].map((v, idx) => (
+              <div key={idx} className="bg-[#1e293b] p-8 rounded-[2rem] border border-[#F5A623]/20 hover:border-[#F5A623] relative overflow-hidden group transition-all">
+                <ShieldCheck className="h-24 w-24 text-[#F5A623] absolute -top-4 -right-4 opacity-10 group-hover:scale-110 transition-transform" />
+                <div className="h-10 w-10 bg-[#F5A623] rounded-full flex items-center justify-center mb-6">
+                  <CheckCircle2 className="h-5 w-5 text-[#0f172a]" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{v.title}</h3>
+                <p className="text-neutral-400 text-sm leading-relaxed">{v.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
       {/* Testimonials Section */}
       <motion.section 
         initial={{ opacity: 0, y: 30 }} 
@@ -1006,22 +1149,22 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                text: "Il Host Naples completely changed how I manage my property. The shared pool is a lifesaver during high season!",
-                name: "Marco Rossi",
-                role: "Lister since 2023",
+                text: "Il Host Naples found us the perfect apartment in Posillipo. The host was incredibly helpful and the booking pool saved our holiday when our first choice was full!",
+                name: "James Wilson, London",
+                role: "Guest",
+                avatar: "https://i.pravatar.cc/150?u=james"
+              },
+              {
+                text: "The booking pool has transformed my business. I never lose a guest anymore and the referral commissions are fantastic!",
+                name: "Marco Esposito, Naples",
+                role: "Lister",
                 avatar: "https://i.pravatar.cc/150?u=marco"
               },
               {
-                text: "As a service provider, I've seen my airport transfer business grow by 40% in just six months. The platform is truly seamless.",
-                name: "Elena Esposito",
-                role: "Supplier (Transfers)",
-                avatar: "https://i.pravatar.cc/150?u=elena"
-              },
-              {
-                text: "The best way to experience Naples. I found a beautiful BnB and booked a private food tour in 5 minutes. Amazing!",
-                name: "Thomas Muller",
-                role: "Guest from Germany",
-                avatar: "https://i.pravatar.cc/150?u=thomas"
+                text: "As a local tour guide, Il Host Naples has tripled my bookings. The platform truly understands authentic Naples experiences.",
+                name: "Sofia Ragozzino, Naples",
+                role: "Service Provider",
+                avatar: "https://i.pravatar.cc/150?u=sofia"
               }
             ].map((t, idx) => (
               <motion.div
@@ -1066,17 +1209,17 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                title: "Best Areas to Stay in Naples",
+                title: "Best Areas to Stay in Naples 2026",
                 desc: "From the luxury of Vomero to the historic heart of the Cento Storico, find the perfect base for your trip.",
                 img: "https://images.unsplash.com/photo-1590059963351-4043b8bed72a?auto=format&fit=crop&w=800&q=80"
               },
               {
-                title: "Top 10 Authentic Experiences",
+                title: "Top 10 Authentic Naples Experiences",
                 desc: "Discover underground ruins, secret catacombs, and the true soul of the city with our local guide.",
                 img: "https://images.unsplash.com/photo-1595181781204-7c3fffbebd16?auto=format&fit=crop&w=800&q=80"
               },
               {
-                title: "The Ultimate Pizza Guide",
+                title: "Naples Food Guide: Beyond Pizza",
                 desc: "Where to find the best Margherita and traditional street food that locals actually eat.",
                 img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"
               }
@@ -1120,23 +1263,23 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                title: "List Your Property",
+                title: "Become an Il Host Lister",
                 role: "lister",
-                desc: "Manage your homes, rooms, and B&Bs with professional tools.",
+                desc: "List your Naples property and join our verified host community. Access the exclusive booking pool.",
                 icon: Home,
-                cta: "Register as Lister"
+                cta: "Start Listing"
               },
               {
-                title: "Offer Your Experience",
+                title: "Share Your Naples",
                 role: "service_provider",
-                desc: "Share your passion for Naples through tours and activities.",
-                icon: Star,
+                desc: "Offer authentic local experiences to guests. Cars, tours, food experiences and more.",
+                icon: Car,
                 cta: "Become a Provider"
               },
               {
-                title: "Join as Supplier",
+                title: "Supply to Top Hosts",
                 role: "supplier",
-                desc: "Offer transfer, rental, and cleaning services to our network.",
+                desc: "Offer your B2B services to our network of verified Naples hosts. Cleaning, linen, welcome kits and more.",
                 icon: Briefcase,
                 cta: "Join Network"
               }
@@ -1220,12 +1363,10 @@ export const LandingPage: React.FC = () => {
 
           <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-10 md:mb-0">
-              © 2026 IL HOST IN NAPLES. MADE WITH PASSION IN ITALY.
+              © 2026 IL HOST IN NAPLES. MADE WITH ❤️ IN NAPLES.
             </p>
             <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-10 md:mb-0">
-              <a href="#" className="hover:text-white transition-colors">ITALIANO</a>
-              <a href="#" className="hover:text-white transition-colors">ENGLISH</a>
-              <a href="#" className="hover:text-white transition-colors">DEUTSCH</a>
+              <a href="#" className="hover:text-amber-500 transition-colors">EN | IT</a>
             </div>
           </div>
         </div>

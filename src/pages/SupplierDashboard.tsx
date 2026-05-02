@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useHotels } from '../contexts/HotelsContext';
@@ -6,36 +6,83 @@ import { Card, Button, Input } from '../components/UI';
 import { 
   Wrench, Calendar, BarChart3, User, Plus,
   Edit2, Trash2, CheckCircle2, Search, Filter,
-  ChevronRight, Package, LayoutGrid, Briefcase
+  ChevronRight, Package, LayoutGrid, Briefcase, AlertCircle
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { DashboardLayout } from '../components/DashboardLayout';
+import { SupplierServiceFormModal } from '../components/SupplierServiceFormModal';
+import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
+
+import { SUPPLIER_CATEGORIES } from '../constants';
 
 export const SupplierDashboard: React.FC = () => {
   const { user, isDemoMode } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allServices, addService } = useHotels();
+  const { allHotels, allServices, addService, updateService, deleteService, bookings } = useHotels();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
   
-  const myServices = allServices.filter(s => s.providerId === user?.id || (isDemoMode && s.category === 'B2B'));
+  const myServices = allServices.filter(s => s.providerId === user?.id || (isDemoMode && s.serviceType === 'B2B'));
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<any>(null);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+
+  // Use allBookings to count active orders for my services
+  const myActiveOrders = bookings.filter(b => 
+    b.status === 'PENDING' && 
+    myServices.some(s => s.id === b.itemId)
+  ).length;
 
   const handleAddService = () => {
-    const newService = {
-      id: `supply-${Date.now()}`,
-      name: "Cleaning Supply Batch " + (myServices.length + 1),
-      description: "Professional cleaning materials.",
-      price: 85,
-      priceUnit: 'batch',
-      category: 'B2B',
-      subCategory: 'maintenance',
-      imageUrl: "",
-      providerId: user?.id,
-      rating: 5,
-      isFeatured: false,
-      status: 'approved' as const
-    };
-    addService(newService);
+    if (isDemoMode) {
+      setEditingService({
+        name: 'Premium Cleaning Naples',
+        category: SUPPLIER_CATEGORIES[0].id,
+        price: 80,
+        priceUnit: 'per session',
+        isDemoDummy: true
+      });
+    } else {
+      setEditingService(null);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleEditService = (service: any) => {
+    setEditingService(service);
+    setIsModalOpen(true);
+  };
+
+  const handleServiceSubmit = (data: any) => {
+    if (editingService?.isDemoDummy) {
+      toast.success('B2B service published to catalog');
+      setIsModalOpen(false);
+      return;
+    }
+    if (editingService) {
+      updateService(editingService.id, data);
+      toast.success('B2B service updated');
+    } else {
+      const newService = {
+        ...data,
+        id: `supply-${Date.now()}`,
+        providerId: user?.id,
+        status: 'approved' as const,
+        serviceType: 'B2B',
+        rating: 5
+      };
+      addService(newService);
+      toast.success('B2B service published to catalog');
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteService = (id: string) => {
+    deleteService(id);
+    toast.success('B2B service removed');
+    setServiceToDelete(null);
   };
 
   const renderOverview = () => (
@@ -51,14 +98,14 @@ export const SupplierDashboard: React.FC = () => {
         <Card className="p-6 border-white/5 bg-white/5 flex items-center justify-between hover:border-[#fbbf24]/30 transition-all cursor-pointer">
            <div className="space-y-1">
              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Active Orders</p>
-             <h3 className="text-3xl font-bold text-white">2</h3>
+             <h3 className="text-3xl font-bold text-white">{myActiveOrders}</h3>
            </div>
            <div className="p-4 rounded-2xl bg-blue-500/10"><Calendar className="h-6 w-6 text-blue-500" /></div>
         </Card>
         <Card className="p-6 border-white/5 bg-white/5 flex items-center justify-between hover:border-[#fbbf24]/30 transition-all cursor-pointer">
            <div className="space-y-1">
              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Lister Connections</p>
-             <h3 className="text-3xl font-bold text-white">14</h3>
+             <h3 className="text-3xl font-bold text-white">{Math.max(14, myServices.length * 3)}</h3>
            </div>
            <div className="p-4 rounded-2xl bg-purple-500/10"><Briefcase className="h-6 w-6 text-purple-500" /></div>
         </Card>
@@ -82,7 +129,7 @@ export const SupplierDashboard: React.FC = () => {
                       </div>
                       <div>
                         <h3 className="font-bold text-white">{service.name}</h3>
-                        <p className="text-[10px] font-black uppercase text-neutral-500 tracking-tighter mt-0.5">{service.category}</p>
+                        <p className="text-[10px] font-black uppercase text-neutral-500 tracking-tighter mt-0.5">{SUPPLIER_CATEGORIES.find(c => c.id === service.category)?.label || service.category}</p>
                       </div>
                    </div>
                    <div className="text-right">
@@ -142,6 +189,57 @@ export const SupplierDashboard: React.FC = () => {
              <p className="text-neutral-500 max-w-sm">Advanced supplier logistics for this module are coming in the next update.</p>
            </div>
         )}
+
+        <SupplierServiceFormModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleServiceSubmit}
+          initialData={editingService}
+        />
+
+        {/* Delete Confirmation */}
+        <AnimatePresence>
+          {serviceToDelete && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setServiceToDelete(null)}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative w-full max-w-md bg-white rounded-3xl p-8"
+              >
+                <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="h-8 w-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-[#0f172a] text-center mb-2">Delete B2B Service?</h3>
+                <p className="text-neutral-500 text-center mb-8">
+                  This service will be removed from the B2B catalog for Listers.
+                </p>
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1 rounded-2xl h-14 font-black uppercase tracking-widest text-[10px]"
+                    onClick={() => setServiceToDelete(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-2xl h-14 font-black uppercase tracking-widest text-[10px]"
+                    onClick={() => handleDeleteService(serviceToDelete)}
+                  >
+                    Yes, Delete
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </DashboardLayout>
   );

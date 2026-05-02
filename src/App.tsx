@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth, UserRole } from './contexts/AuthContext';
 import { HotelsProvider } from './contexts/HotelsContext';
+import { WishlistProvider } from './contexts/WishlistContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { SettingsProvider } from './contexts/SettingsContext';
@@ -114,10 +115,12 @@ export default function App() {
           <CurrencyProvider>
             <AuthProvider>
               <HotelsProvider>
-                <Router>
-                  <Toaster position="top-center" richColors />
-                  <AppContent />
-                </Router>
+                <WishlistProvider>
+                  <Router>
+                    <Toaster position="top-center" richColors />
+                    <AppContent />
+                  </Router>
+                </WishlistProvider>
               </HotelsProvider>
             </AuthProvider>
           </CurrencyProvider>

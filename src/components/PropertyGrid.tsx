@@ -42,7 +42,7 @@ export const PropertyGrid: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide md:grid md:grid-cols-4 md:overflow-visible">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayHotels.map((property) => (
           <motion.div
             key={property.id}

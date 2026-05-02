@@ -4,82 +4,177 @@ import {
   Search, Filter, MapPin, CheckCircle2, 
   MessageCircle, Phone, Mail, X, 
   Sparkles, Hammer, Camera, Paintbrush, 
-  HardHat, Truck, ShieldAlert, ArrowLeft
+  HardHat, Truck, ShieldAlert, ArrowLeft,
+  Calendar, Building2
 } from 'lucide-react';
 import { Card, Button, Input } from '../components/UI';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useHotels } from '../contexts/HotelsContext';
+import { toast } from 'sonner';
 
-const CATEGORIES = [
-  { id: 'cleaning', label: 'Cleaning', icon: Sparkles },
-  { id: 'laundry', label: 'Laundry', icon: Truck },
-  { id: 'plumber', label: 'Plumber', icon: Hammer },
-  { id: 'photographer', label: 'Photographer', icon: Camera },
-  { id: 'interior_designer', label: 'Interior Designer', icon: Paintbrush },
-  { id: 'furniture', label: 'Furniture', icon: Hammer },
-  { id: 'construction', label: 'Construction', icon: HardHat },
-  { id: 'sos', label: 'SOS Emergency', icon: ShieldAlert, priority: true }
-];
+import { SUPPLIER_CATEGORIES } from '../constants';
 
 const MOCK_SUPPLIERS = [
   {
-    id: '1',
-    name: 'Naples Sparkling Clean',
+    id: 'demo-supplier-1',
+    name: 'Pulizie Napoli Pro',
     category: 'cleaning',
     bio: 'Premium cleaning services specialized in luxury holiday homes and B&Bs in the historic center.',
-    area: 'Center',
+    area: 'All Naples',
     phone: '+393331234567',
+    price: 80,
+    priceUnit: 'per session',
+    rating: 4.9,
     portfolio: [
-      'https://picsum.photos/seed/clean1/400/400',
-      'https://picsum.photos/seed/clean2/400/400',
-      'https://picsum.photos/seed/clean3/400/400'
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400',
+      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400',
+      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=400'
     ],
-    coverage: ['Center', 'Station', 'Vomero'],
-    workingHours: '08:00 - 20:00'
+    coverage: ['All Naples'],
+    workingHours: '08:00 - 20:00',
+    originalProviderId: 'demo-supplier'
   },
   {
-    id: '2',
-    name: 'Vesuvius Repairs',
-    category: 'plumber',
-    bio: 'Professional plumbing and emergency repairs. Available 24/7 for SOS requests.',
-    area: 'Vomero',
+    id: 'demo-supplier-2',
+    name: 'Biancheria Luxury',
+    category: 'linen',
+    bio: 'High-quality bed linen and towel rental with delivery service.',
+    area: 'Centro Storico, Chiaia',
     phone: '+393339876543',
+    price: 30,
+    priceUnit: 'per set',
+    rating: 4.8,
     portfolio: [
-      'https://picsum.photos/seed/plumb1/400/400',
-      'https://picsum.photos/seed/plumb2/400/400',
-      'https://picsum.photos/seed/plumb3/400/400'
+      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=400',
+      'https://images.unsplash.com/photo-1615800059530-97424ad4f620?w=400',
+      'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=400'
     ],
-    coverage: ['Center', 'Vomero', 'Seafront', 'Stadium'],
-    workingHours: '24/7'
+    coverage: ['Centro Storico', 'Chiaia'],
+    workingHours: '09:00 - 18:00',
+    originalProviderId: 'demo-supplier'
   },
   {
-    id: '3',
-    name: 'Neapolis Views Studio',
-    category: 'photographer',
-    bio: 'Commercial real estate photography helping listers maximize their property potential.',
-    area: 'Seafront',
+    id: 'demo-supplier-3',
+    name: 'Welcome Naples Kits',
+    category: 'welcome_kits',
+    bio: 'Curated welcome kits for your guests featuring local products.',
+    area: 'All Naples',
     phone: '+393330001111',
+    price: 40,
+    priceUnit: 'per kit',
+    rating: 5.0,
     portfolio: [
-      'https://picsum.photos/seed/photo1/400/400',
-      'https://picsum.photos/seed/photo2/400/400',
-      'https://picsum.photos/seed/photo3/400/400'
+      'https://images.unsplash.com/photo-1542841791-0985223c6d71?w=400',
+      'https://images.unsplash.com/photo-1555529902-5261145633bf?w=400',
+      'https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=400'
     ],
-    coverage: ['Center', 'Seafront', 'Islands'],
-    workingHours: '09:00 - 18:00'
+    coverage: ['All Naples'],
+    workingHours: '09:00 - 18:00',
+    originalProviderId: 'demo-supplier'
+  },
+  {
+    id: 'demo-supplier-4',
+    name: 'Falegname Napoli',
+    category: 'furniture',
+    bio: 'Custom furniture and quick repairs for your properties.',
+    area: 'Posillipo, Vomero',
+    phone: '+393335557777',
+    price: 150,
+    priceUnit: 'per visit',
+    rating: 4.7,
+    portfolio: [
+      'https://images.unsplash.com/photo-1581539250439-c96689b516f1?w=400',
+      'https://images.unsplash.com/photo-1505693314120-0d443867891c?w=400',
+      'https://images.unsplash.com/photo-1600607686527-6fb886090705?w=400'
+    ],
+    coverage: ['Posillipo', 'Vomero'],
+    workingHours: '08:00 - 19:00',
+    originalProviderId: 'demo-supplier'
   }
 ];
 
 export const SupplierDirectory: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { allServices, allHotels, addBooking } = useHotels();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSupplier, setSelectedSupplier] = useState<typeof MOCK_SUPPLIERS[0] | null>(null);
+  
+  const realSuppliers = allServices
+    .filter(s => s.serviceType === 'B2B')
+    .map(s => ({
+      id: s.id,
+      name: s.name,
+      category: s.category,
+      bio: s.description,
+      area: s.location || 'Naples',
+      phone: '+393330000000', // Provider phone placeholder
+      price: s.price,
+      priceUnit: s.priceUnit,
+      rating: s.rating || 5.0,
+      portfolio: s.imageUrl ? [s.imageUrl] : ['https://images.unsplash.com/photo-1542841791-0985223c6d71?w=400'],
+      coverage: [s.location || 'Naples'],
+      workingHours: '09:00 - 18:00',
+      isReal: true,
+      originalProviderId: s.providerId
+    }));
 
-  const filteredSuppliers = MOCK_SUPPLIERS.filter(s => {
+  const combinedSuppliers = [...realSuppliers, ...MOCK_SUPPLIERS];
+
+  const [selectedSupplier, setSelectedSupplier] = useState<typeof combinedSuppliers[0] | null>(null);
+  
+  // Request Service Modal state
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [selectedPropertyId, setSelectedPropertyId] = useState('');
+  const [requestDate, setRequestDate] = useState('');
+  const [requestNotes, setRequestNotes] = useState('');
+
+  const myProperties = allHotels.filter(h => h.ownerId === user?.id);
+
+  const filteredSuppliers = combinedSuppliers.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           s.area.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || s.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleRequestService = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSupplier || !selectedPropertyId || !requestDate) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const prop = myProperties.find(p => p.id === selectedPropertyId);
+    
+    addBooking({
+      id: `req-${Date.now()}`,
+      reference: `REQ-${Math.floor(Math.random() * 10000)}`,
+      bookingType: 'SERVICE',
+      itemId: selectedSupplier.id,
+      itemName: selectedSupplier.name,
+      itemImage: selectedSupplier.portfolio[0],
+      customerId: user?.id || 'demo-owner',
+      customerName: user?.name || 'Hotel Owner',
+      customerEmail: user?.email || 'owner@example.com',
+      customerPhone: '+39333000000',
+      ownerId: selectedSupplier.originalProviderId || 'demo-supplier',
+      startDate: new Date(requestDate).toISOString(),
+      guests: 1,
+      totalPrice: selectedSupplier.price,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+      notes: `For property: ${prop?.name || 'Local Property'}\n\n${requestNotes}`
+    });
+
+    console.log('SUPPLIER PORTAL:', `Order sent to ${selectedSupplier.name} for ${requestDate}`);
+    toast.success('Service request sent to supplier!');
+    setIsRequestModalOpen(false);
+    setSelectedPropertyId('');
+    setRequestDate('');
+    setRequestNotes('');
+  };
 
   return (
     <div className="min-h-screen bg-neutral-50 pt-32 pb-12 px-4 md:px-8">
@@ -118,7 +213,7 @@ export const SupplierDirectory: React.FC = () => {
               >
                 All Services
               </button>
-              {CATEGORIES.map(cat => (
+              {SUPPLIER_CATEGORIES.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
@@ -156,17 +251,27 @@ export const SupplierDirectory: React.FC = () => {
                 </div>
                 <h3 className="text-xl font-bold text-[#1e293b] mb-1 group-hover:text-[#fbbf24] transition-colors">{supplier.name}</h3>
                 <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-                  {CATEGORIES.find(c => c.id === supplier.category)?.label}
+                  {SUPPLIER_CATEGORIES.find(c => c.id === supplier.category)?.label || supplier.category}
                 </p>
               </div>
 
               {/* Body */}
               <div className="p-6 pt-0 flex-1">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-neutral-100">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-bold text-[#1e293b]">€{supplier.price}</span>
+                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{supplier.priceUnit}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500 uppercase tracking-widest">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    <span>{supplier.rating} rating</span>
+                  </div>
+                </div>
                 <p className="text-neutral-500 text-sm line-clamp-2 mb-6 leading-relaxed">{supplier.bio}</p>
                 
                 {/* 3-Image Preview Grid */}
                 <div className="grid grid-cols-3 gap-2">
-                  {supplier.portfolio.map((img, idx) => (
+                  {supplier.portfolio.map((img: string, idx: number) => (
                     <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-neutral-100">
                       <img src={img} alt="Portfolio" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                     </div>
@@ -176,25 +281,36 @@ export const SupplierDirectory: React.FC = () => {
 
               {/* Footer / Contact Bar */}
               <div className="p-4 bg-neutral-50 flex items-center gap-2 border-t border-neutral-100" onClick={e => e.stopPropagation()}>
-                <a 
-                  href={`https://wa.me/${supplier.phone.replace('+', '')}`}
-                  target="_blank"
-                  className="flex-1 flex items-center justify-center h-12 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-all shadow-lg shadow-green-500/10"
+                <div className="flex items-center gap-2 pr-2 border-r border-neutral-200">
+                  <a 
+                    href={`https://wa.me/${supplier.phone.replace('+', '')}`}
+                    target="_blank"
+                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-all shadow-lg shadow-green-500/10"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </a>
+                  <a 
+                    href={`tel:${supplier.phone}`}
+                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-[#1e293b] hover:bg-neutral-800 text-white transition-all shadow-lg shadow-[#1e293b]/10"
+                  >
+                    <Phone className="h-4 w-4" />
+                  </a>
+                  <a 
+                    href={`mailto:supplier@example.com`}
+                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] transition-all shadow-lg shadow-amber-500/10"
+                  >
+                    <Mail className="h-4 w-4" />
+                  </a>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setSelectedSupplier(supplier);
+                    setIsRequestModalOpen(true);
+                  }}
+                  className="flex-1 bg-[#1e293b] hover:bg-neutral-800 text-white font-bold h-10 rounded-xl text-xs uppercase tracking-widest"
                 >
-                  <MessageCircle className="h-5 w-5" />
-                </a>
-                <a 
-                  href={`tel:${supplier.phone}`}
-                  className="flex-1 flex items-center justify-center h-12 rounded-xl bg-[#1e293b] hover:bg-neutral-800 text-white transition-all shadow-lg shadow-[#1e293b]/10"
-                >
-                  <Phone className="h-5 w-5" />
-                </a>
-                <a 
-                  href={`sms:${supplier.phone}`}
-                  className="flex-1 flex items-center justify-center h-12 rounded-xl bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] transition-all shadow-lg shadow-amber-500/10"
-                >
-                  <Mail className="h-5 w-5" />
-                </a>
+                  Request Service
+                </Button>
               </div>
             </Card>
           ))}
@@ -259,18 +375,26 @@ export const SupplierDirectory: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-4">
+                    <div className="flex flex-col gap-3 pt-4">
+                      <div className="flex items-center gap-3">
+                        <Button 
+                          onClick={() => window.open(`https://wa.me/${selectedSupplier.phone.replace('+', '')}`, '_blank')}
+                          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold h-14 rounded-2xl"
+                        >
+                          <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp
+                        </Button>
+                        <Button 
+                          onClick={() => window.location.href = `tel:${selectedSupplier.phone}`}
+                          className="flex-1 bg-[#1e293b] text-white font-bold h-14 rounded-2xl"
+                        >
+                          <Phone className="h-5 w-5 mr-2" /> Direct Call
+                        </Button>
+                      </div>
                       <Button 
-                        onClick={() => window.open(`https://wa.me/${selectedSupplier.phone.replace('+', '')}`, '_blank')}
-                        className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold h-14 rounded-2xl"
+                        onClick={() => setIsRequestModalOpen(true)}
+                        className="w-full bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] font-bold h-14 rounded-2xl"
                       >
-                        <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp
-                      </Button>
-                      <Button 
-                        onClick={() => window.location.href = `tel:${selectedSupplier.phone}`}
-                        className="flex-1 bg-[#1e293b] text-white font-bold h-14 rounded-2xl"
-                      >
-                        <Phone className="h-5 w-5 mr-2" /> Direct Call
+                        Request Service
                       </Button>
                     </div>
                   </div>
@@ -286,6 +410,91 @@ export const SupplierDirectory: React.FC = () => {
                       ))}
                     </div>
                   </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Request Service Modal */}
+        <AnimatePresence>
+          {isRequestModalOpen && selectedSupplier && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8 bg-[#1e293b]/80 backdrop-blur-sm">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="w-full max-w-lg bg-white rounded-[2rem] shadow-2xl relative"
+              >
+                <div className="p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold text-[#1e293b]">Request Service</h2>
+                      <p className="text-neutral-500">From {selectedSupplier.name}</p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setIsRequestModalOpen(false);
+                        setSelectedSupplier(null);
+                      }}
+                      className="h-10 w-10 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-400 hover:text-red-500 transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleRequestService} className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Service Total</label>
+                      <div className="h-14 bg-neutral-50 rounded-2xl flex items-center px-4 font-bold text-[#1e293b]">
+                        €{selectedSupplier.price} {selectedSupplier.priceUnit}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Select Property</label>
+                      <select 
+                        required
+                        className="w-full h-14 bg-neutral-100 rounded-2xl px-4 font-bold text-[#1e293b] outline-none focus:ring-2 focus:ring-[#fbbf24]"
+                        value={selectedPropertyId}
+                        onChange={e => setSelectedPropertyId(e.target.value)}
+                      >
+                        <option value="">Choose a property...</option>
+                        {myProperties.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Date Needed</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                        <Input 
+                          type="datetime-local" 
+                          required
+                          className="pl-12 h-14 rounded-2xl border-none shadow-sm"
+                          value={requestDate}
+                          onChange={e => setRequestDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Special Requirements / Notes</label>
+                      <textarea 
+                        className="w-full bg-neutral-100 rounded-2xl p-4 text-[#1e293b] outline-none focus:ring-2 focus:ring-[#fbbf24] placeholder:text-neutral-400"
+                        rows={4}
+                        placeholder="Any special instructions for the supplier..."
+                        value={requestNotes}
+                        onChange={e => setRequestNotes(e.target.value)}
+                      />
+                    </div>
+
+                    <Button type="submit" className="w-full h-14 rounded-2xl bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] font-bold text-lg mt-4">
+                      Submit Request
+                    </Button>
+                  </form>
                 </div>
               </motion.div>
             </div>

@@ -8,26 +8,38 @@ import {
   MapPin, Star, Calendar, CheckCircle2, 
   ArrowLeft, Clock, Share, Heart, Phone, Info,
   Car, Bike, Ship, Palmtree, UserCheck, Utensils, ChefHat, Sparkles, Send, Loader2,
-  ChevronRight
+  ChevronRight, X, Users as UsersIcon
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
-import { useHotels } from '../contexts/HotelsContext';
+import { useHotels, Booking } from '../contexts/HotelsContext';
 import { SEOHead } from '../components/SEOHead';
 import { generateExperienceSchema, generateSlug, generateBreadcrumbSchema } from '../utils/seo';
+import { format } from 'date-fns';
 
 export const ExperienceDetailsPage: React.FC = () => {
   const { slugWithId } = useParams();
   const id = slugWithId ? slugWithId.split('-').pop() : null;
   const navigate = useNavigate();
-  const { services, refreshHotels } = useHotels();
+  const { services, refreshHotels, addBooking } = useHotels();
   const { token, user } = useAuth();
   const { formatPrice } = useCurrency();
   
   const [service, setService] = useState<any>(null);
-  const [requestDetails, setRequestDetails] = useState('');
   const [requestDate, setRequestDate] = useState('');
+  const [requestTime, setRequestTime] = useState('10:00');
+  const [numPeople, setNumPeople] = useState(1);
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [bookingStatus, setBookingStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  
+  const [customerDetails, setCustomerDetails] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: ''
+  });
 
   useEffect(() => {
     if (!services.length) {
@@ -42,38 +54,67 @@ export const ExperienceDetailsPage: React.FC = () => {
     }
   }, [id, services]);
 
-  const handleRequest = async (e: React.FormEvent) => {
+  const handleOpenForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
       toast.error('Please login to request a service');
       navigate('/login');
       return;
     }
+    setShowRequestForm(true);
+  };
 
+  const handleSendRequest = async () => {
+    if (!customerDetails.name || !customerDetails.email || !customerDetails.phone || !requestDate) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setBookingStatus('loading');
     setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/services/request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          serviceId: service.id,
-          details: requestDetails,
-          date: requestDate
-        })
-      });
 
-      if (res.ok) {
-        toast.success('Request sent! The provider will contact you soon.');
-        setRequestDetails('');
-        setRequestDate('');
-      } else {
-        toast.error('Failed to send request');
-      }
+    const reference = 'EXP-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    const totalPrice = service.price * numPeople;
+
+    const newBooking: Partial<Booking> = {
+      id: `book-${Date.now()}`,
+      reference,
+      bookingType: 'SERVICE',
+      itemId: service.id,
+      itemName: service.name,
+      itemImage: service.imageUrl,
+      customerId: user?.id || 'anon',
+      customerName: customerDetails.name,
+      customerEmail: customerDetails.email,
+      customerPhone: customerDetails.phone,
+      ownerId: service.ownerId || service.providerId || 'admin',
+      startDate: requestDate,
+      guests: numPeople,
+      totalPrice,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+      notes,
+      time: requestTime,
+      meetingPoint: pickupLocation || service.location || 'Naples'
+    };
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      addBooking(newBooking as any);
+      
+      console.log('EMAIL TO CUSTOMER:', `Your experience request ${reference} has been sent!`);
+      console.log('EMAIL TO PROVIDER:', `New experience request for ${service.name} from ${customerDetails.name}`);
+
+      setBookingStatus('success');
+      setShowRequestForm(false);
+      toast.success('Request sent successfully!');
+      setTimeout(() => navigate('/dashboard'), 3000);
     } catch (err) {
+      console.error(err);
       toast.error('An error occurred');
+      setBookingStatus('idle');
     } finally {
       setIsSubmitting(false);
     }
@@ -130,10 +171,10 @@ export const ExperienceDetailsPage: React.FC = () => {
           <span>Back to Experiences</span>
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pb-24 lg:pb-0">
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="aspect-video w-full rounded-3xl overflow-hidden bg-neutral-100 shadow-xl">
+            <div className="aspect-video w-full rounded-2xl md:rounded-3xl overflow-hidden bg-neutral-100 shadow-xl">
               <img 
                 src={service.imageUrl || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750'} 
                 alt={service.name}
@@ -188,8 +229,8 @@ export const ExperienceDetailsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Booking Card */}
-          <div className="lg:col-span-1">
+          {/* Booking Card - Hidden on Mobile, Fixed Bar instead */}
+          <div className="hidden lg:block lg:col-span-1">
             <Card className="sticky top-32 p-8 shadow-2xl border-neutral-100 bg-white rounded-[32px]">
               <div className="mb-8">
                 <p className="text-neutral-500 text-sm mb-1 uppercase tracking-widest font-bold">From</p>
@@ -199,47 +240,226 @@ export const ExperienceDetailsPage: React.FC = () => {
                 </div>
               </div>
 
-              <form onSubmit={handleRequest} className="space-y-6">
+              <form onSubmit={handleOpenForm} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Date</label>
+                    <Input 
+                      type="date"
+                      required
+                      value={requestDate}
+                      onChange={(e) => setRequestDate(e.target.value)}
+                      className="rounded-2xl border-neutral-200 focus:border-[#fbbf24] h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Time</label>
+                    <Input 
+                      type="time"
+                      required
+                      value={requestTime}
+                      onChange={(e) => setRequestTime(e.target.value)}
+                      className="rounded-2xl border-neutral-200 focus:border-[#fbbf24] h-12"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Preferred Date</label>
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Guests</label>
+                  <div className="flex items-center justify-between p-3 rounded-2xl border border-neutral-200">
+                    <button 
+                      type="button"
+                      onClick={() => setNumPeople(Math.max(1, numPeople - 1))}
+                      className="h-8 w-8 rounded-full bg-neutral-100 flex items-center justify-center font-bold"
+                    >
+                      -
+                    </button>
+                    <span className="font-bold text-neutral-900">{numPeople} People</span>
+                    <button 
+                      type="button"
+                      onClick={() => setNumPeople(numPeople + 1)}
+                      className="h-8 w-8 rounded-full bg-neutral-100 flex items-center justify-center font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Pickup Location</label>
                   <Input 
-                    type="date"
-                    required
-                    value={requestDate}
-                    onChange={(e) => setRequestDate(e.target.value)}
+                    placeholder="Hotel Name or Address"
+                    value={pickupLocation}
+                    onChange={(e) => setPickupLocation(e.target.value)}
                     className="rounded-2xl border-neutral-200 focus:border-[#fbbf24] h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Special Requirements</label>
-                  <textarea 
-                    className="w-full rounded-2xl border border-neutral-200 p-4 text-sm outline-none focus:border-[#fbbf24] transition-all"
-                    rows={4}
-                    placeholder="Tell us about special requests, dietary needs, or group size..."
-                    value={requestDetails}
-                    onChange={(e) => setRequestDetails(e.target.value)}
-                  />
-                </div>
+
                 <Button 
                   className="w-full h-14 bg-[#0f172a] text-white hover:bg-neutral-800 rounded-2xl font-bold text-lg group"
                   type="submit"
-                  disabled={isSubmitting}
                 >
-                  {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : (
-                    <div className="flex items-center justify-center gap-2">
-                      <Send className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                      <span>Request Booking</span>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-center gap-2">
+                    <Send className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                    <span>Request to Book</span>
+                  </div>
                 </Button>
                 <p className="text-[10px] text-center text-neutral-400 font-medium px-4">
-                  Requesting doesn't charge your card yet. The provider will confirm availability and details with you.
+                  Requesting doesn't charge your card. No payment required now.
                 </p>
               </form>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Mobile Fixed Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-100 bg-white p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Total Price</p>
+            <p className="text-xl font-extrabold text-neutral-900">{formatPrice(service.price * numPeople)}</p>
+          </div>
+          <Button 
+            onClick={() => setShowRequestForm(true)}
+            className="h-12 flex-1 rounded-xl bg-[#0f172a] text-sm font-black uppercase tracking-widest text-white"
+          >
+            Request to Book
+          </Button>
+        </div>
+      </div>
+
+      {/* Booking Request Form Modal */}
+      <AnimatePresence>
+        {showRequestForm && (
+          <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#0f172a]/80 backdrop-blur-sm md:p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] md:rounded-[3rem] bg-white p-6 md:p-12 shadow-2xl overflow-y-auto scrollbar-hide"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl md:text-3xl font-black text-[#0f172a]">Complete Request</h2>
+                <button onClick={() => setShowRequestForm(false)} className="rounded-full bg-neutral-100 p-2 hover:bg-neutral-200 transition-colors">
+                  <X className="h-6 w-6 text-neutral-500" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 md:gap-12">
+                {/* Left: Form */}
+                <div className="lg:col-span-3 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Your Name</label>
+                      <Input 
+                        value={customerDetails.name} 
+                        onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})}
+                        placeholder="John Doe"
+                        className="h-14 border-neutral-200 rounded-2xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Phone Number</label>
+                      <Input 
+                        value={customerDetails.phone} 
+                        onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})}
+                        placeholder="+39 ..."
+                        className="h-14 border-neutral-200 rounded-2xl"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Email Address</label>
+                    <Input 
+                      type="email"
+                      value={customerDetails.email} 
+                      onChange={(e) => setCustomerDetails({...customerDetails, email: e.target.value})}
+                      placeholder="email@example.com"
+                      className="h-14 border-neutral-200 rounded-2xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Additional Notes</label>
+                    <textarea 
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Any specific requests or info?"
+                      className="w-full h-32 rounded-2xl border border-neutral-200 p-4 text-sm outline-none focus:border-[#fbbf24] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Right: Summary */}
+                <div className="lg:col-span-2 space-y-8">
+                  <div className="rounded-[2rem] bg-neutral-50 p-8 space-y-6">
+                    <h3 className="text-xl font-black text-[#0f172a]">Summary</h3>
+                    <div className="flex gap-4">
+                      <img src={service.imageUrl} className="h-20 w-20 rounded-2xl object-cover" />
+                      <div>
+                        <p className="font-bold text-[#0f172a]">{service.name}</p>
+                        <p className="text-xs text-neutral-500 uppercase font-bold tracking-widest">{service.serviceType}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 pt-4 border-t border-neutral-200">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-neutral-500">Date & Time</span>
+                        <span className="text-sm font-black text-[#0f172a]">{requestDate} @ {requestTime}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-bold text-neutral-500">People</span>
+                        <span className="text-sm font-black text-[#0f172a]">{numPeople} People</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-4 border-t border-neutral-200">
+                        <span className="font-black text-[#0f172a] uppercase tracking-widest text-xs">Total Estimated</span>
+                        <span className="font-black text-2xl text-[#fbbf24]">
+                          {formatPrice(service.price * numPeople)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleSendRequest}
+                    disabled={isSubmitting}
+                    className="w-full h-16 bg-[#fbbf24] text-[#0f172a] font-black uppercase tracking-widest rounded-[1.5rem] hover:bg-[#0f172a] hover:text-white transition-all shadow-xl"
+                  >
+                    {isSubmitting ? 'Sending...' : 'Send Request Now'}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {bookingStatus === 'success' && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#0f172a]/90 backdrop-blur-md p-4">
+            <motion.div 
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white w-full h-full md:h-auto md:max-w-sm md:rounded-[3rem] p-8 md:p-12 text-center flex flex-col items-center justify-center"
+            >
+              <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <CheckCircle2 className="h-12 w-12 text-green-500" />
+              </div>
+              <h2 className="text-3xl font-black text-[#0f172a] mb-4">Request Sent!</h2>
+              <p className="text-neutral-500 text-sm font-medium mb-8">
+                Your request has been received. The provider will respond within 24 hours.
+              </p>
+              <Button 
+                onClick={() => navigate('/dashboard')}
+                className="w-full h-14 bg-[#0f172a] text-white font-black uppercase tracking-widest rounded-2xl"
+              >
+                Go to Dashboard
+              </Button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

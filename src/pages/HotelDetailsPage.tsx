@@ -9,7 +9,7 @@ import {
   ArrowUpCircle, Waves, ChevronRight, ChevronLeft,
   Info, ShieldCheck, Map as MapIcon, ChevronDown, ChevronUp, X,
   Share, Heart, Phone, Clock,
-  Car, Bike, Ship, Palmtree, UserCheck, Utensils, ChefHat, Sparkles
+  Car, Bike, Ship, Palmtree, UserCheck, Utensils, ChefHat, Sparkles, ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format, addDays, isWithinInterval, parseISO, isSameDay } from 'date-fns';
@@ -68,6 +68,7 @@ export const HotelDetailsPage: React.FC = () => {
   const [selectedExtraServices, setSelectedExtraServices] = useState<string[]>([]);
   const [guestCount, setGuestCount] = useState(1);
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showFullScreenMap, setShowFullScreenMap] = useState(false);
   const [requestDetails, setRequestDetails] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -237,9 +238,10 @@ export const HotelDetailsPage: React.FC = () => {
     const newBooking = {
       id: `book-${Date.now()}`,
       reference,
-      propertyId: hotel.id,
-      propertyName: hotel.name,
-      propertyImage: galleryImages[0],
+      bookingType: 'PROPERTY' as const,
+      itemId: hotel.id,
+      itemName: hotel.name,
+      itemImage: galleryImages[0],
       customerId: user?.id || 'anon',
       customerName: requestDetails.name,
       customerEmail: requestDetails.email,
@@ -539,7 +541,7 @@ export const HotelDetailsPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className="mx-auto max-w-7xl px-6 py-8 md:py-12">
+      <div className="mx-auto max-w-7xl px-6 py-8 md:py-12 pb-32 md:pb-12">
         <div className="flex flex-col gap-8 md:gap-12 lg:flex-row">
           {/* Left Content (70%) */}
           <div className="flex-1">
@@ -747,8 +749,19 @@ export const HotelDetailsPage: React.FC = () => {
 
             {/* Map Section */}
             <div className="mb-8 md:mb-12">
-              <h2 className="mb-6 md:mb-8 font-display text-xl md:text-2xl font-bold text-[#1e293b]">Where you'll be</h2>
-              <div className="h-64 md:h-96 w-full overflow-hidden rounded-2xl md:rounded-3xl border border-neutral-100 shadow-sm">
+              <div className="flex items-center justify-between mb-6 md:mb-8">
+                <h2 className="font-display text-xl md:text-2xl font-bold text-[#1e293b]">Where you'll be</h2>
+                <button 
+                  onClick={() => setShowFullScreenMap(true)}
+                  className="lg:hidden text-[10px] font-black uppercase tracking-widest text-[#fbbf24] bg-[#fbbf24]/10 px-3 py-1.5 rounded-lg"
+                >
+                  Full Screen
+                </button>
+              </div>
+              <div 
+                onClick={() => { if(window.innerWidth < 1024) setShowFullScreenMap(true); }}
+                className="h-64 md:h-96 w-full overflow-hidden rounded-2xl md:rounded-3xl border border-neutral-100 shadow-sm relative group cursor-pointer lg:cursor-default"
+              >
                 <MapContainer 
                   key={`${hotel.lat}-${hotel.lng}`}
                   center={[hotel.lat || 40.8518, hotel.lng || 14.2681]} 
@@ -761,6 +774,7 @@ export const HotelDetailsPage: React.FC = () => {
                     <Popup>{hotel.name}</Popup>
                   </Marker>
                 </MapContainer>
+                <div className="lg:hidden absolute inset-0 bg-transparent z-10" /> {/* Click overlay for mobile */}
               </div>
               <div className="mt-4 md:mt-6 flex items-center gap-4 rounded-xl md:rounded-2xl bg-neutral-50 p-4 md:p-6">
                 <MapIcon className="h-5 w-5 md:h-6 md:w-6 text-[#fbbf24]" />
@@ -769,6 +783,52 @@ export const HotelDetailsPage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Full Screen Map Modal */}
+            <AnimatePresence>
+              {showFullScreenMap && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="fixed inset-0 z-[300] bg-white flex flex-col"
+                >
+                  <div className="p-4 flex items-center gap-4 border-b border-neutral-100 bg-white shadow-sm z-10">
+                    <button 
+                      onClick={() => setShowFullScreenMap(false)}
+                      className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
+                    >
+                      <ArrowLeft className="h-6 w-6 text-neutral-900" />
+                    </button>
+                    <div>
+                      <h3 className="font-bold text-neutral-900">{hotel.name}</h3>
+                      <p className="text-xs text-neutral-500">{hotel.city}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 relative">
+                    <MapContainer 
+                      center={[hotel.lat || 40.8518, hotel.lng || 14.2681]} 
+                      zoom={16} 
+                      className="h-full w-full"
+                    >
+                      <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={[hotel.lat || 40.8518, hotel.lng || 14.2681]}>
+                        <Popup>{hotel.name}</Popup>
+                      </Marker>
+                    </MapContainer>
+                  </div>
+                  <div className="p-6 bg-white border-t border-neutral-100">
+                     <p className="text-sm text-neutral-600 mb-4">{hotel.area || 'Naples centro'}</p>
+                     <Button 
+                       onClick={() => setShowFullScreenMap(false)}
+                       className="w-full h-14 bg-[#0f172a] text-white font-black uppercase tracking-widest rounded-2xl"
+                     >
+                       Back to Details
+                     </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Host Info */}
             <div id="host-section" className="mb-8 md:mb-12 border-t border-neutral-100 pt-8 md:pt-12">
@@ -948,7 +1008,7 @@ export const HotelDetailsPage: React.FC = () => {
       </div>
 
       {/* Mobile Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-[60] border-t border-neutral-100 bg-white p-4 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-[60] border-t border-neutral-100 bg-white p-4 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <div>
             <p className="text-lg font-bold text-[#1e293b]">
@@ -1009,12 +1069,12 @@ export const HotelDetailsPage: React.FC = () => {
       {/* Booking Request Form Modal */}
       <AnimatePresence>
         {showRequestForm && (
-          <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#1e293b]/80 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#1e293b]/80 backdrop-blur-sm md:p-4">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem] bg-white p-8 md:p-12 shadow-2xl scrollbar-hide"
+              className="w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] md:rounded-[3rem] bg-white p-6 md:p-12 shadow-2xl overflow-y-auto scrollbar-hide"
             >
               <div className="flex items-center justify-between mb-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-[#1e293b]">Booking Request</h2>
@@ -1023,7 +1083,7 @@ export const HotelDetailsPage: React.FC = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
                 {/* Left: Form */}
                 <div className="space-y-6">
                   <div className="space-y-2">
