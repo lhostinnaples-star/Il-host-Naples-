@@ -68,21 +68,27 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.title = settings.seo.title || settings.siteName;
   }, [settings]);
 
-  const updateSettings = (newSettings: Partial<SiteSettings>) => {
+  const updateSettings = React.useCallback((newSettings: Partial<SiteSettings>) => {
     setSettings(prev => ({
       ...prev,
       ...newSettings,
       sections: newSettings.sections ? { ...prev.sections, ...newSettings.sections } : prev.sections,
       seo: newSettings.seo ? { ...prev.seo, ...newSettings.seo } : prev.seo
     }));
-  };
+  }, []);
 
-  const resetSettings = () => {
+  const resetSettings = React.useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
-  };
+  }, []);
+
+  const value = React.useMemo(() => ({ 
+    settings, 
+    updateSettings, 
+    resetSettings 
+  }), [settings, updateSettings, resetSettings]);
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings, resetSettings }}>
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   );

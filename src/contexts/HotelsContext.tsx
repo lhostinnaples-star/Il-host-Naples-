@@ -116,10 +116,26 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [globalCategory, setGlobalCategory] = useState<string | null>(null);
-  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
-  const [searchDates, setSearchDates] = useState<{ startDate: Date; endDate: Date } | null>(null);
+  const [globalCategory, setGlobalCategoryState] = useState<string | null>(null);
+  const [selectedAreas, setSelectedAreasState] = useState<string[]>([]);
+  const [priceRange, setPriceRangeState] = useState<{ min: number; max: number } | null>(null);
+  const [searchDates, setSearchDatesState] = useState<{ startDate: Date; endDate: Date } | null>(null);
+
+  const setGlobalCategory = useCallback((category: string | null) => {
+    setGlobalCategoryState(category);
+  }, []);
+
+  const setSelectedAreas = useCallback((areas: string[]) => {
+    setSelectedAreasState(areas);
+  }, []);
+
+  const setPriceRange = useCallback((range: { min: number; max: number } | null) => {
+    setPriceRangeState(range);
+  }, []);
+
+  const setSearchDates = useCallback((dates: { startDate: Date; endDate: Date } | null) => {
+    setSearchDatesState(dates);
+  }, []);
 
   const refreshData = useCallback(async () => {
     setIsLoading(true);
@@ -240,7 +256,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         if (!h.unavailableDates || h.unavailableDates.length === 0) return true;
         
         // Check if any date in the range intersects with unavailableDates
-        const start = new Date(searchDates.startDate);
+    const start = new Date(searchDates.startDate);
         const end = new Date(searchDates.endDate);
         
         // Normalize search dates to start of day for comparison
@@ -264,10 +280,15 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return filtered;
   }, [allHotels, globalCategory, selectedAreas, priceRange, searchDates]);
 
+  const approvedServices = useMemo(() => 
+    allServices.filter(s => s.status === 'approved'),
+    [allServices]
+  );
+
   const contextValue = useMemo(() => ({ 
     hotels, 
     allHotels,
-    services: allServices.filter(s => s.status === 'approved'),
+    services: approvedServices,
     allServices,
     bookings,
     isLoading, 
@@ -289,6 +310,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }), [
     hotels, 
     allHotels,
+    approvedServices,
     allServices, 
     bookings,
     isLoading, 

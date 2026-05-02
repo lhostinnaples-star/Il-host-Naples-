@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 
 export type Currency = {
   code: string;
@@ -24,23 +24,29 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(currencies[1]); // EUR is at index 1
 
-  const setCurrency = (code: string) => {
+  const setCurrency = useCallback((code: string) => {
     const currency = currencies.find(c => c.code === code);
     if (currency) {
       setCurrentCurrency(currency);
     }
-  };
+  }, []);
 
-  const formatPrice = (priceInUsd: number) => {
+  const formatPrice = useCallback((priceInUsd: number) => {
     const convertedPrice = priceInUsd * currentCurrency.rate;
     return `${currentCurrency.symbol}${convertedPrice.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })}`;
-  };
+  }, [currentCurrency]);
+
+  const value = React.useMemo(() => ({ 
+    currentCurrency, 
+    setCurrency, 
+    formatPrice 
+  }), [currentCurrency, setCurrency, formatPrice]);
 
   return (
-    <CurrencyContext.Provider value={{ currentCurrency, setCurrency, formatPrice }}>
+    <CurrencyContext.Provider value={value}>
       {children}
     </CurrencyContext.Provider>
   );

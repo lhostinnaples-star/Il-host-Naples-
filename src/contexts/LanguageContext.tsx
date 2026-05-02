@@ -37,15 +37,20 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState<Language>(languages[0]);
 
-  const setLanguage = (code: string) => {
+  const setLanguage = React.useCallback((code: string) => {
     const lang = languages.find(l => l.code === code);
     if (lang) {
       setCurrentLanguage(lang);
     }
-  };
+  }, []);
+
+  const value = React.useMemo(() => ({ 
+    currentLanguage, 
+    setLanguage 
+  }), [currentLanguage, setLanguage]);
 
   return (
-    <LanguageContext.Provider value={{ currentLanguage, setLanguage }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

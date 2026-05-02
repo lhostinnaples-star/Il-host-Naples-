@@ -129,16 +129,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchUser();
   }, [token, isDemoMode]);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = React.useCallback((newToken: string, newUser: User) => {
     localStorage.removeItem('isDemoMode');
     localStorage.removeItem('demoRole');
     setIsDemoMode(false);
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(newUser);
-  };
+  }, []);
 
-  const loginAsDemo = (role: UserRole) => {
+  const loginAsDemo = React.useCallback((role: UserRole) => {
     localStorage.setItem('isDemoMode', 'true');
     localStorage.setItem('demoRole', role);
     setIsDemoMode(true);
@@ -149,19 +149,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(MOCK_USERS[userKey]);
     setToken('demo-token');
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = React.useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('isDemoMode');
     localStorage.removeItem('demoRole');
     setToken(null);
     setUser(null);
     setIsDemoMode(false);
-  };
+  }, []);
+
+  const value = React.useMemo(() => ({ 
+    user, 
+    token, 
+    login, 
+    loginAsDemo, 
+    logout, 
+    isLoading, 
+    isDemoMode 
+  }), [user, token, login, loginAsDemo, logout, isLoading, isDemoMode]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, loginAsDemo, logout, isLoading, isDemoMode }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

@@ -28,26 +28,35 @@ export const SearchResultsPage: React.FC = () => {
   // Use useMemo for default dates to avoid new object references on every render
   const dates = React.useMemo(() => {
     if (state.dates && state.dates[0]) return state.dates;
+    
+    // If context has dates, use them
+    if (contextSearchDates?.startDate && contextSearchDates?.endDate) {
+      return [{ 
+        startDate: contextSearchDates.startDate, 
+        endDate: contextSearchDates.endDate,
+        key: 'selection'
+      }];
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return [{ startDate: today, endDate: tomorrow }];
-  }, [state.dates]);
+    return [{ startDate: today, endDate: tomorrow, key: 'selection' }];
+  }, [state.dates, contextSearchDates]);
   
   // Sync context dates with state dates
   useEffect(() => {
-    if (dates && dates[0]) {
-      const newStart = dates[0].startDate?.getTime();
-      const newEnd = dates[0].endDate?.getTime();
+    if (dates && dates[0] && dates[0].startDate && dates[0].endDate) {
+      const newStart = dates[0].startDate.getTime();
+      const newEnd = dates[0].endDate.getTime();
       const currentStart = contextSearchDates?.startDate?.getTime();
       const currentEnd = contextSearchDates?.endDate?.getTime();
 
       // Only update if dates are valid and actually different to prevent infinite loops
-      const isValidNew = newStart !== undefined && !isNaN(newStart as number) && newEnd !== undefined && !isNaN(newEnd as number);
       const isDifferent = newStart !== currentStart || newEnd !== currentEnd;
 
-      if (isValidNew && isDifferent) {
+      if (isDifferent) {
         setSearchDates({
           startDate: dates[0].startDate,
           endDate: dates[0].endDate
