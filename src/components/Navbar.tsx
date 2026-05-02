@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, UserRole } from '../contexts/AuthContext';
 import { useHotels } from '../contexts/HotelsContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { Button } from './UI';
 import { 
   Bed, User, LogOut, LayoutDashboard, Home, Coffee, 
@@ -12,6 +13,7 @@ import { motion, AnimatePresence } from 'motion/react';
 export const Navbar: React.FC = () => {
   const { user, logout, isDemoMode } = useAuth();
   const { globalCategory, setGlobalCategory } = useHotels();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,11 +40,17 @@ export const Navbar: React.FC = () => {
       {/* Top Header */}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <Link to="/" className="flex items-center gap-1.5 md:gap-2 text-xl md:text-2xl font-serif font-bold tracking-tight shrink-0">
-          <span className="text-[#fbbf24]">Lhost</span>
-          <div className="flex flex-col -gap-1 leading-none">
-            <span className="text-[10px] md:text-sm font-sans font-medium opacity-80 decoration-[#fbbf24] underline underline-offset-2">in</span>
-            <span>Naples</span>
-          </div>
+          {settings.logo ? (
+            <img src={settings.logo} alt={settings.siteName} className="h-8 md:h-10 object-contain" />
+          ) : (
+            <>
+              <span className="text-[#fbbf24]">{settings.siteName.split(' ')[0]}</span>
+              <div className="flex flex-col -gap-1 leading-none">
+                <span className="text-[10px] md:text-sm font-sans font-medium opacity-80 decoration-[#fbbf24] underline underline-offset-2">in</span>
+                <span>{settings.siteName.split(' ').slice(1).join(' ') || 'Naples'}</span>
+              </div>
+            </>
+          )}
         </Link>
 
         <div className="flex items-center gap-2 md:gap-6">

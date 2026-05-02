@@ -37,9 +37,11 @@ interface Hotel {
   accessDescription?: string;
   localTipsDescription?: string;
   unavailableDates?: string[]; // ISO date strings
+  status?: 'pending' | 'approved' | 'rejected';
+  isFeatured?: boolean;
 }
 
-interface Service {
+export interface Service {
   id: string;
   name: string;
   category: string;
@@ -47,19 +49,56 @@ interface Service {
   description: string;
   price: number;
   priceUnit: string;
-  location: string;
+  location?: string;
   imageUrl?: string;
-  ownerId?: string;
+  ownerId?: string; // Legacy
+  providerId?: string;
   rating?: number;
+  status?: 'pending' | 'approved' | 'rejected';
+  isFeatured?: boolean;
 }
 
-interface HotelsContextType {
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SHARED' | 'ACCEPTED' | 'CLOSED' | 'EXPIRED';
+
+export interface Booking {
+  id: string;
+  reference: string;
+  propertyId: string;
+  propertyName: string;
+  propertyImage?: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  ownerId: string;
+  startDate: string; // ISO
+  endDate: string; // ISO
+  nights: number;
+  guests: number;
+  totalPrice: number;
+  status: BookingStatus;
+  createdAt: string;
+  notes?: string;
+  rejectionReason?: string;
+  sharedAt?: string;
+  sharedBy?: string;
+  originalListerId?: string;
+}
+
+export interface HotelsContextType {
   hotels: Hotel[];
+  allHotels: Hotel[];
   services: Service[];
+  allServices: Service[];
+  bookings: Booking[];
   isLoading: boolean;
   refreshHotels: () => Promise<void>;
   addHotel: (hotel: Hotel) => void;
+  updateHotel: (id: string, updates: Partial<Hotel>) => void;
   addService: (service: Service) => void;
+  updateService: (id: string, updates: Partial<Service>) => void;
+  addBooking: (booking: Booking) => void;
+  updateBooking: (id: string, updates: Partial<Booking>) => void;
   globalCategory: string | null;
   setGlobalCategory: (category: string | null) => void;
   selectedAreas: string[];
@@ -75,42 +114,46 @@ const HotelsContext = createContext<HotelsContextType | undefined>(undefined);
 export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [allHotels, setAllHotels] = useState<Hotel[]>([]);
   const [allServices, setAllServices] = useState<Service[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [globalCategory, setGlobalCategory] = useState<string | null>(null);
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
   const [searchDates, setSearchDates] = useState<{ startDate: Date; endDate: Date } | null>(null);
 
-  const refreshHotels = useCallback(async () => {
+  const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [hotelsRes, servicesRes] = await Promise.all([
-        fetch('/api/hotels'),
-        fetch('/api/services')
-      ]);
-      
-      if (hotelsRes.ok) {
-        const text = await hotelsRes.text();
-        if (text) {
-          try {
-            const data = JSON.parse(text);
-            setAllHotels(data);
-          } catch (e) {
-            console.error('Failed to parse hotels JSON:', e);
-          }
+      // Try local storage first
+      const savedHotels = localStorage.getItem('stay_ease_hotels');
+      const savedServices = localStorage.getItem('stay_ease_services');
+      const savedBookings = localStorage.getItem('stay_ease_bookings');
+
+      if (savedHotels) {
+        setAllHotels(JSON.parse(savedHotels));
+      } else {
+        // Fallback to fetch or mock
+        const hotelsRes = await fetch('/api/hotels');
+        if (hotelsRes.ok) {
+          const data = await hotelsRes.json();
+          setAllHotels(data);
+          localStorage.setItem('stay_ease_hotels', JSON.stringify(data));
         }
       }
-      
-      if (servicesRes.ok) {
-        const text = await servicesRes.text();
-        if (text) {
-          try {
-            const data = JSON.parse(text);
-            setAllServices(data);
-          } catch (e) {
-            console.error('Failed to parse services JSON:', e);
-          }
+
+      if (savedServices) {
+        setAllServices(JSON.parse(savedServices));
+      } else {
+        const servicesRes = await fetch('/api/services');
+        if (servicesRes.ok) {
+          const data = await servicesRes.json();
+          setAllServices(data);
+          localStorage.setItem('stay_ease_services', JSON.stringify(data));
         }
+      }
+
+      if (savedBookings) {
+        setBookings(JSON.parse(savedBookings));
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -120,19 +163,65 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   const addHotel = useCallback((hotel: Hotel) => {
-    setAllHotels(prev => [...prev, hotel]);
+    setAllHotels(prev => {
+      const updated = [...prev, hotel];
+      localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const updateHotel = useCallback((id: string, updates: Partial<Hotel>) => {
+    setAllHotels(prev => {
+      const updated = prev.map(h => h.id === id ? { ...h, ...updates } : h);
+      localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
   const addService = useCallback((service: Service) => {
-    setAllServices(prev => [...prev, service]);
+    setAllServices(prev => {
+      const updated = [...prev, service];
+      localStorage.setItem('stay_ease_services', JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
+  const updateService = useCallback((id: string, updates: Partial<Service>) => {
+    setAllServices(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s);
+      localStorage.setItem('stay_ease_services', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const addBooking = useCallback((booking: Booking) => {
+    setBookings(prev => {
+      const updated = [booking, ...prev];
+      localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const updateBooking = useCallback((id: string, updates: Partial<Booking>) => {
+    setBookings(prev => {
+      const updated = prev.map(b => b.id === id ? { ...b, ...updates } : b);
+      localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const refreshHotels = refreshData;
+
   useEffect(() => {
-    refreshHotels();
-  }, [refreshHotels]);
+    refreshData();
+  }, [refreshData]);
 
   const hotels = useMemo(() => {
     let filtered = allHotels;
+    
+    // Default filter for public view: only approved properties
+    // In a real app, this would be more complex (e.g. admin sees all)
+    // For now, let's keep allHotels available in context for Dashboards
     
     if (globalCategory) {
       filtered = filtered.filter(h => h.category === globalCategory);
@@ -177,11 +266,18 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const contextValue = useMemo(() => ({ 
     hotels, 
-    services: allServices,
+    allHotels,
+    services: allServices.filter(s => s.status === 'approved'),
+    allServices,
+    bookings,
     isLoading, 
     refreshHotels, 
     addHotel, 
+    updateHotel,
     addService,
+    updateService,
+    addBooking,
+    updateBooking,
     globalCategory, 
     setGlobalCategory,
     selectedAreas,
@@ -192,11 +288,17 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSearchDates
   }), [
     hotels, 
+    allHotels,
     allServices, 
+    bookings,
     isLoading, 
     refreshHotels, 
     addHotel, 
+    updateHotel,
     addService, 
+    updateService,
+    addBooking,
+    updateBooking,
     globalCategory, 
     selectedAreas, 
     priceRange, 

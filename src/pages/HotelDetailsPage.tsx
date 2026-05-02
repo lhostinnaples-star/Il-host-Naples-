@@ -20,12 +20,13 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
-import { useHotels } from '../contexts/HotelsContext';
+import { useHotels, Booking } from '../contexts/HotelsContext';
 import { WishlistButton } from '../components/WishlistButton';
 import { ReviewCard } from '../components/ReviewCard';
 import { BookingWidget } from '../components/BookingWidget';
 import { SEOHead } from '../components/SEOHead';
 import { generatePropertySchema, generateSlug, generateBreadcrumbSchema } from '../utils/seo';
+import { Input } from '../components/UI';
 
 const AmenityIcon: React.FC<{ name: string }> = ({ name }) => {
   const lower = name.toLowerCase();
@@ -66,6 +67,14 @@ export const HotelDetailsPage: React.FC = () => {
   const [mobileSliderIndex, setMobileSliderIndex] = useState(0);
   const [selectedExtraServices, setSelectedExtraServices] = useState<string[]>([]);
   const [guestCount, setGuestCount] = useState(1);
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [requestDetails, setRequestDetails] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+    notes: ''
+  });
+  const { addBooking } = useHotels();
 
   const guestServiceCategories = [
     {
@@ -207,36 +216,58 @@ export const HotelDetailsPage: React.FC = () => {
       return;
     }
 
+    setShowRequestForm(true);
+  };
+
+  const handleSendRequest = async () => {
+    if (!requestDetails.name || !requestDetails.email || !requestDetails.phone) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     setBookingStatus('loading');
 
-    try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          hotelId: hotel.id,
-          roomId: hotel.rooms?.[selectedRoomIdx]?.id,
-          checkIn: startDate.toISOString(),
-          checkOut: endDate.toISOString(),
-          totalPrice: (hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount,
-          extraServices: selectedExtraServices,
-          guests: guestCount,
-          status: 'pending'
-        })
-      });
+    const { startDate, endDate } = dateRange[0];
+    const nights = nightsCount;
+    const pricePerNight = hotel.rooms?.[selectedRoomIdx]?.price || hotel.price;
+    const extraTotal = selectedExtraServices.length * 50; // Simple calc for now
+    const totalPrice = (pricePerNight * nights) + extraTotal;
+    const reference = 'BE-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-      if (res.ok) {
-        setBookingStatus('success');
-        toast.success('Booking successful!');
-        setTimeout(() => navigate('/dashboard'), 2000);
-      } else {
-        const data = await res.json();
-        toast.error(data.error || 'Booking failed');
-        setBookingStatus('idle');
-      }
+    const newBooking = {
+      id: `book-${Date.now()}`,
+      reference,
+      propertyId: hotel.id,
+      propertyName: hotel.name,
+      propertyImage: galleryImages[0],
+      customerId: user?.id || 'anon',
+      customerName: requestDetails.name,
+      customerEmail: requestDetails.email,
+      customerPhone: requestDetails.phone,
+      ownerId: hotel.ownerId || 'admin',
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      nights,
+      guests: guestCount,
+      totalPrice,
+      status: 'PENDING' as any,
+      createdAt: new Date().toISOString(),
+      notes: requestDetails.notes
+    };
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      addBooking(newBooking as any);
+      
+      console.log('EMAIL TO CUSTOMER:', `Your request ${reference} has been sent!`);
+      console.log('EMAIL TO LISTER:', `New booking request for ${hotel.name} from ${requestDetails.name}`);
+
+      setBookingStatus('success');
+      setShowRequestForm(false);
+      toast.success('Request sent successfully!');
+      setTimeout(() => navigate('/dashboard'), 3000);
     } catch (err) {
       console.error(err);
       toast.error('An error occurred');
@@ -970,6 +1001,114 @@ export const HotelDetailsPage: React.FC = () => {
               <Button className="mt-8 w-full h-14 bg-[#1e293b] text-white font-bold rounded-2xl" onClick={() => setShowDatePicker(false)}>
                 Confirm Dates
               </Button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Booking Request Form Modal */}
+      <AnimatePresence>
+        {showRequestForm && (
+          <div className="fixed inset-0 z-[160] flex items-center justify-center bg-[#1e293b]/80 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[2rem] bg-white p-8 md:p-12 shadow-2xl scrollbar-hide"
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1e293b]">Booking Request</h2>
+                <button onClick={() => setShowRequestForm(false)} className="rounded-full bg-neutral-100 p-2 hover:bg-neutral-200 transition-colors">
+                  <X className="h-6 w-6 text-neutral-500" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                {/* Left: Form */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Full Name</label>
+                    <Input 
+                      value={requestDetails.name} 
+                      onChange={(e) => setRequestDetails({...requestDetails, name: e.target.value})}
+                      placeholder="Your Name"
+                      className="h-12 border-neutral-200 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Email Address</label>
+                    <Input 
+                      type="email"
+                      value={requestDetails.email} 
+                      onChange={(e) => setRequestDetails({...requestDetails, email: e.target.value})}
+                      placeholder="email@example.com"
+                      className="h-12 border-neutral-200 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Phone Number</label>
+                    <Input 
+                      value={requestDetails.phone} 
+                      onChange={(e) => setRequestDetails({...requestDetails, phone: e.target.value})}
+                      placeholder="+39 ..."
+                      className="h-12 border-neutral-200 rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Special Requests</label>
+                    <textarea 
+                      value={requestDetails.notes}
+                      onChange={(e) => setRequestDetails({...requestDetails, notes: e.target.value})}
+                      placeholder="Any notes for the host?"
+                      className="w-full h-32 rounded-xl border border-neutral-200 p-4 text-sm outline-none focus:border-[#fbbf24] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Right: Summary */}
+                <div className="space-y-8">
+                  <div className="rounded-2xl bg-neutral-50 p-6 space-y-4">
+                    <h3 className="text-lg font-bold text-[#1e293b]">Booking Summary</h3>
+                    <div className="flex gap-4">
+                      <img src={galleryImages[0]} className="h-16 w-16 rounded-lg object-cover" />
+                      <div>
+                        <p className="font-bold text-sm text-[#1e293b]">{hotel.name}</p>
+                        <p className="text-xs text-neutral-500">{hotel.city}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3 pt-4 border-t border-neutral-200">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-neutral-500">Dates</span>
+                        <span className="font-bold text-[#1e293b]">{format(dateRange[0].startDate, 'MMM dd')} - {format(dateRange[0].endDate, 'MMM dd')}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-neutral-500">Duration</span>
+                        <span className="font-bold text-[#1e293b]">{nightsCount} Nights</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-neutral-500">Guests</span>
+                        <span className="font-bold text-[#1e293b]">{guestCount} Guests</span>
+                      </div>
+                      <div className="flex justify-between pt-3 border-t border-neutral-200">
+                        <span className="font-bold text-[#1e293b]">Total Estimated</span>
+                        <span className="font-bold text-xl text-[#fbbf24]">
+                          {formatPrice((hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount + (selectedExtraServices.length * 50))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleSendRequest}
+                    disabled={bookingStatus === 'loading'}
+                    className="w-full h-16 bg-[#fbbf24] text-[#1e293b] font-black uppercase tracking-widest rounded-2xl hover:bg-[#1e293b] hover:text-white transition-all shadow-xl"
+                  >
+                    {bookingStatus === 'loading' ? 'Sending Request...' : 'Confirm & Send Request'}
+                  </Button>
+                  <p className="text-[10px] text-center text-neutral-400 uppercase font-bold tracking-widest">No payment required now</p>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

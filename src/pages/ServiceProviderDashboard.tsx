@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useHotels } from '../contexts/HotelsContext';
 import { Card, Button, Input } from '../components/UI';
 import { 
   Plus, Edit2, Trash2, Map, Calendar,
@@ -13,29 +14,44 @@ import { DashboardLayout } from '../components/DashboardLayout';
 export const ServiceProviderDashboard: React.FC = () => {
   const { user, token, isDemoMode } = useAuth();
   const { formatPrice } = useCurrency();
+  const { allServices, addService } = useHotels();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
   
-  const [services, setServices] = useState<any[]>([]);
+  const myServices = allServices.filter(s => s.providerId === user?.id || (isDemoMode && !s.providerId));
   const [requests, setRequests] = useState<any[]>([]);
 
   useEffect(() => {
     if (isDemoMode) {
-      import('../utils/mockData').then(({ MOCK_SERVICES }) => {
-        setServices(MOCK_SERVICES);
-        setRequests([
-          {
-            id: 'req-1',
-            status: 'pending',
-            date: new Date().toISOString(),
-            Service: MOCK_SERVICES[0],
-            Customer: { name: 'Giuseppe Verdi' }
-          }
-        ]);
-      });
-      return;
+      setRequests([
+        {
+          id: 'req-1',
+          status: 'pending',
+          date: new Date().toISOString(),
+          Service: myServices[0] || { name: 'Sample Experience' },
+          Customer: { name: 'Giuseppe Verdi' }
+        }
+      ]);
     }
-  }, [isDemoMode]);
+  }, [isDemoMode, myServices]);
+
+  const handleAddService = () => {
+    const newService = {
+      id: `service-${Date.now()}`,
+      name: "Private Boat Tour " + (myServices.length + 1),
+      description: "Explore Naples from the sea.",
+      price: 120,
+      priceUnit: 'group',
+      category: 'Tours',
+      subCategory: 'boat-tours',
+      imageUrl: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0",
+      providerId: user?.id,
+      rating: 5,
+      isFeatured: false,
+      status: 'approved' as const
+    };
+    addService(newService);
+  };
 
   const renderOverview = () => (
     <div className="space-y-8">
@@ -43,7 +59,7 @@ export const ServiceProviderDashboard: React.FC = () => {
         <Card className="p-6 border-white/5 bg-white/5 flex items-center justify-between cursor-pointer hover:border-[#fbbf24]/30 transition-all">
            <div className="space-y-1">
              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">My Experiences</p>
-             <h3 className="text-3xl font-bold text-white">{services.length}</h3>
+             <h3 className="text-3xl font-bold text-white">{myServices.length}</h3>
            </div>
            <div className="p-4 rounded-2xl bg-green-500/10"><Map className="h-6 w-6 text-green-500" /></div>
         </Card>
@@ -67,12 +83,12 @@ export const ServiceProviderDashboard: React.FC = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Active Services</h2>
-            <Button size="sm" className="h-9 bg-[#fbbf24] text-black font-black uppercase tracking-widest gap-2">
+            <Button size="sm" onClick={handleAddService} className="h-9 bg-[#fbbf24] text-black font-black uppercase tracking-widest gap-2">
               <Plus className="h-4 w-4" /> New Service
             </Button>
           </div>
           <div className="space-y-4">
-            {services.map(service => (
+            {myServices.map(service => (
               <Card key={service.id} className="p-4 border-white/5 bg-white/5 hover:border-[#fbbf24]/30 transition-all group">
                 <div className="flex gap-4">
                    <div className="h-20 w-24 rounded-lg overflow-hidden shrink-0">
@@ -83,7 +99,7 @@ export const ServiceProviderDashboard: React.FC = () => {
                         <h3 className="font-bold text-white group-hover:text-[#fbbf24] transition-colors">{service.name}</h3>
                         <p className="text-[#fbbf24] font-black">{formatPrice(service.price)}</p>
                       </div>
-                      <p className="text-xs text-neutral-500 mt-1 uppercase tracking-widest">{service.serviceType}</p>
+                      <p className="text-xs text-neutral-500 mt-1 uppercase tracking-widest">{service.category} - {service.subCategory}</p>
                    </div>
                 </div>
               </Card>

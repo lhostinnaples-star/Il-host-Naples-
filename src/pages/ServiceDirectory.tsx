@@ -221,7 +221,7 @@ export const ServiceDirectory: React.FC = () => {
                     <p className="text-2xl font-bold text-[#1e293b]">{formatPrice(service.price)} <span className="text-sm text-neutral-400 font-medium">/{service.priceUnit}</span></p>
                   </div>
                   <Button className="rounded-2xl bg-neutral-100 text-[#1e293b] hover:bg-[#fbbf24] font-bold px-6 border-none transition-all group-hover:shadow-lg group-hover:shadow-[#fbbf24]/20">
-                    Book Now
+                    Request to Book
                   </Button>
                 </div>
               </div>

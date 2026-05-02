@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { SERVICE_CATEGORIES } from '../constants';
 
 import { useHotels } from '../contexts/HotelsContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { AreaSelection } from '../components/AreaSelection';
 import { WishlistButton } from '../components/WishlistButton';
 import { SEOHead } from '../components/SEOHead';
@@ -203,6 +204,7 @@ const ChildAgeDropdown: React.FC<{
 export const LandingPage: React.FC = () => {
   const { 
     hotels, 
+    allHotels,
     selectedAreas, 
     setSelectedAreas, 
     globalCategory, 
@@ -211,6 +213,7 @@ export const LandingPage: React.FC = () => {
     setPriceRange,
     setSearchDates
   } = useHotels();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -408,10 +411,10 @@ export const LandingPage: React.FC = () => {
             className="mb-12"
           >
             <h1 className="mb-4 text-5xl font-extrabold tracking-tight md:text-7xl">
-              Find your next stay
+              {settings.heroTitle}
             </h1>
             <p className="text-xl font-light text-neutral-300">
-              Search deals on hotels, homes, and much more in Naples...
+              {settings.heroSubtitle}
             </p>
           </motion.div>
 
@@ -752,44 +755,46 @@ export const LandingPage: React.FC = () => {
       </section>
 
       <div id="area-selection-section" className="mt-24">
-        <AreaSelection />
+        {settings.sections.areas && <AreaSelection />}
       </div>
 
       {/* Featured Properties Section */}
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        className="py-24 px-6 bg-neutral-50"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">Featured Properties</h2>
-              <p className="text-neutral-500 max-w-2xl">Hand-picked stays in the most beautiful corners of Naples, from cozy B&Bs to luxury holiday houses.</p>
+      {settings.sections.featuredProperties && (
+        <motion.section 
+          initial={{ opacity: 0, y: 30 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }} 
+          className="py-24 px-6 bg-neutral-50"
+        >
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">Featured Properties</h2>
+                <p className="text-neutral-500 max-w-2xl">Hand-picked stays in the most beautiful corners of Naples, from cozy B&Bs to luxury holiday houses.</p>
+              </div>
+              <div className="flex bg-white p-1 rounded-xl shadow-sm border border-neutral-200 self-start">
+                {(['all', 'holiday_house', 'bnb'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setFeaturedFilter(tab)}
+                    className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+                      featuredFilter === tab 
+                        ? 'bg-[#1e293b] text-white shadow-md' 
+                        : 'text-neutral-500 hover:text-[#1e293b]'
+                    }`}
+                  >
+                    {tab === 'all' ? 'All' : tab === 'holiday_house' ? 'Holiday House' : 'B&B'}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-neutral-200 self-start">
-              {(['all', 'holiday_house', 'bnb'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setFeaturedFilter(tab)}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
-                    featuredFilter === tab 
-                      ? 'bg-[#1e293b] text-white shadow-md' 
-                      : 'text-neutral-500 hover:text-[#1e293b]'
-                  }`}
-                >
-                  {tab === 'all' ? 'All' : tab === 'holiday_house' ? 'Holiday House' : 'B&B'}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {hotels
-              .filter(h => featuredFilter === 'all' || h.category === featuredFilter)
-              .slice(0, 6)
-              .map((hotel, idx) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {allHotels
+                .filter(h => h.status === 'approved' && h.isFeatured)
+                .filter(h => featuredFilter === 'all' || h.category === featuredFilter)
+                .slice(0, 6)
+                .map((hotel, idx) => (
               <motion.div
                 key={hotel.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -856,11 +861,14 @@ export const LandingPage: React.FC = () => {
         </div>
       </motion.section>
 
+      )}
+
       {/* Recently Viewed Section */}
       <RecentlyViewedProperties />
 
       {/* Experiences & Services Section */}
-      <motion.section 
+      {settings.sections.featuredExperiences && (
+        <motion.section 
         initial={{ opacity: 0, y: 30 }} 
         whileInView={{ opacity: 1, y: 0 }} 
         viewport={{ once: true }} 
@@ -905,7 +913,7 @@ export const LandingPage: React.FC = () => {
                   <h3 className="font-bold text-[#1e293b] mb-1 line-clamp-1">{service.name}</h3>
                   <p className="text-xs text-neutral-400 mb-4 font-medium italic">From €{service.price}/{service.priceUnit}</p>
                   <button className="text-[10px] font-extrabold uppercase tracking-widest text-[#fbbf24] group-hover:text-[#1e293b] transition-colors flex items-center justify-center w-full">
-                    Book Now
+                    Request to Book
                   </button>
                 </motion.div>
               );
@@ -913,6 +921,7 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
+      )}
 
       {/* Booking Pool Teaser Section */}
       <motion.section 

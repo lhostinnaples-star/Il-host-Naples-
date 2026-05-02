@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth, UserRole } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useHotels } from '../contexts/HotelsContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { Button, Card, Input } from '../components/UI';
 import { 
   Users, Home, Calendar, BarChart3, Star, MessageSquare, 
@@ -20,32 +21,35 @@ import { MOCK_USERS } from '../contexts/AuthContext';
 export const AdminDashboard: React.FC = () => {
   const { token, isDemoMode } = useAuth();
   const { formatPrice } = useCurrency();
-  const { hotels } = useHotels();
+  const { allHotels, updateHotel } = useHotels();
+  const { settings, updateSettings } = useSettings();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
 
-  const [stats, setStats] = useState({ 
-    users: 124, 
-    hotels: 42, 
-    bookings: 156, 
-    revenue: 28500,
-    userGrowth: 12,
-    bookingGrowth: 8,
-    revenueGrowth: -3
-  });
-  
-  const [approvals, setApprovals] = useState<any[]>([]);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const pendingHotels = allHotels.filter(h => h.status === 'pending');
   const [searchQuery, setSearchQuery] = useState('');
+  const [allUsers, setAllUsers] = useState<any[]>([]);
 
   useEffect(() => {
     if (isDemoMode) {
-      import('../utils/mockData').then(({ MOCK_ADMIN_APPROVALS }) => {
-        setApprovals(MOCK_ADMIN_APPROVALS);
-        setAllUsers(Object.values(MOCK_USERS));
-      });
+      setAllUsers(Object.values(MOCK_USERS));
     }
   }, [isDemoMode]);
+
+  const handleApprove = (id: string) => {
+    updateHotel(id, { status: 'approved' });
+    toast.success('Property approved successfully');
+  };
+
+  const handleReject = (id: string) => {
+    updateHotel(id, { status: 'rejected' });
+    toast.error('Property rejected');
+  };
+
+  const handleToggleFeatured = (id: string, isFeatured: boolean) => {
+    updateHotel(id, { isFeatured });
+    toast.success(isFeatured ? 'Property featured' : 'Property unfeatured');
+  };
 
   const StatCard = ({ title, value, growth, icon: Icon, color }: any) => (
     <Card className="p-6 border-white/5 bg-white/5 flex items-center justify-between group hover:border-[#fbbf24]/30 transition-all">
@@ -69,10 +73,10 @@ export const AdminDashboard: React.FC = () => {
   const renderOverview = () => (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Users" value={stats.users} growth={stats.userGrowth} icon={Users} color="bg-blue-500" />
-        <StatCard title="Total Properties" value={hotels.length || stats.hotels} growth={stats.bookingGrowth} icon={Home} color="bg-purple-500" />
-        <StatCard title="Active Bookings" value={stats.bookings} growth={stats.bookingGrowth} icon={Calendar} color="bg-orange-500" />
-        <StatCard title="Total Revenue" value={formatPrice(stats.revenue)} growth={stats.revenueGrowth} icon={BarChart3} color="bg-green-500" />
+        <StatCard title="Total Users" value={allUsers.length} growth={12} icon={Users} color="bg-blue-500" />
+        <StatCard title="Total Properties" value={allHotels.length} growth={8} icon={Home} color="bg-purple-500" />
+        <StatCard title="Pending Approvals" value={pendingHotels.length} growth={5} icon={Clock} color="bg-orange-500" />
+        <StatCard title="Total Revenue" value={formatPrice(28500)} growth={-3} icon={BarChart3} color="bg-green-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -111,26 +115,29 @@ export const AdminDashboard: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Pending</h2>
-            <span className="text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">{approvals.length} Urgent</span>
+            <span className="text-[10px] font-black bg-red-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">{pendingHotels.length} Items</span>
           </div>
           <div className="space-y-4">
-            {approvals.slice(0, 3).map((app) => (
-              <Card key={app.id} className="p-4 border-white/5 bg-white/5 space-y-3">
+            {pendingHotels.slice(0, 3).map((h) => (
+              <Card key={h.id} className="p-4 border-white/5 bg-white/5 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#fbbf24]/10 flex items-center justify-center text-[#fbbf24] font-bold uppercase">
-                    {app.name[0]}
+                  <div className="h-10 w-10 rounded-xl bg-[#fbbf24]/10 flex items-center justify-center text-[#fbbf24] font-bold uppercase overflow-hidden">
+                    {h.imageUrl ? <img src={h.imageUrl} className="w-full h-full object-cover" /> : h.name[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white leading-none">{app.name}</p>
-                    <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-tighter mt-1">{app.role.replace('_', ' ')}</p>
+                    <p className="text-sm font-bold text-white leading-none">{h.name}</p>
+                    <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-tighter mt-1">{h.city}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 h-8 text-[10px] font-black uppercase bg-green-600 hover:bg-green-700">Approve</Button>
-                  <Button size="sm" variant="outline" className="flex-1 h-8 text-[10px] font-black uppercase border-white/10 hover:bg-red-500/10 hover:text-red-500 transition-colors">Reject</Button>
+                  <Button size="sm" onClick={() => handleApprove(h.id)} className="flex-1 h-8 text-[10px] font-black uppercase bg-green-600 hover:bg-green-700 text-white">Approve</Button>
+                  <Button size="sm" variant="outline" onClick={() => handleReject(h.id)} className="flex-1 h-8 text-[10px] font-black uppercase border-white/10 hover:bg-red-500/10 hover:text-red-500 transition-colors">Reject</Button>
                 </div>
               </Card>
             ))}
+            {pendingHotels.length === 0 && (
+              <p className="text-neutral-500 text-xs text-center py-4">No pending approvals</p>
+            )}
           </div>
         </div>
       </div>
@@ -228,15 +235,23 @@ export const AdminDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Meta Title</label>
-                    <Input defaultValue="StayEase Naples" className="bg-white/5 border-white/10" />
+                    <Input 
+                      value={settings.seo.title} 
+                      onChange={(e) => updateSettings({ seo: { ...settings.seo, title: e.target.value } })}
+                      className="bg-white/5 border-white/10" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Meta Description</label>
-                    <textarea className="w-full h-24 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-[#fbbf24] outline-none" defaultValue="Naples' premier luxury property management platform." />
+                    <textarea 
+                      className="w-full h-24 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-[#fbbf24] outline-none" 
+                      value={settings.seo.description}
+                      onChange={(e) => updateSettings({ seo: { ...settings.seo, description: e.target.value } })}
+                    />
                   </div>
                 </div>
               </div>
-              <Button className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Save SEO Settings</Button>
+              <Button onClick={() => toast.success('SEO Settings updated!')} className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Save SEO Settings</Button>
             </Card>
           </div>
         );
@@ -246,24 +261,48 @@ export const AdminDashboard: React.FC = () => {
             <Card className="p-8 border-white/5 bg-white/5 space-y-8">
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-white border-b border-white/5 pb-4">Theme Configuration</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-xl bg-white/5 border border-white/10">
                     <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Primary Color</p>
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded bg-[#fbbf24]"></div>
-                      <span className="font-mono text-xs text-white">#fbbf24</span>
+                      <input 
+                        type="color" 
+                        value={settings.primaryColor}
+                        onChange={(e) => updateSettings({ primaryColor: e.target.value })}
+                        className="h-8 w-8 rounded bg-transparent border-none" 
+                      />
+                      <span className="font-mono text-xs text-white uppercase">{settings.primaryColor}</span>
                     </div>
                   </div>
                   <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-                    <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Secondary Color</p>
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded bg-[#121826]"></div>
-                      <span className="font-mono text-xs text-white">#121826</span>
-                    </div>
+                    <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">Platform Logo (URL)</p>
+                    <Input 
+                      value={settings.logo}
+                      onChange={(e) => updateSettings({ logo: e.target.value })}
+                      placeholder="https://..."
+                      className="h-9 bg-transparent border-white/10 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-white">Homepage Sections</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {Object.entries(settings.sections).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between p-4 rounded-xl bg-white/3 border border-white/5">
+                        <span className="text-sm text-neutral-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                        <input 
+                          type="checkbox" 
+                          checked={value}
+                          onChange={(e) => updateSettings({ sections: { ...settings.sections, [key]: e.target.checked } })}
+                          className="w-5 h-5 accent-[#fbbf24]"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
-              <Button className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Apply Branding</Button>
+              <Button onClick={() => toast.success('Branding applied!')} className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Apply Branding</Button>
             </Card>
           </div>
         );
@@ -273,18 +312,109 @@ export const AdminDashboard: React.FC = () => {
             <Card className="p-8 border-white/5 bg-white/5 space-y-8">
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-white border-b border-white/5 pb-4">General Platform Settings</h3>
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Site Name</label>
-                    <Input defaultValue="StayEase Naples" className="bg-white/5 border-white/10" />
+                    <Input 
+                      value={settings.siteName}
+                      onChange={(e) => updateSettings({ siteName: e.target.value })}
+                      className="bg-white/5 border-white/10" 
+                    />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Admin Email</label>
-                    <Input defaultValue="admin@stayease.it" className="bg-white/5 border-white/10" />
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Tagline</label>
+                    <Input 
+                      value={settings.tagline}
+                      onChange={(e) => updateSettings({ tagline: e.target.value })}
+                      className="bg-white/5 border-white/10" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Hero Title</label>
+                    <Input 
+                      value={settings.heroTitle}
+                      onChange={(e) => updateSettings({ heroTitle: e.target.value })}
+                      className="bg-white/5 border-white/10" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Hero Subtitle</label>
+                    <Input 
+                      value={settings.heroSubtitle}
+                      onChange={(e) => updateSettings({ heroSubtitle: e.target.value })}
+                      className="bg-white/5 border-white/10" 
+                    />
                   </div>
                 </div>
               </div>
-              <Button className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Save General Settings</Button>
+              <Button onClick={() => toast.success('General Settings updated!')} className="w-full bg-[#fbbf24] text-black font-black uppercase py-4">Save General Settings</Button>
+            </Card>
+          </div>
+        );
+      case 'properties':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">All Properties</h2>
+              <span className="text-xs text-neutral-500">{allHotels.length} total</span>
+            </div>
+            <Card className="border-white/5 bg-white/5 overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-white/[0.02] border-b border-white/5">
+                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Property</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest">Featured</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-neutral-500 uppercase tracking-widest text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {allHotels.map((h) => (
+                    <tr key={h.id} className="hover:bg-white/[0.01] transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img src={h.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-white/5" alt="" />
+                          <div>
+                            <p className="text-sm font-bold text-white">{h.name}</p>
+                            <p className="text-xs text-neutral-500">{h.city}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                         <div className={cn(
+                           "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                           h.status === 'approved' ? "bg-green-500/10 text-green-500" :
+                           h.status === 'rejected' ? "bg-red-500/10 text-red-500" :
+                           "bg-yellow-500/10 text-yellow-500"
+                         )}>
+                           {h.status || 'pending'}
+                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleToggleFeatured(h.id, !h.isFeatured)}
+                          className={cn(
+                            "h-8 px-3 text-[10px] font-black uppercase border border-white/10",
+                            h.isFeatured ? "bg-[#fbbf24] text-black hover:bg-[#fbbf24]/90" : "text-neutral-500 hover:text-white"
+                          )}
+                        >
+                          {h.isFeatured ? 'Featured' : 'Make Featured'}
+                        </Button>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {h.status !== 'approved' && (
+                            <Button size="sm" onClick={() => handleApprove(h.id)} className="h-8 text-[10px] font-black uppercase bg-green-600 text-white hover:bg-green-700">Approve</Button>
+                          )}
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-500 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </Card>
           </div>
         );

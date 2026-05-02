@@ -4,6 +4,7 @@ import { AuthProvider, useAuth, UserRole } from './contexts/AuthContext';
 import { HotelsProvider } from './contexts/HotelsContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 import { Navbar } from './components/Navbar';
 import { LandingPage } from './pages/LandingPage';
 import { SearchResultsPage } from './pages/SearchResultsPage';
@@ -109,16 +110,18 @@ export default function App() {
   return (
     <HelmetProvider>
       <LanguageProvider>
-        <CurrencyProvider>
-          <AuthProvider>
-            <HotelsProvider>
-              <Router>
-                <Toaster position="top-center" richColors />
-                <AppContent />
-              </Router>
-            </HotelsProvider>
-          </AuthProvider>
-        </CurrencyProvider>
+        <SettingsProvider>
+          <CurrencyProvider>
+            <AuthProvider>
+              <HotelsProvider>
+                <Router>
+                  <Toaster position="top-center" richColors />
+                  <AppContent />
+                </Router>
+              </HotelsProvider>
+            </AuthProvider>
+          </CurrencyProvider>
+        </SettingsProvider>
       </LanguageProvider>
     </HelmetProvider>
   );

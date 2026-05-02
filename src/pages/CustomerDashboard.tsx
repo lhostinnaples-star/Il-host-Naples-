@@ -10,31 +10,24 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useSearchParams } from 'react-router-dom';
+import { useHotels } from '../contexts/HotelsContext';
+import { toast } from 'sonner';
 import { DashboardLayout } from '../components/DashboardLayout';
 
 export const CustomerDashboard: React.FC = () => {
   const { token, user, isDemoMode } = useAuth();
   const { formatPrice } = useCurrency();
+  const { bookings: allBookings, updateBooking } = useHotels();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
   
-  const [bookings, setBookings] = useState<any[]>([]);
+  const myBookings = allBookings.filter(b => b.customerId === user?.id || (isDemoMode && !b.customerId));
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'pending' | 'past' | 'cancelled'>('upcoming');
 
-  useEffect(() => {
-    if (isDemoMode) {
-      import('../utils/mockData').then(({ MOCK_BOOKINGS }) => {
-        setBookings(MOCK_BOOKINGS);
-      });
-      return;
-    }
-
-    fetch('/api/bookings/my', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => setBookings(Array.isArray(data) ? data : []))
-    .catch(err => console.error(err));
-  }, [token, isDemoMode]);
+  const handleCancelRequest = (bookingId: string) => {
+    updateBooking(bookingId, { status: 'CANCELLED' });
+    toast.success('Booking request cancelled');
+  };
 
   const renderOverview = () => (
     <div className="space-y-8">
@@ -43,7 +36,7 @@ export const CustomerDashboard: React.FC = () => {
            <div className="relative z-10 space-y-4">
               <div className="p-3 bg-white/10 rounded-xl w-fit"><Calendar className="h-6 w-6 text-white" /></div>
               <div>
-                <h3 className="text-3xl font-bold text-white">{bookings.length}</h3>
+                <h3 className="text-3xl font-bold text-white">{myBookings.length}</h3>
                 <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mt-1">Total Bookings</p>
               </div>
            </div>
@@ -71,39 +64,66 @@ export const CustomerDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white">Upcoming & Past Trips</h2>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-white">My Trips</h2>
+        
+        <div className="flex bg-white/5 p-1 rounded-xl border border-white/5 self-start">
+          {(['upcoming', 'pending', 'past', 'cancelled'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                activeTab === tab 
+                  ? "bg-[#fbbf24] text-black shadow-lg" 
+                  : "text-neutral-500 hover:text-white"
+              )}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {bookings.map((booking) => (
+          {myBookings
+            .filter(b => {
+              if (activeTab === 'upcoming') return b.status === 'CONFIRMED' || b.status === 'ACCEPTED';
+              if (activeTab === 'pending') return b.status === 'PENDING' || b.status === 'SHARED';
+              if (activeTab === 'past') return b.status === 'CLOSED';
+              if (activeTab === 'cancelled') return b.status === 'CANCELLED' || b.status === 'EXPIRED';
+              return true;
+            })
+            .map((booking) => (
             <Card key={booking.id} className="p-0 border-white/5 bg-white/5 overflow-hidden flex flex-col group hover:border-[#fbbf24]/30 transition-all">
               <div className="h-48 relative">
                 <img 
-                  src={booking.Room?.Hotel?.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945'} 
+                  src={booking.propertyImage || 'https://images.unsplash.com/photo-1566073771259-6a8506099945'} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                  alt={booking.Room?.Hotel?.name}
+                  alt={booking.propertyName}
                 />
                 <div className="absolute top-4 right-4 group-hover:scale-110 transition-transform">
                   <div className={cn(
                     "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md shadow-lg",
-                    booking.status === 'confirmed' ? "bg-green-500/80 text-white" : "bg-orange-500/80 text-white"
+                    (booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') ? "bg-green-500/80 text-white" : 
+                    (booking.status === 'PENDING' || booking.status === 'SHARED') ? "bg-amber-500/80 text-white" :
+                    "bg-red-500/80 text-white"
                   )}>
                     {booking.status}
                   </div>
                 </div>
+                <div className="absolute top-4 left-4">
+                  <span className="bg-black/40 backdrop-blur-md text-[10px] text-white px-2 py-1 rounded font-black uppercase tracking-tighter shadow-sm border border-white/10">#{booking.reference}</span>
+                </div>
               </div>
               <div className="p-6 space-y-4">
                 <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-white group-hover:text-[#fbbf24] transition-colors">{booking.Room?.Hotel?.name}</h3>
-                  <div className="flex items-center gap-2 text-xs text-neutral-400">
-                    <MapPin className="h-3 w-3" />
-                    <span>{booking.Room?.Hotel?.city}, {booking.Room?.Hotel?.country}</span>
-                  </div>
+                  <h3 className="text-lg font-bold text-white group-hover:text-[#fbbf24] transition-colors">{booking.propertyName}</h3>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Dates</p>
-                    <p className="text-xs font-bold text-white">{new Date(booking.checkIn).toLocaleDateString()} — {new Date(booking.checkOut).toLocaleDateString()}</p>
+                    <p className="text-xs font-bold text-white">{new Date(booking.startDate).toLocaleDateString()} — {new Date(booking.endDate).toLocaleDateString()}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Total</p>
@@ -113,13 +133,28 @@ export const CustomerDashboard: React.FC = () => {
 
                 <div className="flex gap-3 pt-2">
                   <Button variant="outline" className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-white/10 hover:bg-white/5">Details</Button>
-                  {booking.status === 'confirmed' && (
-                    <Button className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10">Rate Trip</Button>
+                  {(booking.status === 'PENDING' || booking.status === 'SHARED') && (
+                    <Button onClick={() => handleCancelRequest(booking.id)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest bg-white/5 hover:bg-white/10 text-red-500 border border-white/10">Cancel Request</Button>
+                  )}
+                  {booking.status === 'CLOSED' && (
+                    <Button className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest bg-white/5 hover:bg-white/10 text-white border border-white/10">Write Review</Button>
                   )}
                 </div>
               </div>
             </Card>
           ))}
+          {myBookings.filter(b => {
+              if (activeTab === 'upcoming') return b.status === 'CONFIRMED' || b.status === 'ACCEPTED';
+              if (activeTab === 'pending') return b.status === 'PENDING' || b.status === 'SHARED';
+              if (activeTab === 'past') return b.status === 'CLOSED';
+              if (activeTab === 'cancelled') return b.status === 'CANCELLED' || b.status === 'EXPIRED';
+              return true;
+            }).length === 0 && (
+            <div className="col-span-1 md:col-span-2 py-12 text-center border-2 border-dashed border-white/5 rounded-2xl">
+              <Calendar className="h-12 w-12 text-neutral-700 mx-auto mb-4" />
+              <p className="text-neutral-500 font-bold uppercase tracking-widest text-xs">No bookings found in this category</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
