@@ -126,12 +126,25 @@ export const MapPage: React.FC = () => {
                     icon={createMarkerIcon(hotel.area || 'Everyone')}
                   >
                     <Popup className="rounded-xl border-0 shadow-xl">
-                      <div className="p-1">
-                        <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-36 object-cover rounded-lg mb-4" />
-                        <h3 className="font-display font-bold text-lg text-[#1e293b] mb-1">{hotel.name}</h3>
-                        <p className="text-sm text-slate-500 mb-3">{hotel.area}</p>
-                        <p className="font-bold text-[#fbbf24] text-lg">€{hotel.price} <span className="text-sm text-slate-500 font-normal">/ night</span></p>
-                      </div>
+                        <div className="p-1">
+                          <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-36 object-cover rounded-lg mb-4" />
+                          <h3 className="font-display font-bold text-lg text-[#1e293b] mb-1">{hotel.name}</h3>
+                          <p className="text-sm text-slate-500 mb-3">{hotel.area}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-[#fbbf24] text-lg">€{hotel.price} <span className="text-sm text-slate-500 font-normal">/ night</span></p>
+                            <button 
+                              onClick={() => {
+                                const typeSlug = (hotel.type || 'Holiday House').toLowerCase().replace(/\s+/g, '-');
+                                const areaSlug = (hotel.area || 'Napoli').toLowerCase().replace(/\s+/g, '-');
+                                const nameSlug = hotel.name.toLowerCase().replace(/\s+/g, '-');
+                                window.location.href = `/hotel/${hotel.id}`;
+                              }}
+                              className="text-xs font-black uppercase text-[#1e293b] underline"
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </div>
                     </Popup>
                   </Marker>
                 );

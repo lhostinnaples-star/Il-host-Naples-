@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link, useSearchParams, useParams } from 'react-router-dom';
 import { Card, Button } from '../components/UI';
-import { Heart, Star, MapPin, X, ChevronDown, Map, List } from 'lucide-react';
+import { Heart, Star, MapPin, X, ChevronDown, Map, List, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { useHotels } from '../contexts/HotelsContext';
@@ -12,7 +12,7 @@ import { generateSlug } from '../utils/seo';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { divIcon } from 'leaflet';
-import { ArrowLeft } from 'lucide-react';
+import { BackButton } from '../components/BackButton';
 
 import { PROPERTY_AREAS } from '../constants';
 
@@ -106,12 +106,26 @@ export const SearchResultsPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, [location.pathname, location.search]);
 
+  // Sync area from URL to context
+  useEffect(() => {
+    if (areaQuery) {
+      const match = PROPERTY_AREAS.find(a => a.toLowerCase().includes(areaQuery.toLowerCase().split('(')[0].trim()));
+      if (match && !selectedAreas.includes(match)) {
+        setSelectedAreas([match]);
+      } else if (!match && selectedAreas.length > 0) {
+        setSelectedAreas([]);
+      }
+    } else if (selectedAreas.length > 0) {
+      setSelectedAreas([]);
+    }
+  }, [areaQuery]); // Intentionally not including selectedAreas to prevent loops
+
   // Filter logic
   const searchResults = React.useMemo(() => {
+    // hotels is already filtered by area, price, etc. in context
+    if (!search) return hotels;
+    
     return hotels.filter(h => {
-      if (areaQuery && h.area?.toLowerCase() !== areaQuery.toLowerCase()) return false;
-      
-      if (!search) return true;
       const searchLower = search.toLowerCase();
       const hType = h.category === 'holiday_house' ? 'holiday house' : 'bed breakfast';
       return h.name.toLowerCase().includes(searchLower) || 
@@ -120,7 +134,7 @@ export const SearchResultsPage: React.FC = () => {
              h.type?.toLowerCase().includes(searchLower) ||
              hType.includes(searchLower);
     });
-  }, [hotels, search, areaQuery]);
+  }, [hotels, search]);
 
   const getResultsHeading = () => {
     const areaText = selectedAreas.length > 0 
@@ -204,7 +218,8 @@ export const SearchResultsPage: React.FC = () => {
   const canonical = `/naples/${typeSlug}/${areaSlug}`;
 
   return (
-    <div className="min-h-screen bg-white pt-32">
+    <div className="min-h-screen bg-white pt-24 md:pt-32 relative">
+      <BackButton className="fixed top-20 left-4 md:absolute md:top-24 md:left-6" variant="dark" />
       <SEOHead 
         title={`${typeLabel} in ${areaLabel} Naples`}
         canonical={canonical}
@@ -695,7 +710,7 @@ export const SearchResultsPage: React.FC = () => {
                               <div className="flex items-center justify-between">
                                 <p className="font-bold text-[#fbbf24]">€{hotel.price}</p>
                                 <Link 
-                                  to={`/naples/${generateSlug(hotel.type || 'holiday-house')}/${generateSlug(hotel.area || 'naples')}/${generateSlug(hotel.name)}-${hotel.id}`}
+                                  to={`/hotel/${hotel.id}`}
                                   className="text-[10px] font-black uppercase tracking-widest text-[#1e293b] underline"
                                 >
                                   View
@@ -718,7 +733,7 @@ export const SearchResultsPage: React.FC = () => {
                     whileHover={{ y: -5 }}
                     className="group"
                   >
-                    <Link to={`/naples/${generateSlug(hotel.type || 'holiday-house')}/${generateSlug(hotel.area || 'naples')}/${generateSlug(hotel.name)}-${hotel.id}`}>
+                    <Link to={`/hotel/${hotel.id}`}>
                       <Card className="h-full overflow-hidden border-neutral-100 p-0 shadow-sm transition-shadow hover:shadow-md">
                         <div className="relative aspect-[4/3]">
                           <img

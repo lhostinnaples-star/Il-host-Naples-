@@ -102,7 +102,7 @@ export const DashboardSidebar: React.FC<{
   const navItems = getNavItems();
 
   const SidebarContent = (
-    <div className="flex flex-col h-full bg-[#1c2431] text-neutral-400">
+    <div className="flex flex-col h-full bg-[#1e293b] text-[#94a3b8]">
       <div className="p-6">
         <Link to="/" className="flex items-center gap-3 text-white">
           <div className="bg-[#fbbf24] p-2 rounded-lg">
@@ -131,7 +131,7 @@ export const DashboardSidebar: React.FC<{
                     <item.icon className="h-5 w-5 shrink-0" />
                     {!isCollapsed && (
                       <>
-                        <span className="flex-1 text-left text-sm font-medium">{item.label}</span>
+                        <span className="flex-1 text-left text-sm font-bold text-white uppercase tracking-wider">{item.label}</span>
                         {isExpanded ? <ChevronLeft className="h-4 w-4 rotate-[-90deg]" /> : <ChevronRight className="h-4 w-4" />}
                       </>
                     )}
@@ -161,12 +161,12 @@ export const DashboardSidebar: React.FC<{
                     isActive ? "bg-white/10 text-white shadow-sm" : "hover:bg-white/5 hover:text-neutral-200"
                   )}
                 >
-                  <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-[#fbbf24]")} />
+                  <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-[#F5A623]")} />
                   {!isCollapsed && (
                     <>
-                      <span className="flex-1 text-sm font-medium">{item.label}</span>
+                      <span className="flex-1 text-sm font-bold uppercase tracking-wider">{item.label}</span>
                       {item.badge && (
-                        <span className="bg-[#fbbf24] text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                        <span className="bg-[#F5A623] text-[#0f172a] text-[10px] font-black px-1.5 py-0.5 rounded-full">
                           {item.badge}
                         </span>
                       )}
@@ -243,7 +243,7 @@ export const DashboardHeader: React.FC<{
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-20 h-16 bg-[#121826] border-b border-white/5 px-4 flex items-center justify-between">
+    <header className="sticky top-0 z-20 h-16 bg-[#0f172a] border-b border-[#334155] px-4 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <button 
           onClick={() => setMobileOpen(true)}
@@ -252,16 +252,16 @@ export const DashboardHeader: React.FC<{
           <Menu className="h-6 w-6" />
         </button>
         
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-neutral-500">
+        <div className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#64748b]">
           <Link to="/" className="hover:text-white transition-colors">Site</Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="text-neutral-300">{title}</span>
+          <span className="text-[#94a3b8]">{title}</span>
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         {isDemoMode && (
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-black uppercase">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5A623]/10 border border-[#F5A623]/20 text-[#F5A623] text-[10px] font-black uppercase">
             <AlertCircle className="h-3 w-3" />
             Demo Mode
           </div>
@@ -279,11 +279,11 @@ export const DashboardHeader: React.FC<{
         <div className="flex items-center gap-3 pl-2">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-bold text-white leading-none">{user?.name}</p>
-            <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-tighter mt-1">{user?.role.replace('_', ' ')}</p>
+            <p className="text-[10px] font-medium text-[#64748b] uppercase tracking-tighter mt-1">{user?.role.replace('_', ' ')}</p>
           </div>
           <button 
-            onClick={() => navigate('/profile')}
-            className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white hover:border-[#fbbf24]/50 transition-all overflow-hidden"
+            onClick={() => navigate('?section=profile')}
+            className="h-10 w-10 rounded-xl bg-[#1e293b] border border-[#334155] flex items-center justify-center text-white hover:border-[#F5A623]/50 transition-all overflow-hidden"
           >
             <UserIcon className="h-5 w-5" />
           </button>
@@ -306,9 +306,10 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
       case UserRole.ADMIN:
         return [
           { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/admin?section=bookings' },
-          { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin?section=analytics' },
-          { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
+          { id: 'users', label: 'Users', icon: Users, href: '/admin?section=users' },
+          { id: 'properties', label: 'Properties', icon: Home, href: '/admin?section=properties' },
+          { id: 'experiences', label: 'Experiences', icon: Map, href: '/admin?section=experiences' },
+          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/admin?section=suppliers' },
         ];
       case UserRole.HOTEL_OWNER:
         return [
@@ -320,6 +321,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
       case UserRole.CUSTOMER:
         return [
           { id: 'overview', label: 'Bookings', icon: Calendar, href: '/dashboard' },
+          { id: 'experiences', label: 'Experiences', icon: Map, href: '/dashboard?section=experiences' },
           { id: 'wishlist', label: 'Wishlist', icon: Star, href: '/dashboard?section=wishlist' },
           { id: 'profile', label: 'Profile', icon: UserIcon, href: '/dashboard?section=profile' },
           { id: 'search', label: 'Search', icon: Search, href: '/search' },
@@ -346,8 +348,8 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
   return (
     <div className="min-h-screen bg-[#0f172a] pb-24 md:pb-0">
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#1c2431] border-t border-white/5 px-4 py-3 flex items-center justify-between shadow-2xl">
-        {navItems.slice(0, 4).map((item) => {
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#1e293b] border-t border-[#334155] px-2 py-3 flex items-center justify-between shadow-2xl">
+        {navItems.slice(0, 5).map((item) => {
           const isActive = location.pathname + location.search === item.href;
           return (
             <Link 
@@ -355,17 +357,17 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
               to={item.href || '#'} 
               className={cn(
                 "flex flex-col items-center gap-1 transition-colors flex-1 text-center truncate",
-                isActive ? "text-[#fbbf24]" : "text-neutral-500"
+                isActive ? "text-[#F5A623]" : "text-[#94a3b8]"
               )}
             >
               <item.icon className="h-5 w-5" />
-              <span className="text-[9px] font-bold uppercase tracking-tighter w-full truncate px-1">{item.label}</span>
+              <span className="text-[8px] font-bold uppercase tracking-tighter w-full truncate px-0.5">{item.label}</span>
             </Link>
           );
         })}
         <button 
           onClick={() => setMobileOpen(true)}
-          className="flex flex-col items-center gap-1 text-neutral-500 flex-1 text-center"
+          className="flex flex-col items-center gap-1 text-[#94a3b8] flex-1 text-center"
         >
           <Menu className="h-5 w-5" />
           <span className="text-[9px] font-bold uppercase tracking-tighter">More</span>
@@ -381,7 +383,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
       
       <div className={cn(
         "transition-all duration-300",
-        isCollapsed ? "md:pl-20" : "lg:pl-64 md:pl-20"
+        isCollapsed ? "md:pl-20" : "md:pl-64"
       )}>
         <DashboardHeader title={title} setMobileOpen={setMobileOpen} />
         

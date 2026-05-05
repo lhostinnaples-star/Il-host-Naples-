@@ -25,6 +25,7 @@ export const WishlistButton: React.FC<WishlistButtonProps> = ({
   return (
     <button 
       onClick={handleToggle}
+      title=""
       className={`group ${className} ${active ? 'bg-white' : 'bg-white/20 hover:bg-white'} border border-white/20 hover:border-transparent z-10 relative`}
     >
       <motion.div

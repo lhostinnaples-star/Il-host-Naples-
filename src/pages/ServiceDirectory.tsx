@@ -17,10 +17,16 @@ import { SERVICE_CATEGORIES } from '../constants';
 
 export const ServiceDirectory: React.FC = () => {
   const navigate = useNavigate();
-  const { services, isLoading, refreshHotels } = useHotels();
+  const { services, allServices, isLoading, refreshHotels } = useHotels();
   const { user, token } = useAuth();
   const { formatPrice } = useCurrency();
   
+  console.log('Services count:', allServices.length)
+  console.log('B2C approved:', allServices.filter(
+    s => s.serviceType === 'B2C' && 
+    s.status === 'approved'
+  ).length)
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
@@ -161,9 +167,9 @@ export const ServiceDirectory: React.FC = () => {
                     {SERVICE_CATEGORIES.find(c => c.id === selectedCategory)?.subCategories.map(sub => (
                       <button
                         key={sub.id}
-                        onClick={() => setSelectedSubCategory(sub.id)}
+                        onClick={() => setSelectedSubCategory(sub.label)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
-                          selectedSubCategory === sub.id ? 'bg-[#1e293b] text-white border-[#1e293b]' : 'bg-white text-neutral-400 border-neutral-100 hover:border-[#fbbf24] hover:text-[#fbbf24]'
+                          selectedSubCategory === sub.label ? 'bg-[#1e293b] text-white border-[#1e293b]' : 'bg-white text-neutral-400 border-neutral-100 hover:border-[#fbbf24] hover:text-[#fbbf24]'
                         }`}
                       >
                         <sub.icon className="h-3.5 w-3.5" />

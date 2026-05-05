@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -23,6 +23,7 @@ import 'react-date-range/dist/theme/default.css';
 import { useHotels, Booking } from '../contexts/HotelsContext';
 import { WishlistButton } from '../components/WishlistButton';
 import { ReviewCard } from '../components/ReviewCard';
+import { BackButton } from '../components/BackButton';
 import { BookingWidget } from '../components/BookingWidget';
 import { SEOHead } from '../components/SEOHead';
 import { generatePropertySchema, generateSlug, generateBreadcrumbSchema } from '../utils/seo';
@@ -43,12 +44,58 @@ export const HotelDetailsPage: React.FC = () => {
   const id = idParam || (slugWithId ? slugWithId.split('-').pop() : null);
   const { token, user } = useAuth();
   const { formatPrice } = useCurrency();
-  const { searchDates, hotels } = useHotels();
+  const { searchDates, hotels, allHotels, addBooking, isLoading } = useHotels();
+
+  // Find hotel from context instead of API
+  const foundHotel = useMemo(() => {
+    // try exact id match first
+    let hotel = allHotels.find(h => h.id === id);
+    if (!hotel) {
+      // if not found, it might be a slug that ends with the ID, e.g., "hotel-name-hotel-1"
+      // or we can try just looking for a hotel that has this ID in the string.
+      // Better: fallback to slug search if id is actually a slug.
+      const possibleId = id?.split('-').pop(); // In case of standard slug format
+      hotel = allHotels.find(h => h.id === possibleId);
+    }
+    return hotel;
+  }, [allHotels, id]);
+
+  console.log('Hotel ID from UI:', id);
+  console.log('Found Hotel:', foundHotel);
+  console.log('All Hotels count:', allHotels.length);
+
+  const hotel = useMemo(() => {
+    if (!foundHotel) return null;
+    return {
+      ...foundHotel,
+      sqm: foundHotel.sqm || 65,
+      guests: foundHotel.guests || 2,
+      bedrooms: foundHotel.bedrooms || 1,
+      bathrooms: foundHotel.bathrooms || 1,
+      rating: foundHotel.rating || 4.5,
+      reviews: foundHotel.reviews || 0,
+      amenities: foundHotel.amenities || [],
+      lat: foundHotel.lat || 40.8518,
+      lng: foundHotel.lng || 14.2681,
+      images: foundHotel.images || [foundHotel.imageUrl] || [],
+      spaceDescription: foundHotel.spaceDescription || "This elegant apartment combines traditional Neapolitan charm with modern amenities. Located in a historic building, it features high ceilings and large windows that flood the rooms with natural light.",
+      accessDescription: foundHotel.accessDescription || "Guests have full access to the entire apartment. The building has a 24/7 concierge service and a modern elevator.",
+      localTipsDescription: foundHotel.localTipsDescription || "Don't miss the local bakery just around the corner for the best sfogliatella in town. The metro station is a 5-minute walk away, connecting you to all major attractions.",
+      cancellationPolicy: foundHotel.cancellationPolicy || 'Moderate',
+      cirCode: foundHotel.cirCode || 'CIR-12345-NAP',
+      unavailableDates: foundHotel.unavailableDates || [],
+      extraServices: (foundHotel.extraServices && foundHotel.extraServices.length > 0) 
+        ? foundHotel.extraServices 
+        : ['rent_car', 'rent_scooter', 'bike_rental', 'taxi_services', 'ncc_private', 'boat_rental', 'coastline', 'private_tour', 'restaurant_booking', 'private_chef', 'cooking_class', 'spa_massage'],
+      rooms: foundHotel.rooms || [],
+      houseRules: foundHotel.houseRules || ["No smoking", "No parties", "No pets"],
+      owner: foundHotel.owner || { name: 'Professional Host', businessName: 'Lhost Naples', phoneNumber: '+39 081 1234567' }
+    } as any;
+  }, [foundHotel]);
 
   // For similar properties
   const similarHotels = hotels.filter(h => h.id !== id).slice(0, 4);
   const navigate = useNavigate();
-  const [hotel, setHotel] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [bookingStatus, setBookingStatus] = useState<'idle' | 'loading' | 'success'>('idle');
   const [dateRange, setDateRange] = useState([
@@ -75,8 +122,6 @@ export const HotelDetailsPage: React.FC = () => {
     phone: '',
     notes: ''
   });
-  const { addBooking } = useHotels();
-
   const guestServiceCategories = [
     {
       title: 'Transport',
@@ -124,81 +169,51 @@ export const HotelDetailsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetch(`/api/hotels/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        // Fallback for dummy data if fields are missing
-        const enhancedData = {
-          ...data,
-          sqm: data.sqm || 65,
-          guests: data.guests || 4,
-          bedrooms: data.bedrooms || 2,
-          bathrooms: data.bathrooms || 1,
-          lat: data.lat || 40.8518 + (Math.random() - 0.5) * 0.01,
-          lng: data.lng || 14.2681 + (Math.random() - 0.5) * 0.01,
-          images: data.images || [
-            data.imageUrl || `https://picsum.photos/seed/${data.id}/1200/800`,
-            `https://picsum.photos/seed/${data.id}1/1200/800`,
-            `https://picsum.photos/seed/${data.id}2/1200/800`,
-            `https://picsum.photos/seed/${data.id}3/1200/800`,
-          ],
-          spaceDescription: data.spaceDescription || "This elegant apartment combines traditional Neapolitan charm with modern amenities. Located in a historic building, it features high ceilings and large windows that flood the rooms with natural light.",
-          accessDescription: data.accessDescription || "Guests have full access to the entire apartment. The building has a 24/7 concierge service and a modern elevator.",
-          localTipsDescription: data.localTipsDescription || "Don't miss the local bakery just around the corner for the best sfogliatella in town. The metro station is a 5-minute walk away, connecting you to all major attractions.",
-          cancellationPolicy: data.cancellationPolicy || 'Moderate',
-          cirCode: data.cirCode || 'CIR-12345-NAP',
-          unavailableDates: data.unavailableDates || [],
-          extraServices: data.extraServices && data.extraServices.length > 0 
-            ? data.extraServices 
-            : ['rent_car', 'rent_scooter', 'bike_rental', 'taxi_services', 'ncc_private', 'boat_rental', 'coastline', 'private_tour', 'restaurant_booking', 'private_chef', 'cooking_class', 'spa_massage']
-        };
-        setHotel(enhancedData);
+    if (!hotel) return;
 
-        // Save to Recently Viewed
-        try {
-          const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-          const updated = [enhancedData, ...viewed.filter((h: any) => h.id !== enhancedData.id)].slice(0, 5);
-          localStorage.setItem('recentlyViewed', JSON.stringify(updated));
-        } catch (e) {
-          console.error('Failed to save recently viewed', e);
-        }
-      });
+    // Save to Recently Viewed
+    try {
+      const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+      
+      const cardData = {
+        id: hotel.id,
+        name: hotel.name,
+        price: hotel.price,
+        imageUrl: hotel.imageUrl,
+        images: hotel.images,
+        type: hotel.type,
+        area: hotel.area,
+        category: hotel.category,
+        rooms: hotel.rooms ? hotel.rooms.map((r: any) => ({ price: r.price })) : []
+      };
 
-    fetch(`/api/reviews/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setReviews(data);
-        } else {
-          // Demo reviews fallback
-          setReviews([
-            {
-              id: 'demo-r1',
-              rating: 5,
-              comment: "Absolutely loved the authentic Naples vibe here. The host was very helpful with local tips!",
-              User: { name: 'Sarah M.' },
-              createdAt: new Date(Date.now() - 7 * 86400000).toISOString()
-            },
-            {
-              id: 'demo-r2',
-              rating: 4,
-              comment: "Great location and very clean. A bit noisy at night but that's part of the city charm.",
-              User: { name: 'John D.' },
-              createdAt: new Date(Date.now() - 14 * 86400000).toISOString()
-            }
-          ]);
-        }
-      })
-      .catch(err => console.error('Failed to fetch reviews:', err));
-  }, [id]);
-
-  const handleBook = async () => {
-    if (!user) {
-      toast.error('Please login to book');
-      navigate('/login');
-      return;
+      const updated = [cardData, ...viewed.filter((h: any) => h.id !== cardData.id)].slice(0, 5);
+      localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+    } catch (e) {
+      console.error('Failed to save recently viewed', e);
     }
 
+    // Demo reviews fallback since API is not present
+    setReviews([
+      {
+        id: 'demo-r1',
+        rating: 5,
+        comment: "Absolutely loved the authentic Naples vibe here. The host was very helpful with local tips!",
+        User: { name: 'Sarah M.' },
+        createdAt: new Date(Date.now() - 7 * 86400000).toISOString()
+      },
+      {
+        id: 'demo-r2',
+        rating: 4,
+        comment: "Great location and very clean. A bit noisy at night but that's part of the city charm.",
+        User: { name: 'John D.' },
+        createdAt: new Date(Date.now() - 14 * 86400000).toISOString()
+      }
+    ]);
+  }, [hotel]);
+
+  const handleBook = async () => {
+    // Dates validation
     const { startDate, endDate } = dateRange[0];
 
     if (isSameDay(startDate, endDate)) {
@@ -220,6 +235,8 @@ export const HotelDetailsPage: React.FC = () => {
     setShowRequestForm(true);
   };
 
+  const [bookingRef, setBookingRef] = useState('');
+
   const handleSendRequest = async () => {
     if (!requestDetails.name || !requestDetails.email || !requestDetails.phone) {
       toast.error('Please fill in all required fields');
@@ -234,6 +251,7 @@ export const HotelDetailsPage: React.FC = () => {
     const extraTotal = selectedExtraServices.length * 50; // Simple calc for now
     const totalPrice = (pricePerNight * nights) + extraTotal;
     const reference = 'BE-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    setBookingRef(reference);
 
     const newBooking = {
       id: `book-${Date.now()}`,
@@ -277,6 +295,30 @@ export const HotelDetailsPage: React.FC = () => {
     }
   };
 
+  if (!hotel && !isLoading) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-white p-6">
+        <div className="text-center max-w-md">
+          <div className="mb-6 flex justify-center">
+            <div className="h-20 w-20 rounded-full bg-neutral-50 flex items-center justify-center text-[#fbbf24]">
+              <Info className="h-10 w-10" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-[#1e293b] mb-4">Property not found</h2>
+          <p className="text-neutral-500 mb-8 font-medium">
+            We couldn't find the property you're looking for. It might have been removed or the link is incorrect.
+          </p>
+          <Button 
+            onClick={() => navigate('/search')}
+            className="w-full bg-[#fbbf24] text-black hover:bg-[#d9a320] font-black uppercase tracking-widest h-14 rounded-2xl transition-all shadow-lg shadow-[#fbbf24]/20"
+          >
+            Back to Search
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!hotel) return (
     <div className="flex h-screen items-center justify-center">
       <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#fbbf24] border-t-transparent"></div>
@@ -302,7 +344,8 @@ export const HotelDetailsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white pt-32 pb-24 md:pb-0">
+    <div className="min-h-screen bg-white pt-24 md:pt-32 pb-24 md:pb-0 relative">
+      <BackButton className="fixed top-20 left-4 md:absolute md:top-24 md:left-6 z-40" variant="dark" />
       <SEOHead 
         title={seoTitle}
         description={`Book ${hotel.name} in ${hotel.area || 'Naples'}, Naples. ${hotel.bedrooms || 1} bedrooms. From ${formatPrice(hotel.price)}/night. ${hotel.cancellationPolicy || 'Moderate'}.`}
@@ -1177,31 +1220,36 @@ export const HotelDetailsPage: React.FC = () => {
       {/* Success Modal */}
       <AnimatePresence>
         {bookingStatus === 'success' && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1e293b]/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#1e293b]/90 backdrop-blur-md p-4">
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="mx-4 w-full max-w-md rounded-[2rem] bg-white p-12 text-center shadow-2xl"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white w-full h-full md:h-auto md:max-w-md md:rounded-[3rem] p-8 md:p-12 text-center flex flex-col items-center justify-center shadow-2xl"
             >
-              <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-green-50 text-green-500">
-                <CheckCircle2 className="h-12 w-12" />
+              <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <CheckCircle2 className="h-12 w-12 text-green-500" />
               </div>
-              <h2 className="mb-4 font-display text-3xl font-bold text-[#1e293b]">Request Sent!</h2>
-              <p className="text-lg text-neutral-500">Your inquiry for {hotel.name} has been sent to the host. Check your email for details.</p>
-              <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-100 text-xs text-amber-800">
-                <p className="font-bold mb-1">What's next?</p>
-                <p>An email has been sent to you with the host's info so you can finalize your stay and extra services.</p>
+              <h2 className="text-3xl font-black text-[#1e293b] mb-4">Request Sent!</h2>
+              <p className="text-neutral-500 text-sm font-medium mb-6">
+                Your request for {hotel.name} has been received. 
+                Reference: <span className="font-bold text-[#fbbf24]">{bookingRef}</span>
+              </p>
+              
+              <div className="w-full space-y-4">
+                <Button 
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full h-14 bg-[#1e293b] text-white font-black uppercase tracking-widest rounded-2xl"
+                >
+                  Go to Dashboard
+                </Button>
+                <Button 
+                  onClick={() => navigate('/')}
+                  variant="outline"
+                  className="w-full h-14 border-neutral-200 text-neutral-600 font-bold rounded-2xl"
+                >
+                  Back to Home
+                </Button>
               </div>
-              <div className="mt-10 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: '100%' }}
-                  transition={{ duration: 2 }}
-                  className="h-full bg-[#fbbf24]"
-                />
-              </div>
-              <p className="mt-4 text-sm font-medium text-neutral-400">Redirecting to your dashboard...</p>
             </motion.div>
           </div>
         )}

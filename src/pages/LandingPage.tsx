@@ -21,7 +21,9 @@ import { AreaSelection } from '../components/AreaSelection';
 import { WishlistButton } from '../components/WishlistButton';
 import { SEOHead } from '../components/SEOHead';
 import { Logo } from '../components/Logo';
+import { RecentlyViewedProperties } from '../components/RecentlyViewedProperties';
 import { generateOrganizationSchema, generateSlug } from '../utils/seo';
+import { MOCK_PROPERTIES } from '../utils/mockData';
 
 const JustBookedTicker: React.FC = () => {
   const properties = ["Villa Napoli", "Vesuvius View Suite", "Centro Storico Loft", "Sorrento Coast Flat", "Pompei Residenza"];
@@ -52,57 +54,6 @@ const JustBookedTicker: React.FC = () => {
         </AnimatePresence>
       </div>
     </div>
-  );
-};
-
-const RecentlyViewedProperties: React.FC = () => {
-  const [recent, setRecent] = useState<any[]>([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-      setRecent(stored);
-    } catch {}
-  }, []);
-
-  if (recent.length === 0) return null;
-
-  return (
-    <section className="py-16 px-6 bg-neutral-50 overflow-hidden border-t border-neutral-100">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-extrabold text-[#0f172a] mb-8">Recently Viewed</h2>
-        <div className="flex gap-6 overflow-x-auto pb-4 custom-scrollbar">
-          {recent.map((hotel: any) => (
-            <div 
-              key={hotel.id} 
-              className="w-72 shrink-0 cursor-pointer group bg-white p-2 rounded-2xl shadow-sm border border-neutral-100 hover:shadow-md transition-all"
-              onClick={() => {
-                const typeSlug = generateSlug(hotel.type || 'holiday-house');
-                const areaSlug = generateSlug(hotel.area || 'naples');
-                const slug = generateSlug(hotel.name);
-                navigate(`/naples/${typeSlug}/${areaSlug}/${slug}-${hotel.id}`);
-              }}
-            >
-              <div className="w-full h-40 rounded-xl overflow-hidden mb-3 relative">
-                <img 
-                  src={hotel.imageUrl || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945'} 
-                  alt={hotel.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="px-2 pb-2">
-                <h3 className="font-bold text-[#1e293b] truncate text-sm mb-1">{hotel.name}</h3>
-                <p className="text-xs font-bold text-[#fbbf24] truncate">
-                  €{hotel.price || hotel.rooms?.[0]?.price} /night
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 };
 
@@ -424,14 +375,69 @@ export const LandingPage: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="relative z-30 -mb-64 lg:-mb-32"
           >
-            <div className="flex flex-col lg:flex-row bg-white rounded-3xl shadow-2xl border border-neutral-100 overflow-hidden">
+            <div className="flex flex-col lg:flex-row bg-white rounded-3xl shadow-2xl border border-neutral-100">
               {/* Block 1: Search by Dates */}
-              <div 
-                className="date-picker-container flex flex-col items-center justify-center p-6 w-full lg:w-48 border-b lg:border-b-0 lg:border-r border-neutral-200 hover:bg-neutral-50 cursor-pointer group transition-colors lg:rounded-l-3xl"
-                onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-              >
-                <Calendar className="h-8 w-8 text-[#1e293b] mb-3 group-hover:text-[#fbbf24] transition-colors" />
-                <span className="text-xs font-black text-[#1e293b] text-center uppercase tracking-widest leading-tight">SEARCH BY DATES</span>
+              <div className="date-picker-container relative w-full lg:w-48 border-b lg:border-b-0 lg:border-r border-neutral-200 hover:bg-neutral-50 transition-colors lg:rounded-l-3xl">
+                <div 
+                  className="flex flex-col items-center justify-center p-6 w-full h-full cursor-pointer group"
+                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                >
+                  <Calendar className="h-8 w-8 text-[#1e293b] mb-3 group-hover:text-[#fbbf24] transition-colors" />
+                  <span className="text-xs font-black text-[#1e293b] text-center uppercase tracking-widest leading-tight">
+                    {dates[0].startDate !== dates[0].endDate 
+                      ? `${format(dates[0].startDate, 'MMM d')} - ${format(dates[0].endDate, 'MMM d')}` 
+                      : 'SEARCH BY DATES'}
+                  </span>
+                </div>
+
+                <AnimatePresence>
+                  {isDatePickerOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 top-full z-50 mt-2 bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100 rounded-xl min-w-[320px]"
+                    >
+                      <div className="flex items-center justify-between mb-4 lg:hidden">
+                        <h3 className="font-bold text-lg">Select Dates</h3>
+                        <button onClick={(e) => { e.stopPropagation(); setIsDatePickerOpen(false); }} className="p-2"><X className="h-6 w-6" /></button>
+                      </div>
+                      <DateRange
+                        editableDateInputs={true}
+                        onChange={(item: any) => {
+                          handleDateChange(item);
+                          if (item.selection.startDate && item.selection.endDate && item.selection.startDate.getTime() !== item.selection.endDate.getTime()) {
+                            setSearchDates({
+                              startDate: item.selection.startDate,
+                              endDate: item.selection.endDate
+                            });
+                          }
+                        }}
+                        moveRangeOnFirstSelection={false}
+                        ranges={dates}
+                        minDate={new Date()}
+                        maxDate={new Date('2027-12-31')}
+                        rangeColors={['#F5A623']}
+                        months={windowWidth < 1024 ? 1 : 2}
+                        direction={windowWidth < 1024 ? 'vertical' : 'horizontal'}
+                        showMonthAndYearPickers={false}
+                        className="rounded-xl border-none mx-auto custom-date-range"
+                      />
+                      <div className="mt-4 flex justify-end border-t border-neutral-100 pt-4">
+                        <Button 
+                          size="sm" 
+                          className="bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] h-12 px-8 rounded-xl font-bold transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsDatePickerOpen(false);
+                          }}
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Block 2: Discover the Areas */}
@@ -472,7 +478,7 @@ export const LandingPage: React.FC = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute left-0 right-0 lg:right-auto lg:w-64 top-full z-[100] mt-2 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                            className="absolute left-0 top-full z-50 mt-2 min-w-[280px] max-h-[300px] overflow-y-auto rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
                           >
                             <div className="space-y-3">
                               {PROPERTY_AREAS.map((area) => (
@@ -529,7 +535,7 @@ export const LandingPage: React.FC = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute left-0 right-0 lg:right-auto lg:w-64 top-full z-[100] mt-2 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                            className="absolute left-0 top-full z-50 mt-2 min-w-[280px] max-h-[300px] overflow-y-auto rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
                           >
                             <div className="space-y-1">
                               <button
@@ -565,14 +571,98 @@ export const LandingPage: React.FC = () => {
                       </AnimatePresence>
                     </div>
                     {/* Guests */}
-                    <div 
-                      className="occupancy-modal-container flex items-center h-12 lg:h-14 gap-3 bg-white border border-neutral-200 rounded-xl px-4 hover:border-[#fbbf24] transition-colors cursor-pointer group"
-                      onClick={() => setShowOccupancyModal(!showOccupancyModal)}
-                    >
-                      <User className="h-5 w-5 text-slate-500 group-hover:text-[#fbbf24] transition-colors shrink-0" />
-                      <span className="text-sm font-medium text-neutral-500">
-                        {guestOptions.adults + guestOptions.children} Guests
-                      </span>
+                    <div className="occupancy-modal-container relative">
+                      <div 
+                        className="flex items-center h-12 lg:h-14 gap-3 bg-white border border-neutral-200 rounded-xl px-4 hover:border-[#fbbf24] transition-colors cursor-pointer group"
+                        onClick={() => setShowOccupancyModal(!showOccupancyModal)}
+                      >
+                        <User className="h-5 w-5 text-slate-500 group-hover:text-[#fbbf24] transition-colors shrink-0" />
+                        <span className="text-sm font-medium text-neutral-500">
+                          {guestOptions.adults + guestOptions.children} Guests
+                        </span>
+                      </div>
+                      <AnimatePresence>
+                        {showOccupancyModal && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute left-0 top-full z-50 mt-2 min-w-[280px] max-h-[300px] overflow-y-auto rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                          >
+                            <div className="flex items-center justify-between mb-6 lg:hidden">
+                              <h3 className="font-bold text-lg">Guest Selection</h3>
+                              <button onClick={(e) => { e.stopPropagation(); setShowOccupancyModal(false); }} className="p-2"><X className="h-6 w-6" /></button>
+                            </div>
+                            <div className="space-y-6">
+                              <CounterRow 
+                                label="Adults" 
+                                value={guestOptions.adults} 
+                                onDec={() => handleGuestOptionChange('adults', 'dec')}
+                                onInc={() => handleGuestOptionChange('adults', 'inc')}
+                                min={1}
+                              />
+                              <CounterRow 
+                                label="Children" 
+                                value={guestOptions.children} 
+                                onDec={() => handleGuestOptionChange('children', 'dec')}
+                                onInc={() => handleGuestOptionChange('children', 'inc')}
+                                min={0}
+                              />
+                              <CounterRow 
+                                label="Rooms" 
+                                value={guestOptions.rooms} 
+                                onDec={() => handleGuestOptionChange('rooms', 'dec')}
+                                onInc={() => handleGuestOptionChange('rooms', 'inc')}
+                                min={1}
+                              />
+
+                              {guestOptions.children > 0 && (
+                                <div className="space-y-4 border-t border-neutral-100 pt-6">
+                                  <div className="grid grid-cols-2 gap-3">
+                                    {guestOptions.childAges.map((age, index) => (
+                                      <ChildAgeDropdown 
+                                        key={index}
+                                        index={index}
+                                        value={age}
+                                        onChange={(age) => handleChildAgeChange(index, age)}
+                                      />
+                                    ))}
+                                  </div>
+                                  <p className="text-[11px] leading-relaxed text-neutral-500">
+                                    To find you a place to stay that fits your entire group along with correct prices, we need to know how old your child will be at check-out
+                                  </p>
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between border-t border-neutral-100 pt-6">
+                                <span className="text-sm font-medium text-neutral-900">Traveling with pets?</span>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setGuestOptions(prev => ({ ...prev, pets: !prev.pets })); }}
+                                  className={`relative h-6 w-11 rounded-full transition-colors ${guestOptions.pets ? 'bg-[#fbbf24]' : 'bg-neutral-200'}`}
+                                >
+                                  <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${guestOptions.pets ? 'translate-x-5' : ''}`} />
+                                </button>
+                              </div>
+
+                              <div className="flex justify-end pt-2">
+                                <Button 
+                                  size="sm" 
+                                  className="bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] w-full h-12 rounded-xl font-bold transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const hasMissingAges = guestOptions.childAges.some(age => age === null);
+                                    if (!hasMissingAges) {
+                                      setShowOccupancyModal(false);
+                                    }
+                                  }}
+                                >
+                                  Confirm Selection
+                                </Button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                     {/* Price Range / Budget */}
                     <div className="price-dropdown-container relative">
@@ -592,7 +682,7 @@ export const LandingPage: React.FC = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute left-0 right-0 lg:right-auto lg:w-64 top-full z-[100] mt-2 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
+                            className="absolute left-0 top-full z-50 mt-2 min-w-[280px] max-h-[300px] overflow-y-auto rounded-xl bg-white p-4 shadow-2xl ring-1 ring-black/5 border border-neutral-100"
                           >
                             <div className="space-y-1">
                               {priceOptions.map((opt, idx) => (
@@ -627,7 +717,7 @@ export const LandingPage: React.FC = () => {
                     </div>
                     {/* SEARCH Button */}
                     <Button
-                      className="bg-[#1e293b] text-white font-black text-sm lg:text-lg hover:bg-[#fbbf24] hover:text-[#1e293b] transition-colors h-14 lg:h-14 rounded-xl w-full uppercase tracking-widest"
+                      className="bg-[#F5A623] text-[#0f172a] hover:bg-[#e09400] font-black text-sm lg:text-lg transition-colors h-14 lg:h-14 rounded-xl w-full uppercase tracking-widest"
                       onClick={handleSearch}
                     >
                       SEARCH NOW
@@ -637,144 +727,9 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Modals (Date Picker & Occupancy) */}
-            <AnimatePresence>
-              {isDatePickerOpen && (
-                <div className="fixed inset-0 z-[110] lg:absolute lg:inset-auto lg:left-0 lg:top-full mt-4 flex items-center justify-center p-4 lg:p-0">
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setIsDatePickerOpen(false)}
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden"
-                  />
-                    <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="relative z-10 w-full h-full lg:h-auto lg:max-w-none md:rounded-[2rem] bg-white p-6 shadow-2xl ring-1 ring-black/5 flex flex-col overflow-y-auto"
-                  >
-                    <div className="flex items-center justify-between mb-4 lg:hidden">
-                      <h3 className="font-bold text-lg">Select Dates</h3>
-                      <button onClick={() => setIsDatePickerOpen(false)} className="p-2"><X className="h-6 w-6" /></button>
-                    </div>
-                    <DateRange
-                      editableDateInputs={true}
-                      onChange={handleDateChange}
-                      moveRangeOnFirstSelection={false}
-                      ranges={dates}
-                      minDate={new Date()}
-                      maxDate={new Date('2027-12-31')}
-                      rangeColors={['#fbbf24']}
-                      months={windowWidth < 1024 ? 1 : 2}
-                      direction="vertical"
-                      showMonthAndYearPickers={false}
-                      className="rounded-xl border-none mx-auto"
-                    />
-                    <div className="mt-4 flex justify-end border-t border-neutral-100 pt-4">
-                      <Button 
-                        size="sm" 
-                        className="bg-[#1e293b] text-white h-12 px-8 rounded-xl font-bold"
-                        onClick={() => setIsDatePickerOpen(false)}
-                      >
-                        Done
-                      </Button>
-                    </div>
-                  </motion.div>
-                </div>
-              )}
-            </AnimatePresence>
+            {/* Modal code cleaned up */}
 
-            <AnimatePresence>
-              {showOccupancyModal && (
-                <div className="fixed inset-0 z-[110] lg:absolute lg:inset-auto lg:right-0 lg:top-full mt-4 flex items-center justify-center p-4 lg:p-0">
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowOccupancyModal(false)}
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm lg:hidden"
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="relative z-10 w-full h-full md:h-auto md:max-w-sm md:rounded-[2rem] bg-white p-8 shadow-2xl ring-1 ring-black/5 flex flex-col overflow-y-auto"
-                  >
-                    <div className="flex items-center justify-between mb-6 lg:hidden">
-                      <h3 className="font-bold text-lg">Guest Selection</h3>
-                      <button onClick={() => setShowOccupancyModal(false)} className="p-2"><X className="h-6 w-6" /></button>
-                    </div>
-                    <div className="space-y-6">
-                      <CounterRow 
-                        label="Adults" 
-                        value={guestOptions.adults} 
-                        onDec={() => handleGuestOptionChange('adults', 'dec')}
-                        onInc={() => handleGuestOptionChange('adults', 'inc')}
-                        min={1}
-                      />
-                      <CounterRow 
-                        label="Children" 
-                        value={guestOptions.children} 
-                        onDec={() => handleGuestOptionChange('children', 'dec')}
-                        onInc={() => handleGuestOptionChange('children', 'inc')}
-                        min={0}
-                      />
-                      <CounterRow 
-                        label="Rooms" 
-                        value={guestOptions.rooms} 
-                        onDec={() => handleGuestOptionChange('rooms', 'dec')}
-                        onInc={() => handleGuestOptionChange('rooms', 'inc')}
-                        min={1}
-                      />
-
-                      {guestOptions.children > 0 && (
-                        <div className="space-y-4 border-t border-neutral-100 pt-6">
-                          <div className="grid grid-cols-2 gap-3">
-                            {guestOptions.childAges.map((age, index) => (
-                              <ChildAgeDropdown 
-                                key={index}
-                                index={index}
-                                value={age}
-                                onChange={(age) => handleChildAgeChange(index, age)}
-                              />
-                            ))}
-                          </div>
-                          <p className="text-[11px] leading-relaxed text-neutral-500">
-                            To find you a place to stay that fits your entire group along with correct prices, we need to know how old your child will be at check-out
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between border-t border-neutral-100 pt-6">
-                        <span className="text-sm font-medium text-neutral-900">Traveling with pets?</span>
-                        <button 
-                          onClick={() => setGuestOptions(prev => ({ ...prev, pets: !prev.pets }))}
-                          className={`relative h-6 w-11 rounded-full transition-colors ${guestOptions.pets ? 'bg-[#fbbf24]' : 'bg-neutral-200'}`}
-                        >
-                          <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${guestOptions.pets ? 'translate-x-5' : ''}`} />
-                        </button>
-                      </div>
-
-                      <div className="flex justify-end pt-2">
-                        <Button 
-                          size="sm" 
-                          className="bg-[#1e293b] text-white w-full h-12 rounded-xl font-bold"
-                          onClick={() => {
-                            const hasMissingAges = guestOptions.childAges.some(age => age === null);
-                            if (!hasMissingAges) {
-                              setShowOccupancyModal(false);
-                            }
-                          }}
-                        >
-                          Confirm Selection
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-              )}
-            </AnimatePresence>
+ 
           </motion.div>
         </div>
       </section>
@@ -814,11 +769,11 @@ export const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {allHotels
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              {(allHotels.filter(h => h.status === 'approved' && h.isFeatured).length > 0 ? allHotels : MOCK_PROPERTIES)
                 .filter(h => h.status === 'approved' && h.isFeatured)
                 .filter(h => featuredFilter === 'all' || h.category === featuredFilter)
-                .slice(0, 8)
+                .slice(0, 6)
                 .map((hotel, idx) => (
               <motion.div
                 key={hotel.id}
@@ -828,10 +783,7 @@ export const LandingPage: React.FC = () => {
                 transition={{ delay: idx * 0.1 }}
                 className="group cursor-pointer"
                 onClick={() => {
-                  const typeSlug = generateSlug(hotel.type || 'holiday-house');
-                  const areaSlug = generateSlug(hotel.area || 'naples');
-                  const slug = generateSlug(hotel.name);
-                  navigate(`/naples/${typeSlug}/${areaSlug}/${slug}-${hotel.id}`);
+                  navigate(`/hotel/${hotel.id}`);
                 }}
               >
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 shadow-lg">
@@ -874,7 +826,7 @@ export const LandingPage: React.FC = () => {
                       <span className="text-xl font-extrabold text-[#1e293b]">€{hotel.price}</span>
                       <span className="text-xs text-neutral-500 font-medium">/night</span>
                     </div>
-                    <Button variant="outline" size="sm" className="rounded-full text-xs font-bold px-4">Details</Button>
+                    <Button variant="outline" size="sm" className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors rounded-full text-xs font-bold px-4">Details</Button>
                   </div>
                 </div>
               </motion.div>
@@ -883,7 +835,7 @@ export const LandingPage: React.FC = () => {
 
           <div className="mt-16 text-center">
             <Button 
-              className="bg-[#1e293b] text-white hover:bg-[#fbbf24] hover:text-[#1e293b] transition-all px-10 py-6 text-lg font-bold rounded-full group shadow-xl"
+              className="bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] transition-colors px-10 py-6 text-lg font-bold rounded-full group shadow-xl"
               onClick={() => navigate('/search')}
             >
               View All Properties
@@ -959,7 +911,7 @@ export const LandingPage: React.FC = () => {
                 <div className="pt-6 border-t border-white/10 mt-auto">
                   <div className="text-xs text-neutral-400 uppercase tracking-widest font-bold mb-1">From</div>
                   <div className="text-2xl font-extrabold text-white mb-6">{pkg.price}</div>
-                  <Button className="w-full bg-[#F5A623] hover:bg-[#F5A623]/90 text-[#0f172a] font-bold rounded-xl h-12">
+                  <Button className="w-full bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold rounded-xl h-12 transition-colors">
                     Explore Package
                   </Button>
                 </div>
@@ -969,7 +921,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* Experiences & Services Section */}
+       {/* Curated Naples Experiences (Experiences Section) */}
       {settings.sections.featuredExperiences && (
         <motion.section 
         initial={{ opacity: 0, y: 30 }} 
@@ -984,38 +936,49 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {[
-              { id: '1', name: "Capri Boat Tour", price: 85, priceUnit: "person", category: 'Tours', icon: Ship, colorClass: 'bg-amber-50 text-amber-600' },
-              { id: '2', name: "Naples Food Tour", price: 45, priceUnit: "person", category: 'Tours', icon: ChefHat, colorClass: 'bg-amber-50 text-amber-600' },
-              { id: '3', name: "Airport Transfer", price: 35, priceUnit: "trip", category: 'Transport', icon: Plane, colorClass: 'bg-blue-50 text-blue-600' },
-              { id: '4', name: "Private Chef", price: 120, priceUnit: "person", category: 'Lifestyle', icon: ChefHat, colorClass: 'bg-rose-50 text-rose-600' },
-              { id: '5', name: "Vespa City Tour", price: 65, priceUnit: "person", category: 'Tours', icon: Bike, colorClass: 'bg-amber-50 text-amber-600' },
-              { id: '6', name: "Sunset Sailing", price: 95, priceUnit: "person", category: 'Tours', icon: Ship, colorClass: 'bg-amber-50 text-amber-600' }
-            ].map((service, idx) => {
-              const IconComponent = service.icon;
-              const colorClass = service.colorClass;
+            {allServices
+              .filter(s => s.status === 'approved' && s.serviceType === 'B2C')
+              .slice(0, 14)
+              .map((service, idx) => {
+                const IconComponent = service.category === 'Transport' ? Plane : service.category === 'B2B' ? Briefcase : service.id === '1' || service.id === '6' ? Ship : ChefHat;
+                const colorClass = service.category === 'Transport' 
+                  ? 'bg-blue-50 text-blue-600' 
+                  : service.category === 'Lifestyle' 
+                    ? 'bg-rose-50 text-rose-600' 
+                    : 'bg-amber-50 text-amber-600';
 
-              return (
-                <motion.div
-                  key={service.id}
+                return (
+                  <motion.div
+                    key={service.id}
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.05 }}
                   className="group relative bg-white border border-neutral-100 rounded-3xl p-6 text-center shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 border-b-4 hover:border-b-[#fbbf24] cursor-pointer"
-                  onClick={() => navigate('/services')}
+                  onClick={() => navigate(`/experiences/naples/${generateSlug(service.serviceType || 'experience')}/${generateSlug(service.name)}-${service.id}`)}
                 >
                   <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${colorClass}`}>
                     <IconComponent className="h-8 w-8" />
                   </div>
                   <h3 className="font-bold text-[#1e293b] mb-1 line-clamp-1">{service.name}</h3>
                   <p className="text-xs text-neutral-400 mb-4 font-medium italic">From €{service.price}/{service.priceUnit}</p>
-                  <button className="text-[10px] font-extrabold uppercase tracking-widest text-[#fbbf24] group-hover:text-[#1e293b] transition-colors flex items-center justify-center w-full">
+                  <button className="text-[10px] font-extrabold uppercase tracking-widest text-[#F5A623] group-hover:text-[#e09400] transition-colors flex items-center justify-center w-full">
                     Request to Book
                   </button>
                 </motion.div>
               );
             })}
+          </div>
+
+          <div className="mt-16 text-center">
+            <Button 
+              variant="outline"
+              className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors px-10 py-6 text-lg font-bold rounded-full group shadow-xl"
+              onClick={() => navigate('/services')}
+            >
+              View All Experiences
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
           </div>
         </div>
       </motion.section>
@@ -1052,13 +1015,14 @@ export const LandingPage: React.FC = () => {
             <div className="mt-12 flex flex-wrap gap-4">
               <Button 
                 onClick={() => navigate('/auth?role=lister')}
-                className="bg-[#fbbf24] text-[#0f172a] font-black px-8 py-6 rounded-2xl hover:scale-105 transition-transform"
+                className="bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] transition-colors font-black px-8 py-6 rounded-2xl hover:scale-105"
               >
                 List Your Property
               </Button>
               <Button 
                 variant="outline"
-                className="border-white/20 text-white font-bold px-8 py-6 rounded-2xl hover:bg-white/10"
+                onClick={() => navigate('/register?role=lister')}
+                className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors font-bold px-8 py-6 rounded-2xl"
               >
                 How Shared Pool Works
               </Button>
@@ -1204,7 +1168,7 @@ export const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] italic">Naples City Guide</h2>
-            <Button variant="ghost" className="text-amber-600 font-bold hover:bg-amber-50">Explore Blog <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            <Button variant="outline" onClick={() => navigate('/services')} className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors font-bold">Explore Blog <ArrowRight className="ml-2 h-4 w-4 inline-block" /></Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -1212,17 +1176,20 @@ export const LandingPage: React.FC = () => {
               {
                 title: "Best Areas to Stay in Naples 2026",
                 desc: "From the luxury of Vomero to the historic heart of the Cento Storico, find the perfect base for your trip.",
-                img: "https://images.unsplash.com/photo-1590059963351-4043b8bed72a?auto=format&fit=crop&w=800&q=80"
+                img: "https://images.unsplash.com/photo-1590059963351-4043b8bed72a?auto=format&fit=crop&w=800&q=80",
+                onClick: () => navigate('/search?area=Center (Centro Storico)')
               },
               {
                 title: "Top 10 Authentic Naples Experiences",
                 desc: "Discover underground ruins, secret catacombs, and the true soul of the city with our local guide.",
-                img: "https://images.unsplash.com/photo-1595181781204-7c3fffbebd16?auto=format&fit=crop&w=800&q=80"
+                img: "https://images.unsplash.com/photo-1595181781204-7c3fffbebd16?auto=format&fit=crop&w=800&q=80",
+                onClick: () => navigate('/services')
               },
               {
                 title: "Naples Food Guide: Beyond Pizza",
                 desc: "Where to find the best Margherita and traditional street food that locals actually eat.",
-                img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"
+                img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+                onClick: () => navigate('/search')
               }
             ].map((guide, idx) => (
               <motion.div
@@ -1243,7 +1210,7 @@ export const LandingPage: React.FC = () => {
                 <div className="p-8">
                   <h3 className="text-xl font-bold text-[#1e293b] mb-3 group-hover:text-amber-500 transition-colors">{guide.title}</h3>
                   <p className="text-neutral-500 text-sm leading-relaxed mb-6">{guide.desc}</p>
-                  <button className="flex items-center gap-2 font-black text-xs text-[#1e293b] uppercase tracking-widest hover:gap-4 transition-all">
+                  <button onClick={(e) => { e.stopPropagation(); guide.onClick(); }} className="flex items-center gap-2 font-black text-xs text-[#F5A623] hover:text-[#e09400] transition-colors uppercase tracking-widest hover:gap-4">
                     Read More <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -1296,8 +1263,8 @@ export const LandingPage: React.FC = () => {
                 <h3 className="text-2xl font-black mb-4 italic tracking-tight">{p.title}</h3>
                 <p className="text-neutral-400 text-sm mb-10 leading-relaxed font-medium">{p.desc}</p>
                 <Button 
-                  onClick={() => navigate(`/auth?role=${p.role}`)}
-                  className="w-full bg-white text-[#1e293b] hover:bg-amber-500 hover:text-white font-black py-4 rounded-2xl transition-all"
+                  onClick={(e) => { e.stopPropagation(); navigate(`/auth?role=${p.role}`); }}
+                  className="w-full bg-[#F5A623] text-[#0f172a] hover:bg-[#e09400] transition-colors font-black py-4 rounded-2xl"
                 >
                   {p.cta}
                 </Button>
@@ -1310,7 +1277,7 @@ export const LandingPage: React.FC = () => {
       {/* Footer Section */}
       <footer className="bg-[#0f172a] text-white pt-24 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-12 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-16">
             <div className="col-span-2 md:col-span-1 lg:col-span-2">
               <div className="flex items-center gap-2 mb-8">
                 <Logo height={48} className="w-auto" />
@@ -1319,33 +1286,48 @@ export const LandingPage: React.FC = () => {
                 The first comprehensive ecosystem for Neapolitan hospitality. We connect guests with the heart of Naples through a network of trusted hosts and premium local service providers.
               </p>
               <div className="flex gap-4">
-                {[Facebook, Instagram, Twitter, Linkedin].map((Icon, i) => (
-                  <a key={i} href="#" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
-                    <Icon className="h-5 w-5" />
-                  </a>
-                ))}
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
+                  <Twitter className="h-5 w-5" />
+                </a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
+                  <Linkedin className="h-5 w-5" />
+                </a>
               </div>
             </div>
 
             <div>
               <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">Company</h4>
               <ul className="space-y-4 text-sm text-neutral-400 font-medium">
-                <li><a href="#" className="hover:text-amber-500 transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">How it works</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Community</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Blog</a></li>
+                <li><a href="#about" className="hover:text-amber-500 transition-colors">About Us</a></li>
+                <li><a href="#how-it-works" className="hover:text-amber-500 transition-colors">How it Works</a></li>
+                <li><a href="/register" onClick={(e) => { e.preventDefault(); navigate('/register'); }} className="hover:text-amber-500 transition-colors">Community</a></li>
+                <li><a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }} className="hover:text-amber-500 transition-colors">Blog</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">For Hosts</h4>
               <ul className="space-y-4 text-sm text-neutral-400 font-medium">
-                <li><a href="#" className="hover:text-amber-500 transition-colors">List your Property</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Booking Pool</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Owner Tools</a></li>
+                <li><a href="/register?role=lister" onClick={(e) => { e.preventDefault(); navigate('/register?role=lister'); }} className="hover:text-amber-500 transition-colors">List your Property</a></li>
+                <li><a href="/owner" onClick={(e) => { e.preventDefault(); navigate('/owner'); }} className="hover:text-amber-500 transition-colors">Owner Tools</a></li>
                 <li><a href="#" className="hover:text-amber-500 transition-colors">Insurance</a></li>
                 <li><a href="#" className="hover:text-amber-500 transition-colors">Host Guidelines</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">For Guests</h4>
+              <ul className="space-y-4 text-sm text-neutral-400 font-medium">
+                <li><a href="/search" onClick={(e) => { e.preventDefault(); navigate('/search'); }} className="hover:text-amber-500 transition-colors">Find a Stay</a></li>
+                <li><a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }} className="hover:text-amber-500 transition-colors">Experiences</a></li>
+                <li><a href="/map" onClick={(e) => { e.preventDefault(); navigate('/map'); }} className="hover:text-amber-500 transition-colors">Map</a></li>
+                <li><a href="#" className="hover:text-amber-500 transition-colors">Reviews</a></li>
               </ul>
             </div>
 
@@ -1354,9 +1336,9 @@ export const LandingPage: React.FC = () => {
               <ul className="space-y-4 text-sm text-neutral-400 font-medium">
                 <li><a href="#" className="hover:text-amber-500 transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-amber-500 transition-colors">Safety Center</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Contact Us</a></li>
+                <li><a href="#" className="hover:text-amber-500 transition-colors">Terms</a></li>
+                <li><a href="#" className="hover:text-amber-500 transition-colors">Privacy</a></li>
+                <li><a href="#contact" className="hover:text-amber-500 transition-colors">Contact Us</a></li>
               </ul>
             </div>
           </div>

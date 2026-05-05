@@ -38,8 +38,18 @@ interface Hotel {
   accessDescription?: string;
   localTipsDescription?: string;
   unavailableDates?: string[]; // ISO date strings
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: 'pending' | 'approved' | 'rejected' | 'active';
+  rejectionReason?: string;
   isFeatured?: boolean;
+  rooms?: any[];
+  extraServices?: string[];
+  houseRules?: string[];
+  owner?: {
+    name: string;
+    businessName?: string;
+    phoneNumber?: string;
+    email?: string;
+  };
 }
 
 export interface Service {
@@ -55,9 +65,11 @@ export interface Service {
   ownerId?: string; // Legacy
   providerId?: string;
   rating?: number;
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: 'pending' | 'approved' | 'rejected' | 'active';
+  rejectionReason?: string;
   isFeatured?: boolean;
   serviceType?: 'B2C' | 'B2B';
+  areas?: string[];
 }
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SHARED' | 'ACCEPTED' | 'CLOSED' | 'EXPIRED';
@@ -119,11 +131,13 @@ export interface HotelsContextType {
   setSearchDates: (dates: { startDate: Date; endDate: Date } | null) => void;
 }
 
+import { MOCK_PROPERTIES, MOCK_SERVICES } from '../utils/mockData';
+
 const HotelsContext = createContext<HotelsContextType | undefined>(undefined);
 
 export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [allHotels, setAllHotels] = useState<Hotel[]>([]);
-  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [allHotels, setAllHotels] = useState<Hotel[]>(MOCK_PROPERTIES as any);
+  const [allServices, setAllServices] = useState<Service[]>(MOCK_SERVICES as any);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [globalCategory, setGlobalCategoryState] = useState<string | null>(null);
@@ -156,25 +170,55 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const savedBookings = localStorage.getItem('stay_ease_bookings');
 
       if (savedHotels) {
-        setAllHotels(JSON.parse(savedHotels));
+        const parsed = JSON.parse(savedHotels);
+        if (parsed && parsed.length > 0) {
+          setAllHotels(parsed);
+        } else {
+          localStorage.removeItem('stay_ease_hotels');
+          setAllHotels(MOCK_PROPERTIES as any);
+        }
       } else {
         // Fallback to fetch or mock
-        const hotelsRes = await fetch('/api/hotels');
-        if (hotelsRes.ok) {
-          const data = await hotelsRes.json();
-          setAllHotels(data);
-          localStorage.setItem('stay_ease_hotels', JSON.stringify(data));
+        try {
+          const hotelsRes = await fetch('/api/hotels');
+          if (hotelsRes.ok) {
+            const data = await hotelsRes.json();
+            if (data && data.length > 0) {
+              setAllHotels(data);
+              localStorage.setItem('stay_ease_hotels', JSON.stringify(data));
+            } else {
+              setAllHotels(MOCK_PROPERTIES as any);
+            }
+          }
+        } catch (e) {
+          console.log('Using mock hotels fallback');
+          setAllHotels(MOCK_PROPERTIES as any);
         }
       }
 
       if (savedServices) {
-        setAllServices(JSON.parse(savedServices));
+        const parsed = JSON.parse(savedServices);
+        if (parsed && parsed.length > 0) {
+          setAllServices(parsed);
+        } else {
+          localStorage.removeItem('stay_ease_services');
+          setAllServices(MOCK_SERVICES as any);
+        }
       } else {
-        const servicesRes = await fetch('/api/services');
-        if (servicesRes.ok) {
-          const data = await servicesRes.json();
-          setAllServices(data);
-          localStorage.setItem('stay_ease_services', JSON.stringify(data));
+        try {
+          const servicesRes = await fetch('/api/services');
+          if (servicesRes.ok) {
+            const data = await servicesRes.json();
+            if (data && data.length > 0) {
+              setAllServices(data);
+              localStorage.setItem('stay_ease_services', JSON.stringify(data));
+            } else {
+              setAllServices(MOCK_SERVICES as any);
+            }
+          }
+        } catch (e) {
+          console.log('Using mock services fallback');
+          setAllServices(MOCK_SERVICES as any);
         }
       }
 
@@ -187,7 +231,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             reference: 'REF-POOL-1',
             bookingType: 'PROPERTY',
             status: 'SHARED',
-            itemId: 'dummy1',
+            itemId: 'hotel-1',
             itemName: 'Villa Partenope',
             customerId: 'user-guest-1',
             customerName: 'James W.',
@@ -207,7 +251,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             reference: 'REF-POOL-2',
             bookingType: 'PROPERTY',
             status: 'SHARED',
-            itemId: 'dummy2',
+            itemId: 'hotel-2',
             itemName: 'Centro Storico B&B',
             customerId: 'user-guest-2',
             customerName: 'Sophie M.',
@@ -227,7 +271,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             reference: 'REF-POOL-3',
             bookingType: 'PROPERTY',
             status: 'SHARED',
-            itemId: 'dummy3',
+            itemId: 'hotel-3',
             itemName: 'Chiaia Sea View',
             customerId: 'user-guest-3',
             customerName: 'Roberto K.',
@@ -255,7 +299,10 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const addHotel = useCallback((hotel: Hotel) => {
     setAllHotels(prev => {
-      const hotelWithCoords = { ...hotel };
+      const hotelWithCoords = { 
+        ...hotel, 
+        status: hotel.status || 'pending' 
+      };
       if ((!hotelWithCoords.lat || !hotelWithCoords.lng) && hotelWithCoords.area && AREA_COORDINATES[hotelWithCoords.area]) {
         hotelWithCoords.lat = AREA_COORDINATES[hotelWithCoords.area].lat;
         hotelWithCoords.lng = AREA_COORDINATES[hotelWithCoords.area].lng;
@@ -276,7 +323,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const addService = useCallback((service: Service) => {
     setAllServices(prev => {
-      const updated = [...prev, service];
+      const updated = [...prev, { ...service, status: service.status || 'pending' }];
       localStorage.setItem('stay_ease_services', JSON.stringify(updated));
       return updated;
     });
@@ -337,18 +384,20 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [refreshData]);
 
   const hotels = useMemo(() => {
-    let filtered = allHotels;
-    
-    // Default filter for public view: only approved properties
-    // In a real app, this would be more complex (e.g. admin sees all)
-    // For now, let's keep allHotels available in context for Dashboards
+    let filtered = allHotels.filter(h => h.status === 'approved');
     
     if (globalCategory) {
       filtered = filtered.filter(h => h.category === globalCategory);
     }
     
     if (selectedAreas.length > 0) {
-      filtered = filtered.filter(h => h.area && selectedAreas.includes(h.area));
+      filtered = filtered.filter(h => {
+        if (!h.area) return false;
+        return selectedAreas.some(area => {
+          const areaBase = area.split('(')[0].trim().toLowerCase();
+          return h.area!.toLowerCase().includes(areaBase);
+        });
+      });
     }
 
     if (priceRange) {
@@ -385,9 +434,21 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [allHotels, globalCategory, selectedAreas, priceRange, searchDates]);
 
   const approvedServices = useMemo(() => 
-    allServices.filter(s => s.status === 'approved'),
+    allServices.filter(s => 
+      s.status === 'approved' || 
+      s.status === undefined ||
+      s.status === 'active'
+    ),
     [allServices]
   );
+
+  console.log('--- HotelsContext Diagnostics ---');
+  console.log('allHotels count:', allHotels.length);
+  console.log('allServices count:', allServices.length);
+  console.log('bookings count:', bookings.length);
+  console.log('First Hotel:', allHotels[0]);
+  console.log('First Service:', allServices[0]);
+  console.log('isLoading:', isLoading);
 
   const contextValue = useMemo(() => ({ 
     hotels, 
@@ -437,6 +498,10 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setPriceRange,
     setSearchDates
   ]);
+
+  console.log('--- Homepage Diagnostics ---');
+  console.log('Featured Properties Filtered:', allHotels.filter(h => h.status === 'approved' && h.isFeatured).length);
+  console.log('Featured Experiences Filtered:', allServices.filter(s => s.status === 'approved' && s.serviceType === 'B2C').length);
 
   return (
     <HotelsContext.Provider value={contextValue}>

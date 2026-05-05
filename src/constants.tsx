@@ -1,6 +1,7 @@
 import { 
   Car, Bike, Ship, Palmtree, UserCheck, Utensils, 
-  ChefHat, Sparkles, ShieldCheck, Truck, Hammer, Camera, Paintbrush, HardHat, ShieldAlert
+  ChefHat, Sparkles, ShieldCheck, Truck, Hammer, Camera, Paintbrush, HardHat, ShieldAlert,
+  Map as MapIcon
 } from 'lucide-react';
 
 export const SUPPLIER_CATEGORIES = [
@@ -42,35 +43,40 @@ export const AREA_COORDINATES: Record<string, { lat: number; lng: number }> = {
 export const SERVICE_CATEGORIES = [
   {
     id: 'Transport',
-    label: 'TRANSPORT',
+    label: 'Transport',
     icon: Car,
     subCategories: [
       { id: 'rent_a_car', label: 'Rent a Car', icon: Car },
-      { id: 'rent_scooter', label: 'Rent Scooter', icon: Bike },
+      { id: 'rent_scooter', label: 'Rent a Scooter', icon: Bike },
       { id: 'bike_rental', label: 'Bike Rental', icon: Bike },
       { id: 'taxi_services', label: 'Taxi Services', icon: Car },
-      { id: 'ncc_private', label: 'NCC Private', icon: ShieldCheck },
+      { id: 'ncc_private', label: 'Private NCC', icon: ShieldCheck },
+      { id: 'airport_transfer', label: 'Airport Transfer', icon: Car },
+      { id: 'transport_other', label: 'Other', icon: Sparkles }
     ]
   },
   {
     id: 'Tours',
-    label: 'TOURS & LEISURE',
+    label: 'Tours & Leisure',
     icon: Palmtree,
     subCategories: [
       { id: 'boat_rental', label: 'Boat Rental', icon: Ship },
-      { id: 'coastline', label: 'Coastline', icon: Palmtree },
+      { id: 'coastline_tour', label: 'Coastline Tour', icon: Palmtree },
       { id: 'private_tour', label: 'Private Tour', icon: UserCheck },
+      { id: 'city_tour', label: 'City Tour', icon: MapIcon },
+      { id: 'tours_other', label: 'Other', icon: Sparkles }
     ]
   },
   {
     id: 'Lifestyle',
-    label: 'FOOD & LIFESTYLE',
+    label: 'Food & Lifestyle',
     icon: Utensils,
     subCategories: [
       { id: 'restaurant_booking', label: 'Restaurant Table Booking', icon: Utensils },
       { id: 'private_chef', label: 'Private Chef', icon: ChefHat },
       { id: 'cooking_class', label: 'Cooking Class', icon: Utensils },
-      { id: 'spa_massage', label: 'Spa Massage', icon: Sparkles },
+      { id: 'spa_massage', label: 'Spa & Massage', icon: Sparkles },
+      { id: 'lifestyle_other', label: 'Other', icon: Sparkles }
     ]
   }
 ];

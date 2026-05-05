@@ -133,7 +133,7 @@ export const store: { [key: string]: any[] } = {
 // Helper for simple CRUD
 export const mockDb = {
   create: async (collection: string, data: any) => {
-    const newItem = { ...data, id: Math.random().toString(36).substr(2, 9), createdAt: new Date(), updatedAt: new Date() };
+    const newItem = { ...data, id: data.id || Math.random().toString(36).substr(2, 9), createdAt: new Date(), updatedAt: new Date() };
     store[collection].push(newItem);
     return newItem;
   },

@@ -177,7 +177,7 @@ export const SupplierDirectory: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pt-32 pb-12 px-4 md:px-8">
+    <div className="min-h-screen bg-[#0f172a] pt-32 pb-12 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-8 md:mb-12">
@@ -185,21 +185,21 @@ export const SupplierDirectory: React.FC = () => {
             onClick={() => navigate('/owner')} 
             className="flex items-center gap-2 group mb-6 transition-all hover:opacity-70"
           >
-            <ArrowLeft className="h-4 w-4 text-[#fbbf24] transition-transform group-hover:-translate-x-1" />
-            <span className="text-[#1e293b] font-bold text-sm transition-colors group-hover:text-[#fbbf24]">Back</span>
+            <ArrowLeft className="h-4 w-4 text-[#F5A623] transition-transform group-hover:-translate-x-1" />
+            <span className="text-white font-bold text-sm transition-colors group-hover:text-[#F5A623]">Back</span>
           </button>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#1e293b] mb-2">Supplier Directory</h1>
-          <p className="text-neutral-500">Find local professionals to support your property management in Naples.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Supplier Directory</h1>
+          <p className="text-[#94a3b8]">Find local professionals to support your property management in Naples.</p>
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="sticky top-20 z-30 bg-neutral-50/80 backdrop-blur-md py-4 mb-8">
+        <div className="sticky top-20 z-30 bg-[#0f172a]/80 backdrop-blur-md py-4 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748b]" />
               <Input 
                 placeholder="Search by name or area..." 
-                className="pl-12 h-14 rounded-2xl border-none shadow-sm"
+                className="pl-12 h-14 rounded-2xl bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -207,8 +207,8 @@ export const SupplierDirectory: React.FC = () => {
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide lg:pb-0">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`whitespace-nowrap px-6 h-14 rounded-2xl font-bold transition-all border-2 ${
-                  !selectedCategory ? 'bg-[#1e293b] text-white border-[#1e293b]' : 'bg-white text-neutral-500 border-white shadow-sm'
+                className={`whitespace-nowrap px-6 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${
+                  !selectedCategory ? 'bg-[#F5A623] text-black border-[#F5A623]' : 'bg-[#1e293b] text-[#94a3b8] border-[#334155] shadow-sm'
                 }`}
               >
                 All Services
@@ -217,8 +217,8 @@ export const SupplierDirectory: React.FC = () => {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`whitespace-nowrap flex items-center gap-2 px-6 h-14 rounded-2xl font-bold transition-all border-2 ${
-                    selectedCategory === cat.id ? 'bg-[#1e293b] text-white border-[#1e293b]' : 'bg-white text-neutral-500 border-white shadow-sm'
+                  className={`whitespace-nowrap flex items-center gap-2 px-6 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${
+                    selectedCategory === cat.id ? 'bg-[#F5A623] text-black border-[#F5A623]' : 'bg-[#1e293b] text-[#94a3b8] border-[#334155] shadow-sm'
                   }`}
                 >
                   <cat.icon className="h-4 w-4" />
@@ -234,54 +234,54 @@ export const SupplierDirectory: React.FC = () => {
           {filteredSuppliers.map(supplier => (
             <Card 
               key={supplier.id} 
-              className="overflow-hidden border-none shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col h-full bg-white rounded-3xl group"
+              className="overflow-hidden border-[#334155] shadow-sm hover:shadow-xl transition-all cursor-pointer flex flex-col h-full bg-[#1e293b] rounded-[2rem] group"
               onClick={() => setSelectedSupplier(supplier)}
             >
               {/* Header */}
               <div className="p-6 pb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-full">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-[#fbbf24]" />
-                    <span className="text-[10px] font-bold text-[#fbbf24] uppercase tracking-wider">Verified</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-[#F5A623]/10 rounded-full border border-[#F5A623]/20">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[#F5A623]" />
+                    <span className="text-[10px] font-black text-[#F5A623] uppercase tracking-wider">Verified</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-neutral-400 text-xs font-bold uppercase">
+                  <div className="flex items-center gap-1.5 text-[#94a3b8] text-[10px] font-black uppercase tracking-widest">
                     <MapPin className="h-3.5 w-3.5" />
                     {supplier.area}
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-[#1e293b] mb-1 group-hover:text-[#fbbf24] transition-colors">{supplier.name}</h3>
-                <p className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#F5A623] transition-colors">{supplier.name}</h3>
+                <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-widest italic">
                   {SUPPLIER_CATEGORIES.find(c => c.id === supplier.category)?.label || supplier.category}
                 </p>
               </div>
 
               {/* Body */}
               <div className="p-6 pt-0 flex-1">
-                <div className="flex items-center justify-between mb-4 pb-4 border-b border-neutral-100">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#334155]">
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-[#1e293b]">€{supplier.price}</span>
-                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">{supplier.priceUnit}</span>
+                    <span className="text-lg font-bold text-[#F5A623]">€{supplier.price}</span>
+                    <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-widest">{supplier.priceUnit}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500 uppercase tracking-widest">
-                    <Sparkles className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-1 text-[10px] font-black text-white/40 uppercase tracking-widest">
+                    <Sparkles className="h-3.5 w-3.5 text-[#F5A623]" />
                     <span>{supplier.rating} rating</span>
                   </div>
                 </div>
-                <p className="text-neutral-500 text-sm line-clamp-2 mb-6 leading-relaxed">{supplier.bio}</p>
+                <p className="text-[#94a3b8] text-sm line-clamp-2 mb-6 leading-relaxed italic">"{supplier.bio}"</p>
                 
                 {/* 3-Image Preview Grid */}
                 <div className="grid grid-cols-3 gap-2">
                   {supplier.portfolio.map((img: string, idx: number) => (
-                    <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-neutral-100">
-                      <img src={img} alt="Portfolio" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                    <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-[#0f172a] border border-[#334155]">
+                      <img src={img} alt="Portfolio" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Footer / Contact Bar */}
-              <div className="p-4 bg-neutral-50 flex items-center gap-2 border-t border-neutral-100" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center gap-2 pr-2 border-r border-neutral-200">
+              <div className="p-4 bg-[#0f172a] flex items-center gap-2 border-t border-[#334155]" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center gap-2 pr-2 border-r border-[#334155]">
                   <a 
                     href={`https://wa.me/${supplier.phone.replace('+', '')}`}
                     target="_blank"
@@ -291,13 +291,13 @@ export const SupplierDirectory: React.FC = () => {
                   </a>
                   <a 
                     href={`tel:${supplier.phone}`}
-                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-[#1e293b] hover:bg-neutral-800 text-white transition-all shadow-lg shadow-[#1e293b]/10"
+                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-white hover:bg-[#F5A623] text-black transition-all shadow-lg shadow-white/10"
                   >
                     <Phone className="h-4 w-4" />
                   </a>
                   <a 
                     href={`mailto:supplier@example.com`}
-                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] transition-all shadow-lg shadow-amber-500/10"
+                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-[#F5A623] hover:bg-[#f59e0b] text-[#1e293b] transition-all shadow-lg shadow-amber-500/10"
                   >
                     <Mail className="h-4 w-4" />
                   </a>
@@ -307,9 +307,9 @@ export const SupplierDirectory: React.FC = () => {
                     setSelectedSupplier(supplier);
                     setIsRequestModalOpen(true);
                   }}
-                  className="flex-1 bg-[#1e293b] hover:bg-neutral-800 text-white font-bold h-10 rounded-xl text-xs uppercase tracking-widest"
+                  className="flex-1 bg-[#F5A623] text-black hover:bg-white font-black h-10 rounded-xl text-[10px] uppercase tracking-widest shadow-lg shadow-[#F5A623]/10"
                 >
-                  Request Service
+                  Book Pro
                 </Button>
               </div>
             </Card>
@@ -326,16 +326,16 @@ export const SupplierDirectory: React.FC = () => {
         {/* Private Profile Modal */}
         <AnimatePresence>
           {selectedSupplier && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-[#1e293b]/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="w-full max-w-4xl max-h-full overflow-y-auto bg-white rounded-[2rem] shadow-2xl relative"
+                className="w-full max-w-4xl max-h-full overflow-y-auto bg-[#1e293b] rounded-[2rem] shadow-2xl relative border border-[#334155]"
               >
                 <button 
                   onClick={() => setSelectedSupplier(null)}
-                  className="absolute top-6 right-6 h-10 w-10 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-400 hover:text-red-500 transition-colors z-10"
+                  className="absolute top-6 right-6 h-10 w-10 flex items-center justify-center rounded-full bg-[#0f172a] text-[#94a3b8] hover:text-red-500 transition-colors z-10 border border-[#334155]"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -345,19 +345,19 @@ export const SupplierDirectory: React.FC = () => {
                   <div className="p-8 md:p-12 space-y-8">
                     <div>
                       <div className="flex items-center gap-2 mb-4">
-                        <CheckCircle2 className="h-5 w-5 text-[#fbbf24]" />
-                        <span className="text-xs font-bold text-[#fbbf24] uppercase tracking-[0.2em]">Verified Partner</span>
+                        <CheckCircle2 className="h-5 w-5 text-[#F5A623]" />
+                        <span className="text-xs font-black text-[#F5A623] uppercase tracking-[0.2em]">Verified Partner</span>
                       </div>
-                      <h2 className="text-3xl md:text-4xl font-bold text-[#1e293b] mb-4">{selectedSupplier.name}</h2>
-                      <p className="text-neutral-500 leading-relaxed text-lg">{selectedSupplier.bio}</p>
+                      <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{selectedSupplier.name}</h2>
+                      <p className="text-[#94a3b8] leading-relaxed text-lg">{selectedSupplier.bio}</p>
                     </div>
 
-                    <div className="space-y-6 pt-6 border-t border-neutral-100">
+                    <div className="space-y-6 pt-6 border-t border-white/10">
                       <div>
-                        <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Service Coverage</h4>
+                        <h4 className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest mb-3">Service Coverage</h4>
                         <div className="flex flex-wrap gap-2">
                           {selectedSupplier.coverage.map(area => (
-                            <span key={area} className="px-4 py-1.5 bg-neutral-50 rounded-full text-xs font-bold text-[#1e293b] border border-neutral-100">
+                            <span key={area} className="px-4 py-1.5 bg-[#0f172a] rounded-full text-xs font-bold text-white border border-[#334155]">
                               {area}
                             </span>
                           ))}
@@ -365,12 +365,12 @@ export const SupplierDirectory: React.FC = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Working Hours</h4>
-                          <p className="text-sm font-bold text-[#1e293b]">{selectedSupplier.workingHours}</p>
+                          <h4 className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest mb-1">Working Hours</h4>
+                          <p className="text-sm font-bold text-white">{selectedSupplier.workingHours}</p>
                         </div>
                         <div>
-                          <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Base Area</h4>
-                          <p className="text-sm font-bold text-[#1e293b]">{selectedSupplier.area}</p>
+                          <h4 className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest mb-1">Base Area</h4>
+                          <p className="text-sm font-bold text-white">{selectedSupplier.area}</p>
                         </div>
                       </div>
                     </div>
@@ -379,20 +379,20 @@ export const SupplierDirectory: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <Button 
                           onClick={() => window.open(`https://wa.me/${selectedSupplier.phone.replace('+', '')}`, '_blank')}
-                          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold h-14 rounded-2xl"
+                          className="flex-1 bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest h-14 rounded-2xl shadow-lg shadow-green-500/10"
                         >
                           <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp
                         </Button>
                         <Button 
                           onClick={() => window.location.href = `tel:${selectedSupplier.phone}`}
-                          className="flex-1 bg-[#1e293b] text-white font-bold h-14 rounded-2xl"
+                          className="flex-1 bg-white hover:bg-[#F5A623] text-black font-black uppercase tracking-widest h-14 rounded-2xl shadow-lg shadow-white/10"
                         >
                           <Phone className="h-5 w-5 mr-2" /> Direct Call
                         </Button>
                       </div>
                       <Button 
                         onClick={() => setIsRequestModalOpen(true)}
-                        className="w-full bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] font-bold h-14 rounded-2xl"
+                        className="w-full bg-[#F5A623] hover:bg-white text-black font-black h-14 rounded-2xl shadow-lg shadow-[#F5A623]/20 uppercase tracking-widest h-14"
                       >
                         Request Service
                       </Button>
@@ -400,12 +400,12 @@ export const SupplierDirectory: React.FC = () => {
                   </div>
 
                   {/* Right: Portfolio Grid */}
-                  <div className="bg-neutral-50 p-6 md:p-8 lg:p-12">
-                    <h4 className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-6 block lg:hidden">Full Portfolio</h4>
+                  <div className="bg-[#0f172a] p-6 md:p-8 lg:p-12">
+                    <h4 className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest mb-6 block lg:hidden">Full Portfolio</h4>
                     <div className="grid grid-cols-2 gap-4 h-fit">
                       {selectedSupplier.portfolio.map((img, idx) => (
-                        <div key={idx} className={`aspect-square rounded-3xl overflow-hidden bg-white shadow-sm border-2 border-white transition-all hover:border-[#fbbf24] ${idx === 0 ? 'col-span-2' : ''}`}>
-                          <img src={img} alt="Work" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                        <div key={idx} className={`aspect-square rounded-3xl overflow-hidden bg-[#0f172a] shadow-sm border-2 border-[#334155] transition-all hover:border-[#F5A623] ${idx === 0 ? 'col-span-2' : ''}`}>
+                          <img src={img} alt="Work" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
                         </div>
                       ))}
                     </div>
@@ -419,25 +419,25 @@ export const SupplierDirectory: React.FC = () => {
         {/* Request Service Modal */}
         <AnimatePresence>
           {isRequestModalOpen && selectedSupplier && (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8 bg-[#1e293b]/80 backdrop-blur-sm">
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="w-full max-w-lg bg-white rounded-[2rem] shadow-2xl relative"
+                className="w-full max-w-lg bg-[#1e293b] rounded-[2rem] shadow-2xl relative border border-[#334155]"
               >
                 <div className="p-8 space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold text-[#1e293b]">Request Service</h2>
-                      <p className="text-neutral-500">From {selectedSupplier.name}</p>
+                      <h2 className="text-2xl font-bold text-white">Request Service</h2>
+                      <p className="text-[#94a3b8]">From {selectedSupplier.name}</p>
                     </div>
                     <button 
                       onClick={() => {
                         setIsRequestModalOpen(false);
                         setSelectedSupplier(null);
                       }}
-                      className="h-10 w-10 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-400 hover:text-red-500 transition-colors"
+                      className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 text-[#94a3b8] hover:text-red-500 transition-colors"
                     >
                       <X className="h-5 w-5" />
                     </button>
@@ -445,35 +445,35 @@ export const SupplierDirectory: React.FC = () => {
 
                   <form onSubmit={handleRequestService} className="space-y-4">
                     <div>
-                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Service Total</label>
-                      <div className="h-14 bg-neutral-50 rounded-2xl flex items-center px-4 font-bold text-[#1e293b]">
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Service Total</label>
+                      <div className="h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center px-4 font-bold text-[#F5A623]">
                         €{selectedSupplier.price} {selectedSupplier.priceUnit}
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Select Property</label>
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Select Property</label>
                       <select 
                         required
-                        className="w-full h-14 bg-neutral-100 rounded-2xl px-4 font-bold text-[#1e293b] outline-none focus:ring-2 focus:ring-[#fbbf24]"
+                        className="w-full h-14 bg-[#0f172a] rounded-2xl px-4 font-black text-white outline-none focus:ring-2 focus:ring-[#F5A623] border border-[#334155] text-sm"
                         value={selectedPropertyId}
                         onChange={e => setSelectedPropertyId(e.target.value)}
                       >
                         <option value="">Choose a property...</option>
                         {myProperties.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
+                          <option key={p.id} value={p.id} className="bg-[#1e293b]">{p.name}</option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Date Needed</label>
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Date Needed</label>
                       <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral-400" />
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#64748b]" />
                         <Input 
                           type="datetime-local" 
                           required
-                          className="pl-12 h-14 rounded-2xl border-none shadow-sm"
+                          className="pl-12 h-14 rounded-2xl bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]"
                           value={requestDate}
                           onChange={e => setRequestDate(e.target.value)}
                         />
@@ -481,9 +481,9 @@ export const SupplierDirectory: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2">Special Requirements / Notes</label>
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Special Requirements / Notes</label>
                       <textarea 
-                        className="w-full bg-neutral-100 rounded-2xl p-4 text-[#1e293b] outline-none focus:ring-2 focus:ring-[#fbbf24] placeholder:text-neutral-400"
+                        className="w-full bg-[#0f172a] rounded-2xl p-4 text-white outline-none focus:ring-2 focus:ring-[#F5A623] border border-[#334155] placeholder:text-[#64748b] text-sm"
                         rows={4}
                         placeholder="Any special instructions for the supplier..."
                         value={requestNotes}
@@ -491,7 +491,7 @@ export const SupplierDirectory: React.FC = () => {
                       />
                     </div>
 
-                    <Button type="submit" className="w-full h-14 rounded-2xl bg-[#fbbf24] hover:bg-[#f59e0b] text-[#1e293b] font-bold text-lg mt-4">
+                    <Button type="submit" className="w-full h-14 rounded-2xl bg-[#F5A623] hover:bg-white text-black font-black uppercase tracking-widest text-lg mt-4 shadow-lg shadow-[#F5A623]/10">
                       Submit Request
                     </Button>
                   </form>

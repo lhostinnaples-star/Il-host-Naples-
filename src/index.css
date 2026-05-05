@@ -153,3 +153,36 @@ body {
 .marker-cluster span {
 	line-height: 26px; /* Adjusted for border */
 }
+
+/* Date range picker custom styles */
+.custom-date-range .rdrDayToday .rdrDayNumber span:after {
+  background: #F5A623 !important;
+}
+
+.custom-date-range .rdrDayHovered {
+  border: 1px solid #F5A623 !important;
+}
+
+.custom-date-range .rdrMonthAndYearPickers select {
+  color: #0f172a !important;
+}
+
+.custom-date-range .rdrNextPrevButton {
+  background: #fff !important;
+}
+.custom-date-range .rdrNextPrevButton i {
+  border-color: transparent transparent transparent #F5A623 !important;
+}
+
+.custom-date-range .rdrPprevButton i {
+  border-color: transparent #F5A623 transparent transparent !important;
+}
+
+.custom-date-range .rdrDayPassive .rdrDayNumber span {
+  color: #d5dce0 !important;
+}
+
+.custom-date-range .rdrDayStartPreview, .custom-date-range .rdrDayInPreview, .custom-date-range .rdrDayEndPreview {
+  background: rgba(245, 166, 35, 0.2) !important;
+  border-color: #F5A623 !important;
+}

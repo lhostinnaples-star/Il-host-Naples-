@@ -16,12 +16,7 @@ interface ServiceFormModalProps {
   initialData?: any;
 }
 
-import { PROPERTY_AREAS } from '../constants';
-
-const categories = [
-  'Car Rental', 'Bike Rental', 'Boat Tour', 'City Tour', 
-  'Airport Transfer', 'Private Chef', 'Other'
-];
+import { PROPERTY_AREAS, SERVICE_CATEGORIES } from '../constants';
 
 const priceUnits = [
   'per person', 'per trip', 'per day', 'per hour'
@@ -38,7 +33,8 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>({
     name: '',
-    category: 'City Tour',
+    category: SERVICE_CATEGORIES[0].id,
+    subCategory: '',
     description: '',
     price: '',
     priceUnit: 'per person',
@@ -61,8 +57,8 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
   const handleNext = () => {
     if (currentStep === 1) {
-      if (!formData.name || !formData.category) {
-        toast.error('Please fill in name and category');
+      if (!formData.name || !formData.category || !formData.subCategory) {
+        toast.error('Please fill in name, category and subcategory');
         return;
       }
     }
@@ -157,13 +153,26 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Category</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Main Category</label>
                     <select 
                       className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none"
                       value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      onChange={(e) => setFormData({...formData, category: e.target.value, subCategory: ''})}
                     >
-                      {categories.map(c => <option key={c}>{c}</option>)}
+                      {SERVICE_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Sub Category</label>
+                    <select 
+                      className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm outline-none"
+                      value={formData.subCategory}
+                      onChange={(e) => setFormData({...formData, subCategory: e.target.value})}
+                    >
+                      <option value="" disabled>Select sub category</option>
+                      {SERVICE_CATEGORIES.find(c => c.id === formData.category)?.subCategories.map(sub => (
+                        <option key={sub.id} value={sub.label}>{sub.label}</option>
+                      ))}
                     </select>
                   </div>
                   <div className="md:col-span-2 space-y-2">

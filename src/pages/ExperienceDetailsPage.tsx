@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useHotels, Booking } from '../contexts/HotelsContext';
 import { SEOHead } from '../components/SEOHead';
 import { generateExperienceSchema, generateSlug, generateBreadcrumbSchema } from '../utils/seo';
+import { BackButton } from '../components/BackButton';
 import { format } from 'date-fns';
 
 export const ExperienceDetailsPage: React.FC = () => {
@@ -56,13 +57,10 @@ export const ExperienceDetailsPage: React.FC = () => {
 
   const handleOpenForm = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) {
-      toast.error('Please login to request a service');
-      navigate('/login');
-      return;
-    }
     setShowRequestForm(true);
   };
+
+  const [bookingRef, setBookingRef] = useState('');
 
   const handleSendRequest = async () => {
     if (!customerDetails.name || !customerDetails.email || !customerDetails.phone || !requestDate) {
@@ -74,6 +72,7 @@ export const ExperienceDetailsPage: React.FC = () => {
     setIsSubmitting(true);
 
     const reference = 'EXP-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    setBookingRef(reference);
     const totalPrice = service.price * numPeople;
 
     const newBooking: Partial<Booking> = {
@@ -138,7 +137,8 @@ export const ExperienceDetailsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white pt-32 pb-20">
+    <div className="min-h-screen bg-white pt-24 md:pt-32 pb-20 relative">
+      <BackButton className="fixed top-20 left-4 md:absolute md:top-24 md:left-6 z-40" variant="dark" />
       <SEOHead 
         title={`${service.name} in Naples`}
         description={`Book ${service.name} in Naples. From ${formatPrice(service.price)}. ${service.description || service.shortDescription}.`}
@@ -441,21 +441,32 @@ export const ExperienceDetailsPage: React.FC = () => {
             <motion.div 
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white w-full h-full md:h-auto md:max-w-sm md:rounded-[3rem] p-8 md:p-12 text-center flex flex-col items-center justify-center"
+              className="bg-white w-full h-full md:h-auto md:max-w-sm md:rounded-[3rem] p-8 md:p-12 text-center flex flex-col items-center justify-center shadow-2xl"
             >
               <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
                 <CheckCircle2 className="h-12 w-12 text-green-500" />
               </div>
               <h2 className="text-3xl font-black text-[#0f172a] mb-4">Request Sent!</h2>
-              <p className="text-neutral-500 text-sm font-medium mb-8">
-                Your request has been received. The provider will respond within 24 hours.
+              <p className="text-neutral-500 text-sm font-medium mb-6">
+                Your request has been received. 
+                Reference: <span className="font-bold text-[#fbbf24]">{bookingRef}</span>
               </p>
-              <Button 
-                onClick={() => navigate('/dashboard')}
-                className="w-full h-14 bg-[#0f172a] text-white font-black uppercase tracking-widest rounded-2xl"
-              >
-                Go to Dashboard
-              </Button>
+              
+              <div className="w-full space-y-4">
+                <Button 
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full h-14 bg-[#0f172a] text-white font-black uppercase tracking-widest rounded-2xl"
+                >
+                  Go to Dashboard
+                </Button>
+                <Button 
+                  onClick={() => navigate('/')}
+                  variant="outline"
+                  className="w-full h-14 border-neutral-200 text-neutral-600 font-bold rounded-2xl"
+                >
+                  Back to Home
+                </Button>
+              </div>
             </motion.div>
           </div>
         )}

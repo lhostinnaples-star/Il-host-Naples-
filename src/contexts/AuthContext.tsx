@@ -23,6 +23,7 @@ interface User {
   role: UserRole;
   status: UserStatus;
   phone?: string;
+  rejectionReason?: string;
   roleDetails?: any;
 }
 
@@ -31,6 +32,8 @@ interface AuthContextType {
   token: string | null;
   login: (token: string, user: User) => void;
   loginAsDemo: (role: UserRole) => void;
+  updateUser: (updates: Partial<User>) => void;
+  updateUserStatus: (userId: string, status: UserStatus, reason?: string) => void;
   logout: () => void;
   isLoading: boolean;
   isDemoMode: boolean;
@@ -160,15 +163,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsDemoMode(false);
   }, []);
 
+  const updateUser = React.useCallback((updates: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null);
+  }, []);
+
+  const updateUserStatus = React.useCallback((userId: string, status: UserStatus, reason?: string) => {
+    // In a real app, this would be an API call
+    console.log(`Email notification sent to user ${userId}: Your account status is now ${status}${reason ? `. Reason: ${reason}` : ''}`);
+    
+    setUser(prev => {
+      if (prev && prev.id === userId) {
+        return { ...prev, status, rejectionReason: reason };
+      }
+      return prev;
+    });
+
+    // Also update in MOCK_USERS for demo purposes if needed
+    // or persist in local storage if we were using it for users
+  }, []);
+
   const value = React.useMemo(() => ({ 
     user, 
     token, 
     login, 
     loginAsDemo, 
+    updateUser,
+    updateUserStatus,
     logout, 
     isLoading, 
     isDemoMode 
-  }), [user, token, login, loginAsDemo, logout, isLoading, isDemoMode]);
+  }), [user, token, login, loginAsDemo, updateUser, updateUserStatus, logout, isLoading, isDemoMode]);
 
   return (
     <AuthContext.Provider value={value}>

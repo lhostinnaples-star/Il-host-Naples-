@@ -1,5 +1,6 @@
 export const seedProperties = [
   {
+    "id": "hotel-1",
     "name": "Capri Tiberio Palace",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant ISLANDS area.",
     "address": "Via Napoli 1",
@@ -43,6 +44,7 @@ export const seedProperties = [
     "phoneNumber": "+39 081 123 4567"
   },
   {
+    "id": "hotel-2",
     "name": "Hotel Quisisana",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant ISLANDS area.",
     "address": "Via Napoli 2",
@@ -82,6 +84,7 @@ export const seedProperties = [
     "phoneNumber": "+39 081 765 4321"
   },
   {
+    "id": "hotel-3",
     "name": "Excelsior Parco",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant ISLANDS area.",
     "address": "Via Napoli 3",
@@ -118,6 +121,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-4",
     "name": "B&B Il Bacio di Capri",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant ISLANDS area.",
     "address": "Via Napoli 4",
@@ -151,6 +155,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-5",
     "name": "Ischia Blu Resort",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant ISLANDS area.",
     "address": "Via Napoli 5",
@@ -187,6 +192,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-6",
     "name": "San Montano Resort & Spa",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant ISLANDS area.",
     "address": "Via Napoli 6",
@@ -221,6 +227,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-7",
     "name": "Procida Camp & Resort",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant ISLANDS area.",
     "address": "Via Napoli 7",
@@ -254,6 +261,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-8",
     "name": "Lhost in Naples",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant CENTER area.",
     "address": "Via Napoli 8",
@@ -288,6 +296,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-9",
     "name": "Grand Hotel Oriente",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant CENTER area.",
     "address": "Via Napoli 9",
@@ -321,6 +330,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-10",
     "name": "Decumani Hotel de Charme",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant CENTER area.",
     "address": "Via Napoli 10",
@@ -356,6 +366,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-11",
     "name": "B&B Centro Storico",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant CENTER area.",
     "address": "Via Napoli 11",
@@ -388,6 +399,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-12",
     "name": "Palazzo Caracciolo",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant CENTER area.",
     "address": "Via Napoli 12",
@@ -425,6 +437,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-13",
     "name": "Santa Chiara Boutique Hotel",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant CENTER area.",
     "address": "Via Napoli 13",
@@ -459,6 +472,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-14",
     "name": "Spaccanapoli Comfort Suites",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant CENTER area.",
     "address": "Via Napoli 14",
@@ -491,6 +505,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-15",
     "name": "Grand Hotel Vesuvio",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 15",
@@ -525,6 +540,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-16",
     "name": "Eurostars Hotel Excelsior",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 16",
@@ -560,6 +576,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-17",
     "name": "Royal Continental",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 17",
@@ -595,6 +612,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-18",
     "name": "Relais sul Mare",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 18",
@@ -628,6 +646,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-19",
     "name": "Partenope Relais",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 19",
@@ -661,6 +680,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-20",
     "name": "B&B Lungomare",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 20",
@@ -692,6 +712,7 @@ export const seedProperties = [
     "extraServices": ["rent_car", "rent_scooter", "boat_rental", "restaurant_booking"]
   },
   {
+    "id": "hotel-21",
     "name": "Miramare",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant SEAFRONT area.",
     "address": "Via Napoli 21",
@@ -726,6 +747,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-22",
     "name": "Starhotels Terminus",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant STATION area.",
     "address": "Via Napoli 22",
@@ -761,6 +783,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-23",
     "name": "UNAHOTELS Napoli",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant STATION area.",
     "address": "Via Napoli 23",
@@ -797,6 +820,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-24",
     "name": "B&B Napoli Binario 1",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STATION area.",
     "address": "Via Napoli 24",
@@ -828,6 +852,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-25",
     "name": "B&B Sweet Sleep",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STATION area.",
     "address": "Via Napoli 25",
@@ -858,6 +883,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-26",
     "name": "Hotel Vergilius Billia",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant STATION area.",
     "address": "Via Napoli 26",
@@ -893,6 +919,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-27",
     "name": "B&B Firenze 32",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STATION area.",
     "address": "Via Napoli 27",
@@ -924,6 +951,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-28",
     "name": "B&B Central Station",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STATION area.",
     "address": "Via Napoli 28",
@@ -957,6 +985,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-29",
     "name": "Hotel Leopardi",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant STADIUM area.",
     "address": "Via Napoli 29",
@@ -989,6 +1018,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-30",
     "name": "LHP Napoli Palace & SPA",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant STADIUM area.",
     "address": "Via Napoli 30",
@@ -1025,6 +1055,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-31",
     "name": "B&B Fuorigrotta",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STADIUM area.",
     "address": "Via Napoli 31",
@@ -1058,6 +1089,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-32",
     "name": "B&B Mostra d'Oltremare",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STADIUM area.",
     "address": "Via Napoli 32",
@@ -1089,6 +1121,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-33",
     "name": "Hotel Serius",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant STADIUM area.",
     "address": "Via Napoli 33",
@@ -1123,6 +1156,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-34",
     "name": "B&B Domus Campi Flegrei",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant STADIUM area.",
     "address": "Via Napoli 34",
@@ -1156,6 +1190,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-35",
     "name": "Hotel Cimarosa",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant VOMERO area.",
     "address": "Via Napoli 35",
@@ -1191,6 +1226,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-36",
     "name": "B&B Scarlatti",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant VOMERO area.",
     "address": "Via Napoli 36",
@@ -1225,6 +1261,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-37",
     "name": "Villa Maria",
     "description": "Experience the best of Naples in this stunning hotel located in the vibrant VOMERO area.",
     "address": "Via Napoli 37",
@@ -1259,6 +1296,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-38",
     "name": "B&B La Casa di Plinio",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant VOMERO area.",
     "address": "Via Napoli 38",
@@ -1292,6 +1330,7 @@ export const seedProperties = [
     ]
   },
   {
+    "id": "hotel-39",
     "name": "Gentile Relais",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant VOMERO area.",
     "address": "Via Napoli 39",
@@ -1322,6 +1361,7 @@ export const seedProperties = [
     "badges": []
   },
   {
+    "id": "hotel-40",
     "name": "7th Floor Suite",
     "description": "Experience the best of Naples in this stunning bed and breakfast located in the vibrant VOMERO area.",
     "address": "Via Napoli 40",

@@ -212,60 +212,62 @@ export const Navbar: React.FC = () => {
       </AnimatePresence>
 
       {/* Lower Navigation Bar */}
-      <div className="border-t border-white/10 overflow-x-auto scrollbar-hide">
-        <div className="mx-auto flex h-10 md:h-12 max-w-7xl items-center gap-1.5 md:gap-2 px-4 md:px-6 min-w-max">
-          <button 
-            onClick={() => {
-              setGlobalCategory(globalCategory === 'holiday_house' ? null : 'holiday_house');
-              navigate('/');
-            }}
-            className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
-              globalCategory === 'holiday_house' 
-                ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
-                : 'border-transparent hover:bg-white/5 text-white'
-            }`}
-          >
-            <Home className="h-3 w-3 md:h-4 md:w-4" />
-            Holiday House
-          </button>
-          <button 
-            onClick={() => {
-              setGlobalCategory(globalCategory === 'bnb' ? null : 'bnb');
-              navigate('/');
-            }}
-            className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
-              globalCategory === 'bnb' 
-                ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
-                : 'border-transparent hover:bg-white/5 text-white'
-            }`}
-          >
-            <Coffee className="h-3 w-3 md:h-4 md:w-4" />
-            Bed & Breakfast
-          </button>
-          <Link 
-            to="/map"
-            className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
-              location.pathname === '/map'
-                ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
-                : 'border-transparent hover:bg-white/5 text-white'
-            }`}
-          >
-            <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-            Map
-          </Link>
-          <Link 
-            to="/services"
-            className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
-              location.pathname === '/services'
-                ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
-                : 'border-transparent hover:bg-white/5 text-white'
-            }`}
-          >
-            <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
-            Experiences
-          </Link>
+      {!['/dashboard', '/owner', '/supplier', '/service-dashboard', '/admin', '/shared-pool', '/supplier-directory', '/login', '/register', '/verify-email'].some(path => location.pathname.startsWith(path)) && (
+        <div className="border-t border-white/10 overflow-x-auto scrollbar-hide">
+          <div className="mx-auto flex h-10 md:h-12 max-w-7xl items-center gap-1.5 md:gap-2 px-4 md:px-6 min-w-max">
+            <button 
+              onClick={() => {
+                setGlobalCategory(globalCategory === 'holiday_house' ? null : 'holiday_house');
+                navigate('/');
+              }}
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
+                globalCategory === 'holiday_house' 
+                  ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
+                  : 'border-transparent hover:bg-white/5 text-white'
+              }`}
+            >
+              <Home className="h-3 w-3 md:h-4 md:w-4" />
+              Holiday House
+            </button>
+            <button 
+              onClick={() => {
+                setGlobalCategory(globalCategory === 'bnb' ? null : 'bnb');
+                navigate('/');
+              }}
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
+                globalCategory === 'bnb' 
+                  ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
+                  : 'border-transparent hover:bg-white/5 text-white'
+              }`}
+            >
+              <Coffee className="h-3 w-3 md:h-4 md:w-4" />
+              Bed & Breakfast
+            </button>
+            <Link 
+              to="/map"
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
+                location.pathname === '/map'
+                  ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
+                  : 'border-transparent hover:bg-white/5 text-white'
+              }`}
+            >
+              <MapPin className="h-3 w-3 md:h-4 md:w-4" />
+              Map
+            </Link>
+            <Link 
+              to="/services"
+              className={`flex items-center gap-1.5 px-3 md:px-4 py-1 text-[10px] md:text-sm font-bold transition-all rounded-full border cursor-pointer ${
+                location.pathname === '/services'
+                  ? 'border-[#fbbf24] bg-[#fbbf24]/10 text-[#fbbf24]' 
+                  : 'border-transparent hover:bg-white/5 text-white'
+              }`}
+            >
+              <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
+              Experiences
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };
