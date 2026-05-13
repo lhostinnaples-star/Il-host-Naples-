@@ -10,7 +10,7 @@ import {
   MoreVertical, ExternalLink, Filter, Search, ChevronRight,
   TrendingUp, ArrowUpRight, ArrowDownRight, MapPin, Users as UsersIcon,
   Package, LayoutGrid, AlertCircle, Mail, Phone, Image as ImageIcon,
-  FileText, Globe, ShieldCheck, Languages, Check
+  FileText, Globe, ShieldCheck, Languages, Check, X, Map
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import { Checkbox, Textarea, Select } from '../components/UI';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserStatus } from '../contexts/AuthContext';
 import { PendingApprovalScreen } from '../components/PendingApprovalScreen';
+import { SEOHead } from '../components/SEOHead';
 
 const CountdownTimer: React.FC<{ acceptedAt: string, onExpire: () => void }> = ({ acceptedAt, onExpire }) => {
   const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
@@ -74,7 +75,7 @@ const CountdownTimer: React.FC<{ acceptedAt: string, onExpire: () => void }> = (
 export const OwnerDashboard: React.FC = () => {
   const { user, token, isDemoMode, updateUser } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allHotels, addHotel, updateHotel, deleteHotel, bookings: allBookings, updateBooking } = useHotels();
+  const { allHotels, addHotel, updateHotel, deleteHotel, bookings: allBookings, updateBooking, addBooking } = useHotels();
 
   if (user?.status === UserStatus.PENDING_APPROVAL || user?.status === UserStatus.REJECTED) {
     return <PendingApprovalScreen status={user.status} rejectionReason={user.rejectionReason} />;
@@ -91,6 +92,76 @@ export const OwnerDashboard: React.FC = () => {
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any>(null);
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
+
+  // Manual Pool Share State
+  const [showManualPoolModal, setShowManualPoolModal] = useState(false);
+  const [manualPoolForm, setManualPoolForm] = useState({
+    guestName: '',
+    adults: 1,
+    children: 0,
+    specialNotes: '',
+    checkIn: '',
+    checkOut: '',
+    area: 'Center (Centro Storico)',
+    propertyType: 'Any',
+    reason: 'My property is fully booked',
+    listerNotes: ''
+  });
+
+  const handleManualPoolSubmit = () => {
+    if (!manualPoolForm.guestName || !manualPoolForm.checkIn || !manualPoolForm.checkOut || !manualPoolForm.adults) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const checkInDate = new Date(manualPoolForm.checkIn);
+    const checkOutDate = new Date(manualPoolForm.checkOut);
+    const nights = Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+    const newBooking: any = {
+      id: `pool-${Date.now()}`,
+      reference: `POOL${Math.floor(Math.random() * 10000)}`,
+      bookingType: 'PROPERTY',
+      itemId: 'manual-pool',
+      itemName: `${manualPoolForm.propertyType} in ${manualPoolForm.area}`,
+      customerId: `cust-${Date.now()}`,
+      customerName: manualPoolForm.guestName,
+      customerEmail: 'guest-not-provided',
+      customerPhone: 'guest-not-provided',
+      ownerId: 'unassigned', // Will be picked up by someone else
+      startDate: manualPoolForm.checkIn,
+      endDate: manualPoolForm.checkOut,
+      nights,
+      guests: Number(manualPoolForm.adults) + Number(manualPoolForm.children),
+      totalPrice: 0,
+      status: 'SHARED', // Fits within the UI's pool tab
+      area: manualPoolForm.area,
+      notes: manualPoolForm.specialNotes,
+      sharedBy: user?.id,
+      sharedAt: new Date().toISOString(),
+      originalListerId: user?.id,
+      isManual: true,
+      listerNotes: manualPoolForm.listerNotes,
+      reason: manualPoolForm.reason,
+    };
+
+    addBooking(newBooking);
+    toast.success('Booking shared to pool! All listers have been notified.');
+    console.log(`Email notification: Manual pool booking added for ${manualPoolForm.guestName} (${nights} nights).`);
+    setShowManualPoolModal(false);
+    setManualPoolForm({
+      guestName: '',
+      adults: 1,
+      children: 0,
+      specialNotes: '',
+      checkIn: '',
+      checkOut: '',
+      area: 'Center (Centro Storico)',
+      propertyType: 'Any',
+      reason: 'My property is fully booked',
+      listerNotes: ''
+    });
+  };
 
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
@@ -464,21 +535,33 @@ export const OwnerDashboard: React.FC = () => {
 
   const renderBookings = () => (
     <div className="space-y-6">
-      <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] self-start overflow-x-auto scrollbar-hide">
-        {(['pending', 'confirmed', 'past', 'pool', 'pool_accepted'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveBookingTab(tab)}
-            className={cn(
-              "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
-              activeBookingTab === tab 
-                ? "bg-[#F5A623] text-black shadow-lg" 
-                : "text-[#94a3b8] hover:text-white"
-            )}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] self-start overflow-x-auto scrollbar-hide">
+          {(['pending', 'confirmed', 'past', 'pool', 'pool_accepted'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveBookingTab(tab)}
+              className={cn(
+                "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                activeBookingTab === tab 
+                  ? "bg-[#F5A623] text-black shadow-lg" 
+                  : "text-[#94a3b8] hover:text-white"
+              )}
+            >
+              {tab === 'pool' ? 'Booking Pool' : tab === 'pool_accepted' ? 'Pool Accepted' : `${tab} Requests`}
+            </button>
+          ))}
+        </div>
+        
+        {activeBookingTab === 'pool' && (
+          <Button 
+            onClick={() => setShowManualPoolModal(true)}
+            className="bg-[#F5A623] hover:bg-[#F5A623]/90 text-black font-black uppercase text-[10px] tracking-widest px-6"
           >
-            {tab === 'pool' ? 'Booking Pool' : tab === 'pool_accepted' ? 'Pool Accepted' : `${tab} Requests`}
-          </button>
-        ))}
+            <Plus className="h-4 w-4 mr-2" />
+            Manual Pool Share
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -740,7 +823,9 @@ export const OwnerDashboard: React.FC = () => {
   );
 
   return (
-    <DashboardLayout title={section === 'overview' ? 'Property Stats' : section.charAt(0).toUpperCase() + section.slice(1)}>
+    <>
+      <SEOHead noindex />
+      <DashboardLayout title={section === 'overview' ? 'Property Stats' : section.charAt(0).toUpperCase() + section.slice(1)}>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
            <div>
@@ -812,7 +897,194 @@ export const OwnerDashboard: React.FC = () => {
             </div>
           )}
         </AnimatePresence>
+
+        {/* Manual Pool Share Modal */}
+        <AnimatePresence>
+          {showManualPoolModal && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowManualPoolModal(false)}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#1e293b] border border-[#334155] rounded-3xl p-6 md:p-8 shadow-2xl scrollbar-hide"
+              >
+                <div className="flex justify-between items-center mb-6 border-b border-[#334155] pb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Add Guest to Booking Pool</h3>
+                    <p className="text-xs text-[#94a3b8] mt-1 font-medium">Manually share a guest with other listers</p>
+                  </div>
+                  <button 
+                    onClick={() => setShowManualPoolModal(false)}
+                    className="p-2 hover:bg-[#0f172a] rounded-full transition-colors text-[#94a3b8] hover:text-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Guest Information */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-[#F5A623] flex items-center gap-2">
+                      <User className="h-4 w-4" /> Guest Information
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-1 md:col-span-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Guest First Name *</label>
+                        <Input 
+                          placeholder="e.g. Maria"
+                          value={manualPoolForm.guestName}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, guestName: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Adults *</label>
+                        <Input 
+                          type="number"
+                          min="1"
+                          value={manualPoolForm.adults}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, adults: parseInt(e.target.value) || 1})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Children</label>
+                        <Input 
+                          type="number"
+                          min="0"
+                          value={manualPoolForm.children}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, children: parseInt(e.target.value) || 0})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1 md:col-span-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Special Notes</label>
+                        <Textarea 
+                          placeholder="e.g. Speaks English only, needs quiet area..."
+                          value={manualPoolForm.specialNotes}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, specialNotes: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155] min-h-[60px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stay Details */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-[#F5A623] flex items-center gap-2">
+                      <Calendar className="h-4 w-4" /> Stay Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Check-in Date *</label>
+                        <Input 
+                          type="date"
+                          value={manualPoolForm.checkIn}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, checkIn: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Check-out Date *</label>
+                        <Input 
+                          type="date"
+                          min={manualPoolForm.checkIn}
+                          value={manualPoolForm.checkOut}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, checkOut: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Preferred Area</label>
+                        <Select 
+                          value={manualPoolForm.area}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, area: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        >
+                            <option value="Center (Centro Storico)">Center (Centro Storico)</option>
+                            <option value="Seafront (Chiaia - Posillipo)">Seafront (Chiaia - Posillipo)</option>
+                            <option value="Station (Piazza Garibaldi)">Station (Piazza Garibaldi)</option>
+                            <option value="Vomero">Vomero</option>
+                            <option value="Stadium (Fuorigrotta - Fair)">Stadium (Fuorigrotta - Fair)</option>
+                            <option value="Islands (Ischia & Procida)">Islands (Ischia & Procida)</option>
+                            <option value="Any">Any Area</option>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Property Type Needed</label>
+                        <Select 
+                          value={manualPoolForm.propertyType}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, propertyType: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        >
+                            <option value="Any">Any Type</option>
+                            <option value="BnB">B&B</option>
+                            <option value="Holiday House">Holiday House</option>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pool Settings */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-[#F5A623] flex items-center gap-2">
+                      <LayoutGrid className="h-4 w-4" /> Pool Settings
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Reason for sharing</label>
+                        <Select 
+                          value={manualPoolForm.reason}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, reason: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        >
+                            <option value="My property is fully booked">My property is fully booked</option>
+                            <option value="Guest needs different area">Guest needs different area</option>
+                            <option value="Dates not available">Dates not available</option>
+                            <option value="Other">Other</option>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Notes for other Listers</label>
+                        <Textarea 
+                          placeholder="Any context to help another lister take this booking?"
+                          value={manualPoolForm.listerNotes}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, listerNotes: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155] min-h-[60px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-[#334155] flex justify-end gap-3">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowManualPoolModal(false)}
+                      className="border-[#334155] text-white hover:bg-[#0f172a]"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleManualPoolSubmit}
+                      className="bg-[#F5A623] hover:bg-[#F5A623]/90 text-black font-bold"
+                    >
+                      Share to Booking Pool
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </DashboardLayout>
+    </>
   );
 };

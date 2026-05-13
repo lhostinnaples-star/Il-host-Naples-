@@ -18,6 +18,7 @@ import { ImageUpload } from '../components/ImageUpload';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserStatus } from '../contexts/AuthContext';
 import { PendingApprovalScreen } from '../components/PendingApprovalScreen';
+import { SEOHead } from '../components/SEOHead';
 
 export const ServiceProviderDashboard: React.FC = () => {
   const { user, token, isDemoMode, updateUser } = useAuth();
@@ -672,7 +673,9 @@ export const ServiceProviderDashboard: React.FC = () => {
   );
 
   return (
-    <DashboardLayout title={section === 'overview' ? 'Performance' : section.charAt(0).toUpperCase() + section.slice(1)}>
+    <>
+      <SEOHead noindex />
+      <DashboardLayout title={section === 'overview' ? 'Performance' : section.charAt(0).toUpperCase() + section.slice(1)}>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Experience Provider</h1>
@@ -744,5 +747,6 @@ export const ServiceProviderDashboard: React.FC = () => {
         </AnimatePresence>
       </div>
     </DashboardLayout>
+    </>
   );
 };

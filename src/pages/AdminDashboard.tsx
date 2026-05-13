@@ -20,11 +20,12 @@ import { MOCK_USERS } from '../contexts/AuthContext';
 import { PropertyFormModal } from '../components/PropertyFormModal';
 import { ServiceFormModal } from '../components/ServiceFormModal';
 import { SupplierServiceFormModal } from '../components/SupplierServiceFormModal';
+import { SEOHead } from '../components/SEOHead';
 
 export const AdminDashboard: React.FC = () => {
   const { token, isDemoMode, updateUserStatus } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allHotels, allServices, bookings, updateHotel, updateService, deleteService, deleteHotel } = useHotels();
+  const { allHotels, allServices, bookings, updateHotel, updateService, deleteService, deleteHotel, reviews, updateReview, deleteReview, updateBooking, deleteBooking } = useHotels();
   const { settings, updateSettings } = useSettings();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
@@ -50,6 +51,8 @@ export const AdminDashboard: React.FC = () => {
   const [activePropertyTab, setActivePropertyTab] = useState<'all' | 'pending' | 'rejected'>('all');
   const [activeExperienceTab, setActiveExperienceTab] = useState<'all' | 'pending' | 'rejected'>('all');
   const [activeSupplierTab, setActiveSupplierTab] = useState<'all' | 'pending' | 'rejected'>('all');
+  const [activeBookingTab, setActiveBookingTab] = useState<'all' | 'pending' | 'confirmed' | 'cancelled'>('all');
+  const [activeReviewTab, setActiveReviewTab] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   useEffect(() => {
     const tab = searchParams.get('tab') as any;
@@ -97,8 +100,8 @@ export const AdminDashboard: React.FC = () => {
     { title: "Total Users", value: allUsers.length, growth: 12, icon: Users, color: "bg-blue-500" },
     { title: "Total Properties", value: allHotels.length, growth: 8, icon: Home, color: "bg-purple-500" },
     { title: "Pending Approvals", value: pendingHotels.length, growth: -2, icon: Clock, color: "bg-orange-500" },
-    { title: "Total Revenue", value: formatPrice(bookings.reduce((sum, b) => b.status === 'CLOSED' ? sum + b.totalPrice : sum, 0) || 28500), growth: 5, icon: BarChart3, color: "bg-green-500" }
-  ], [allUsers.length, allHotels.length, pendingHotels.length, bookings, formatPrice]);
+    { title: "Total Bookings", value: bookings.length, growth: 5, icon: Calendar, color: "bg-green-500" }
+  ], [allUsers.length, allHotels.length, pendingHotels.length, bookings.length]);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -314,7 +317,7 @@ export const AdminDashboard: React.FC = () => {
 
       <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
         {/* Desktop Table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#0f172a] border-b border-[#334155]">
@@ -400,18 +403,19 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Mobile Grid */}
-        <div className="md:hidden divide-y divide-[#334155]">
-          {allUsers.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u) => (
-            <div key={u.id} className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#0f172a] border border-[#334155] flex items-center justify-center font-bold text-[#F5A623]">
-                    {u.name[0]}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-white truncate">{u.name}</p>
-                    <p className="text-xs text-[#64748b] truncate">{u.email}</p>
-                  </div>
+        <div className="lg:hidden p-4 bg-[#0f172a]">
+          {allUsers.filter(u => {
+            const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                               u.email.toLowerCase().includes(searchQuery.toLowerCase());
+            if (activeUserTab === 'pending') return matchesSearch && u.status === UserStatus.PENDING_APPROVAL;
+            if (activeUserTab === 'rejected') return matchesSearch && u.status === UserStatus.REJECTED;
+            return matchesSearch;
+          }).map((u) => (
+            <div key={u.id} className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-3">
+              <div className="flex items-start justify-between mb-3">
+                <div className="min-w-0 pr-2">
+                  <p className="text-lg font-bold text-white truncate">{u.name}</p>
+                  <p className="text-sm text-[#64748b] truncate">{u.email}</p>
                 </div>
                 <div className={cn(
                   "shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
@@ -423,15 +427,24 @@ export const AdminDashboard: React.FC = () => {
                   {u.role.replace('_', ' ')}
                 </div>
               </div>
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                  <span className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest">Active</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="h-9 px-4 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white hover:bg-[#1e293b]">Edit</Button>
-                  <Button variant="outline" size="sm" className="h-9 px-4 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 hover:bg-red-500/10">Delete</Button>
-                </div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  u.status === UserStatus.ACTIVE ? "bg-green-500" :
+                  u.status === UserStatus.PENDING_APPROVAL ? "bg-amber-500" :
+                  "bg-red-500"
+                )}></div>
+                <span className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest">{u.status || 'Active'}</span>
+              </div>
+              <div className="flex gap-2 w-full">
+                {u.status === UserStatus.PENDING_APPROVAL && (
+                  <Button size="sm" onClick={() => handleApproveUser(u.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest bg-green-600 text-white min-w-[100px]">Approve</Button>
+                )}
+                {u.status === UserStatus.PENDING_APPROVAL && (
+                  <Button size="sm" variant="outline" onClick={() => handleRejectUser(u.id)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Reject</Button>
+                )}
+                <Button variant="outline" size="sm" className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">Edit</Button>
+                <Button variant="outline" size="sm" className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Delete</Button>
               </div>
             </div>
           ))}
@@ -440,10 +453,311 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 
+  const renderBookings = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { title: "Total Bookings", value: bookings.length, color: "text-white" },
+          { title: "Confirmed", value: bookings.filter(b => b.status === "CONFIRMED").length, color: "text-green-500" },
+          { title: "Pending", value: bookings.filter(b => b.status === "PENDING").length, color: "text-amber-500" },
+          { title: "Cancelled", value: bookings.filter(b => b.status === "CANCELLED").length, color: "text-red-500" },
+        ].map((stat, i) => (
+          <Card key={i} className="p-4 bg-[#1e293b] border-[#334155]">
+            <p className="text-[10px] font-black uppercase text-[#94a3b8]">{stat.title}</p>
+            <p className={cn("text-2xl font-bold mt-1", stat.color)}>{stat.value}</p>
+          </Card>
+        ))}
+      </div>
+
+      <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] self-start overflow-x-auto scrollbar-hide">
+        {(['all', 'pending', 'confirmed', 'cancelled'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveBookingTab(tab)}
+            className={cn(
+              "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+              activeBookingTab === tab 
+                ? "bg-[#F5A623] text-black shadow-lg" 
+                : "text-[#94a3b8] hover:text-white"
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#0f172a] border-b border-[#334155]">
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">ID</th>
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Guest</th>
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Property</th>
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Dates</th>
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Guests</th>
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Status</th>
+                <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#334155]">
+              {bookings.filter(b => {
+                if (activeBookingTab === 'pending') return b.status === 'PENDING';
+                if (activeBookingTab === 'confirmed') return b.status === 'CONFIRMED';
+                if (activeBookingTab === 'cancelled') return b.status === 'CANCELLED';
+                return true;
+              }).map(b => (
+                <tr key={b.id} className="hover:bg-[#0f172a]/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-bold text-white">{b.reference}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-bold text-white">{b.customerName}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm text-[#94a3b8]">{b.itemName}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm text-[#94a3b8]">{new Date(b.startDate).toLocaleDateString()} - {b.endDate ? new Date(b.endDate).toLocaleDateString() : ''}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-sm text-[#94a3b8]">{b.guests}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                      b.status === 'CONFIRMED' || b.status === 'ACCEPTED' ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                      b.status === 'CANCELLED' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                      "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    )}>
+                      {b.status}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end gap-2 text-[#94a3b8]">
+                      <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase border-[#334155] text-white">View Details</Button>
+                      <Button variant="outline" size="sm" onClick={() => updateBooking(b.id, { status: 'CANCELLED' })} className="h-8 text-[10px] font-black uppercase border-[#334155] text-red-500">Cancel</Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="lg:hidden p-4 bg-[#0f172a]">
+          {bookings.filter(b => {
+             if (activeBookingTab === 'pending') return b.status === 'PENDING';
+             if (activeBookingTab === 'confirmed') return b.status === 'CONFIRMED';
+             if (activeBookingTab === 'cancelled') return b.status === 'CANCELLED';
+             return true;
+          }).map((b) => (
+            <div key={b.id} className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-3">
+              <div className="flex items-start justify-between mb-3">
+                <div className="min-w-0 pr-2">
+                  <p className="text-lg font-bold text-white truncate">{b.reference}</p>
+                  <p className="text-sm text-[#64748b] truncate">{b.customerName} - {b.itemName}</p>
+                </div>
+                <div className={cn(
+                  "shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                  b.status === 'CONFIRMED' || b.status === 'ACCEPTED' ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                  b.status === 'CANCELLED' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                  "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                )}>
+                  {b.status}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-sm text-[#64748b]">Dates: {new Date(b.startDate).toLocaleDateString()} - {b.endDate ? new Date(b.endDate).toLocaleDateString() : ''}</span>
+                <span className="text-[10px] text-[#64748b] uppercase font-medium">Guests: {b.guests}</span>
+              </div>
+              <div className="flex flex-wrap gap-2 w-full mt-4">
+                <Button variant="outline" size="sm" className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">View Details</Button>
+                <Button variant="outline" size="sm" onClick={() => updateBooking(b.id, { status: 'CANCELLED' })} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Cancel</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderReviews = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <h2 className="text-xl font-bold text-white">Reviews Moderation</h2>
+        <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] overflow-x-auto scrollbar-hide">
+          {(['all', 'pending', 'approved', 'rejected'] as const).map((tab) => (
+             <button
+               key={tab}
+               onClick={() => setActiveReviewTab(tab)}
+               className={cn(
+                 "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                 activeReviewTab === tab 
+                   ? "bg-[#F5A623] text-black shadow-lg" 
+                   : "text-[#94a3b8] hover:text-white"
+               )}
+             >
+               {tab === 'pending' ? 'Pending Moderation' : tab}
+             </button>
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {reviews.filter(r => {
+          if (activeReviewTab === 'pending') return r.status === 'pending';
+          if (activeReviewTab === 'approved') return r.status === 'approved';
+          if (activeReviewTab === 'rejected') return r.status === 'rejected';
+          return true;
+        }).map(r => (
+          <Card key={r.id} className="p-4 bg-[#1e293b] border-[#334155] space-y-4">
+             <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-bold text-white">{r.reviewerName}</p>
+                  <p className="text-[10px] text-[#94a3b8]">{r.propertyName} &bull; {new Date(r.date).toLocaleDateString()}</p>
+                </div>
+                <div className={cn(
+                  "px-2 py-0.5 rounded-full text-[10px] font-black uppercase border",
+                  r.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                  r.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                  "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                )}>
+                   {r.status}
+                </div>
+             </div>
+             <div className="flex gap-1 text-[#F5A623]">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={cn("h-4 w-4", i < r.rating ? "fill-[#F5A623]" : "fill-neutral-600 outline-none stroke-transparent")} />
+                ))}
+             </div>
+             <p className="text-sm text-[#e2e8f0] italic">"{r.text}"</p>
+             <div className="flex gap-2">
+                {r.status !== 'approved' && (
+                  <Button size="sm" onClick={() => updateReview(r.id, { status: 'approved' })} className="flex-1 h-8 text-[10px] font-black uppercase bg-green-600 text-white border-none">Approve</Button>
+                )}
+                {r.status === 'pending' && (
+                  <Button size="sm" variant="outline" onClick={() => updateReview(r.id, { status: 'rejected' })} className="flex-1 h-8 text-[10px] font-black uppercase border-red-500/30 text-red-500">Reject</Button>
+                )}
+                <Button size="sm" variant="outline" onClick={() => deleteReview(r.id)} className="flex-none h-8 w-8 p-0 border-[#334155] text-[#94a3b8] hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
+             </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderAnalytics = () => (
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <Card className="p-4 bg-[#1e293b] border-[#334155]">
+          <p className="text-[10px] font-black uppercase text-[#94a3b8]">Total Users</p>
+          <p className="text-2xl font-bold mt-1 text-white">47</p>
+        </Card>
+        <Card className="p-4 bg-[#1e293b] border-[#334155]">
+          <p className="text-[10px] font-black uppercase text-[#94a3b8]">Total Properties</p>
+          <p className="text-2xl font-bold mt-1 text-white">6</p>
+        </Card>
+        <Card className="p-4 bg-[#1e293b] border-[#334155]">
+          <p className="text-[10px] font-black uppercase text-[#94a3b8]">Total Bookings</p>
+          <p className="text-2xl font-bold mt-1 text-white">23</p>
+        </Card>
+        <Card className="p-4 bg-[#1e293b] border-[#334155]">
+          <p className="text-[10px] font-black uppercase text-[#94a3b8]">Active Listers</p>
+          <p className="text-2xl font-bold mt-1 text-white">8</p>
+        </Card>
+        <Card className="p-4 bg-[#1e293b] border-[#334155]">
+          <p className="text-[10px] font-black uppercase text-[#94a3b8]">Active Providers</p>
+          <p className="text-2xl font-bold mt-1 text-white">12</p>
+        </Card>
+        <Card className="p-4 bg-[#1e293b] border-[#334155]">
+          <p className="text-[10px] font-black uppercase text-[#94a3b8]">Active Suppliers</p>
+          <p className="text-2xl font-bold mt-1 text-white">5</p>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+         <Card className="p-6 bg-[#1e293b] border-[#334155] space-y-6">
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest">Bookings by Month (Last 6 Months)</h3>
+            <div className="flex items-end h-40 gap-2">
+              {[
+                { label: 'Jan', value: 30 },
+                { label: 'Feb', value: 45 },
+                { label: 'Mar', value: 60 },
+                { label: 'Apr', value: 40 },
+                { label: 'May', value: 75 },
+                { label: 'Jun', value: 90 },
+              ].map((m, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                   <div className="w-full bg-[#F5A623] rounded-t-sm transition-all" style={{ height: `${m.value}%` }} />
+                   <p className="text-[10px] text-[#94a3b8] uppercase font-bold">{m.label}</p>
+                </div>
+              ))}
+            </div>
+         </Card>
+         <Card className="p-6 bg-[#1e293b] border-[#334155] space-y-6">
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest">Top Performing Areas</h3>
+            <div className="flex items-end h-40 gap-2">
+              {[
+                { label: 'Centro', value: 80 },
+                { label: 'Vomero', value: 50 },
+                { label: 'Chiaia', value: 100 },
+                { label: 'Posillipo', value: 40 },
+                { label: 'Ischia', value: 60 },
+              ].map((m, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                   <div className="w-full bg-purple-500 rounded-t-sm transition-all" style={{ height: `${m.value}%` }} />
+                   <p className="text-[10px] text-[#94a3b8] uppercase font-bold truncate w-full text-center">{m.label}</p>
+                </div>
+              ))}
+            </div>
+         </Card>
+         <Card className="p-6 bg-[#1e293b] border-[#334155] space-y-6">
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest">User Growth by Role</h3>
+            <div className="flex items-end h-40 gap-2">
+              {[
+                { label: 'Users', value: 95 },
+                { label: 'Listers', value: 40 },
+                { label: 'Providers', value: 25 },
+                { label: 'Suppliers', value: 15 },
+              ].map((m, idx) => (
+                <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                   <div className="w-full bg-blue-500 rounded-t-sm transition-all" style={{ height: `${m.value}%` }} />
+                   <p className="text-[10px] text-[#94a3b8] uppercase font-bold text-center">{m.label}</p>
+                </div>
+              ))}
+            </div>
+         </Card>
+         <Card className="p-6 bg-[#1e293b] border-[#334155] space-y-6">
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest">Popular Properties</h3>
+            <div className="space-y-4">
+               {[
+                 { name: 'Luxury Suite Chiaia', area: 'Seafront (Chiaia - Posillipo)', count: 31 },
+                 { name: 'Villa Partenope', area: 'Seafront (Chiaia - Posillipo)', count: 24 },
+                 { name: 'Island Retreat Ischia', area: 'Islands (Ischia & Procida)', count: 22 },
+               ].map((p, idx) => (
+                 <div key={idx} className="flex justify-between items-center border-b border-[#334155] pb-2 last:border-0 last:pb-0">
+                    <div>
+                      <p className="text-sm font-bold text-white">{p.name}</p>
+                      <p className="text-[10px] text-[#94a3b8] uppercase tracking-widest">{p.area}</p>
+                    </div>
+                    <div className="bg-[#0f172a] px-2 py-1 rounded text-xs font-black text-[#F5A623]">
+                      {p.count} Bookings
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </Card>
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (section) {
       case 'overview': return renderOverview();
       case 'users': return renderUsers();
+      case 'bookings': return renderBookings();
+      case 'reviews': return renderReviews();
+      case 'analytics': return renderAnalytics();
       case 'seo':
         return (
           <div className="max-w-4xl space-y-8">
@@ -593,7 +907,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
               {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#0f172a] border-b border-[#334155]">
@@ -677,61 +991,45 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {/* Mobile Grid */}
-              <div className="md:hidden divide-y divide-[#334155]">
-                {allHotels.map((h) => (
-                  <div key={h.id} className="p-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img src={h.imageUrl} className="h-12 w-12 rounded-xl object-cover bg-[#0f172a] border border-[#334155]" alt="" />
-                        <div>
-                          <p className="text-sm font-bold text-white">{h.name}</p>
-                          <p className="text-[10px] text-[#64748b] uppercase font-black tracking-tighter">{h.city}</p>
-                        </div>
+              <div className="lg:hidden p-4 bg-[#0f172a]">
+                {allHotels.filter(h => {
+                  if (activePropertyTab === 'pending') return h.status === 'pending';
+                  if (activePropertyTab === 'rejected') return h.status === 'rejected';
+                  return true;
+                }).map((h) => (
+                  <div key={h.id} className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-3">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-lg font-bold text-white truncate">{h.name}</p>
+                        <p className="text-sm text-[#64748b] truncate">{h.city}</p>
                       </div>
                       <div className={cn(
-                        "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
-                        h.status === 'approved' ? "bg-green-500/10 text-green-500" :
-                        h.status === 'rejected' ? "bg-red-500/10 text-red-500" :
-                        "bg-yellow-500/10 text-yellow-500"
+                        "shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                        h.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                        h.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                        "bg-amber-500/10 text-amber-500 border-amber-500/20"
                       )}>
-                        {h.status || 'pending'}
+                        {h.status === 'approved' ? 'Active' : h.status || 'pending'}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-2">
-                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleToggleFeatured(h.id, !h.isFeatured)}
-                          className={cn(
-                            "h-10 px-4 text-[10px] font-black uppercase border border-[#334155]",
-                            h.isFeatured ? "bg-[#F5A623] text-black shadow-lg" : "text-[#94a3b8]"
-                          )}
-                        >
-                          {h.isFeatured ? 'Featured' : 'Featured?'}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleEditProperty(h)}
-                          className="h-10 px-4 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white"
-                        >
-                          Edit
-                        </Button>
-                       </div>
-                      <div className="flex items-center gap-2">
-                        {h.status !== 'approved' && (
-                          <Button size="sm" onClick={() => handleApprove(h.id)} className="h-10 px-4 text-[10px] font-black uppercase bg-green-600 text-white border-none">Approve</Button>
-                        )}
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleDeleteProperty(h.id)}
-                          className="h-10 w-10 p-0 border-[#334155] text-red-500 flex items-center justify-center hover:bg-red-500/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    
+                    <div className="flex flex-wrap gap-2 w-full mt-4">
+                      {h.status !== 'approved' && (
+                        <Button size="sm" onClick={() => handleApprove(h.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest bg-green-600 text-white min-w-[100px]">Approve</Button>
+                      )}
+                      {h.status === 'pending' && (
+                        <Button size="sm" variant="outline" onClick={() => handleReject(h.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest border-red-500/30 text-red-500 min-w-[100px]">Reject</Button>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleToggleFeatured(h.id, !h.isFeatured)}
+                        className={cn("flex-1 h-10 text-[10px] uppercase font-black tracking-widest min-w-[100px]", h.isFeatured ? "bg-[#F5A623] text-black border-transparent" : "border-[#334155] text-white")}
+                      >
+                        {h.isFeatured ? 'Featured' : 'Make Feat.'}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleEditProperty(h)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">Edit</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteProperty(h.id)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Delete</Button>
                     </div>
                   </div>
                 ))}
@@ -763,7 +1061,8 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
-              <div className="overflow-x-auto">
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#0f172a] border-b border-[#334155]">
@@ -836,6 +1135,49 @@ export const AdminDashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Grid */}
+              <div className="lg:hidden p-4 bg-[#0f172a]">
+                {experiences
+                  .filter(s => {
+                    if (activeExperienceTab === 'pending') return s.status === 'pending';
+                    if (activeExperienceTab === 'rejected') return s.status === 'rejected';
+                    return true;
+                  }).map((s) => (
+                  <div key={s.id} className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-3">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-lg font-bold text-white truncate">{s.name}</p>
+                        <p className="text-sm text-[#64748b] truncate">{s.category}</p>
+                      </div>
+                      <div className={cn(
+                        "shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                        s.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                        s.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                        "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      )}>
+                        {s.status || 'pending'}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-sm font-bold text-[#F5A623]">{formatPrice(s.price)}</span>
+                      <span className="text-[10px] text-[#64748b] uppercase font-medium">{s.priceUnit}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 w-full mt-4">
+                      {s.status !== 'approved' && (
+                        <Button size="sm" onClick={() => handleApproveService(s.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest bg-green-600 text-white min-w-[100px]">Approve</Button>
+                      )}
+                      {s.status === 'pending' && (
+                        <Button size="sm" variant="outline" onClick={() => handleRejectService(s.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest border-red-500/30 text-red-500 min-w-[100px]">Reject</Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={() => handleEditService(s)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">Edit</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteServiceItem(s.id)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Delete</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         );
@@ -863,7 +1205,8 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
             <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
-              <div className="overflow-x-auto">
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#0f172a] border-b border-[#334155]">
@@ -941,6 +1284,49 @@ export const AdminDashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Grid */}
+              <div className="lg:hidden p-4 bg-[#0f172a]">
+                {supplierServices
+                  .filter(s => {
+                    if (activeSupplierTab === 'pending') return s.status === 'pending';
+                    if (activeSupplierTab === 'rejected') return s.status === 'rejected';
+                    return true;
+                  }).map((s) => (
+                  <div key={s.id} className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 mb-3">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="min-w-0 pr-2">
+                        <p className="text-lg font-bold text-white truncate">{s.name}</p>
+                        <p className="text-sm text-[#64748b] truncate">{s.category}</p>
+                      </div>
+                      <div className={cn(
+                        "shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                        s.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" : 
+                        s.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                        "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      )}>
+                        {s.status || 'pending'}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="text-sm font-bold text-[#F5A623]">{formatPrice(s.price)}</span>
+                      <span className="text-[10px] text-[#64748b] uppercase font-medium">{s.priceUnit}</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 w-full mt-4">
+                      {s.status !== 'approved' && (
+                        <Button size="sm" onClick={() => handleApproveService(s.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest bg-green-600 text-white min-w-[100px]">Approve</Button>
+                      )}
+                      {s.status === 'pending' && (
+                        <Button size="sm" variant="outline" onClick={() => handleRejectService(s.id)} className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest border-red-500/30 text-red-500 min-w-[100px]">Reject</Button>
+                      )}
+                      <Button variant="outline" size="sm" onClick={() => { setEditingSupplierService(s); setIsSupplierModalOpen(true); }} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">Edit</Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteServiceItem(s.id)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Delete</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </div>
         );
@@ -958,6 +1344,8 @@ export const AdminDashboard: React.FC = () => {
   };
 
   return (
+    <>
+    <SEOHead noindex />
     <DashboardLayout title={section === 'overview' ? 'Admin Central' : section.charAt(0).toUpperCase() + section.slice(1)}>
       <div className="space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1015,5 +1403,6 @@ export const AdminDashboard: React.FC = () => {
         }}
       />
     </DashboardLayout>
+    </>
   );
 };

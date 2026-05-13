@@ -19,6 +19,7 @@ import { cn } from '../lib/utils';
 import { ImageUpload } from '../components/ImageUpload';
 import { UserStatus } from '../contexts/AuthContext';
 import { PendingApprovalScreen } from '../components/PendingApprovalScreen';
+import { SEOHead } from '../components/SEOHead';
 
 import { SUPPLIER_CATEGORIES } from '../constants';
 
@@ -518,7 +519,9 @@ export const SupplierDashboard: React.FC = () => {
   );
 
   return (
-    <DashboardLayout title={section === 'overview' ? 'Supply Center' : section.charAt(0).toUpperCase() + section.slice(1)}>
+    <>
+      <SEOHead noindex />
+      <DashboardLayout title={section === 'overview' ? 'Supply Center' : section.charAt(0).toUpperCase() + section.slice(1)}>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Supplier Dashboard</h1>
@@ -589,5 +592,6 @@ export const SupplierDashboard: React.FC = () => {
         </AnimatePresence>
       </div>
     </DashboardLayout>
+    </>
   );
 };

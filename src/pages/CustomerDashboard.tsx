@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ReviewModal } from '../components/ReviewModal';
 import { BookingDetailModal } from '../components/BookingDetailModal';
 import { ImageUpload } from '../components/ImageUpload';
+import { SEOHead } from '../components/SEOHead';
 
 export const CustomerDashboard: React.FC = () => {
   const { user, isDemoMode, updateUser } = useAuth();
@@ -354,7 +355,9 @@ export const CustomerDashboard: React.FC = () => {
   );
 
   return (
-    <DashboardLayout title={section === 'overview' ? 'Overview' : section.charAt(0).toUpperCase() + section.slice(1)}>
+    <>
+      <SEOHead noindex />
+      <DashboardLayout title={section === 'overview' ? 'Overview' : section.charAt(0).toUpperCase() + section.slice(1)}>
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
            <div>
@@ -397,5 +400,6 @@ export const CustomerDashboard: React.FC = () => {
         )}
       </div>
     </DashboardLayout>
+    </>
   );
 };

@@ -44,7 +44,8 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
       {/* Canonical & Hreflang */}
       <link rel="canonical" href={finalUrl} />
       <link rel="alternate" hrefLang="en" href={finalUrl} />
-      {/* Simplified hreflang for now as we don't have separate /it/ paths yet */}
+      <link rel="alternate" hrefLang="it" href={finalUrl} />
+      <link rel="alternate" hrefLang="x-default" href={finalUrl} />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={finalType} />

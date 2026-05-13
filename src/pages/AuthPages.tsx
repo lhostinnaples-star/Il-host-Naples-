@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Hotel, User, Home, Wrench, Car, ArrowRight, ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle, Shield, Settings } from 'lucide-react';
 import { ImageUpload } from '../components/ImageUpload';
 import { toast } from 'sonner';
+import { SEOHead } from '../components/SEOHead';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -63,7 +64,9 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-6">
+    <>
+      <SEOHead noindex />
+      <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-6">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -167,6 +170,7 @@ export const LoginPage: React.FC = () => {
         </p>
       </motion.div>
     </div>
+    </>
   );
 };
 
@@ -254,7 +258,9 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-6 py-20">
+    <>
+      <SEOHead noindex />
+      <div className="flex min-h-screen items-center justify-center bg-neutral-950 px-6 py-20">
       <div className="w-full max-w-4xl">
         <div className="mb-12 text-center">
             <Link to="/" className="mb-6 inline-flex items-center gap-2 text-3xl font-bold tracking-tighter text-white">
@@ -646,5 +652,6 @@ export const RegisterPage: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };

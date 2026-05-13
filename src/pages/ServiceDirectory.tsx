@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { toast } from 'sonner';
 import { SERVICE_CATEGORIES } from '../constants';
+import { SEOHead } from '../components/SEOHead';
 
 export const ServiceDirectory: React.FC = () => {
   const navigate = useNavigate();
@@ -96,7 +97,12 @@ export const ServiceDirectory: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pt-32 pb-12 px-4 md:px-8">
+    <>
+      <SEOHead 
+        title="Naples Experiences & Services" 
+        description="Book authentic Naples experiences - boat tours, private chef, car rental and more."
+      />
+      <div className="min-h-screen bg-neutral-50 pt-32 pb-12 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-8 md:mb-12">
@@ -343,5 +349,6 @@ export const ServiceDirectory: React.FC = () => {
         </AnimatePresence>
       </div>
     </div>
+    </>
   );
 };

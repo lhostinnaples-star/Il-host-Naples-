@@ -373,6 +373,49 @@ export const MOCK_SUPPLIER_SERVICES = [
   { id: 'ss3', name: 'Welcome Kit', price: 35, category: 'Welcome Kits' }
 ];
 
+export const MOCK_REVIEWS = [
+  {
+    id: 'r1',
+    reviewerName: 'John Doe',
+    propertyId: 'hotel-1',
+    propertyName: 'Villa Partenope',
+    rating: 5,
+    text: 'Absolutely stunning villa with incredible views. Clean, modern, and perfectly located.',
+    date: '2026-04-15',
+    status: 'approved'
+  },
+  {
+    id: 'r2',
+    reviewerName: 'Sarah Smith',
+    propertyId: 's1',
+    propertyName: 'Capri Boat Tour',
+    rating: 4,
+    text: 'Great overall experience. The boat was nice but the skipper could have been more engaging.',
+    date: '2026-05-02',
+    status: 'pending'
+  },
+  {
+    id: 'r3',
+    reviewerName: 'Mike Johnson',
+    propertyId: 'hotel-2',
+    propertyName: 'Casa Spaccanapoli',
+    rating: 1,
+    text: 'Very noisy at night and the AC was barely working. Not recommended.',
+    date: '2026-05-08',
+    status: 'rejected'
+  },
+  {
+    id: 'r4',
+    reviewerName: 'Emily Clark',
+    propertyId: 'hotel-3',
+    propertyName: 'Luxury Suite Chiaia',
+    rating: 5,
+    text: 'Incredible suite! The host was super helpful, and the place was immaculate.',
+    date: '2026-05-10',
+    status: 'pending'
+  }
+];
+
 export const MOCK_ADMIN_APPROVALS = [
   { 
     id: 'a1', 

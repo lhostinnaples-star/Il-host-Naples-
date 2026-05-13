@@ -5,6 +5,7 @@ import { divIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useHotels } from '../contexts/HotelsContext';
 import { ArrowRight, CheckCircle2, Clock, Briefcase, Luggage, Activity, Car, ShoppingBag } from 'lucide-react';
+import { SEOHead } from '../components/SEOHead';
 
 const areas = [
   { id: 'Everyone', label: 'Everyone', activeBg: 'bg-[#1e293b]', activeText: 'text-[#fbbf24]' },
@@ -64,7 +65,12 @@ export const MapPage: React.FC = () => {
   }, [hotels, selectedArea]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <SEOHead 
+        title="Naples Property Map" 
+        description="Find holiday houses and B&Bs on the interactive Naples map."
+      />
+      <div className="min-h-screen bg-white">
       
       {/* Header Section */}
       <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
@@ -193,5 +199,6 @@ export const MapPage: React.FC = () => {
       </div>
 
     </div>
+    </>
   );
 };
