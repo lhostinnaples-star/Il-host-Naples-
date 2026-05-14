@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth, UserRole } from './contexts/AuthContext';
 import { HotelsProvider } from './contexts/HotelsContext';
 import { WishlistProvider } from './contexts/WishlistContext';
@@ -21,8 +21,17 @@ import { ServiceDirectory } from './pages/ServiceDirectory';
 import { SupplierDirectory } from './pages/SupplierDirectory';
 import { SharedBookingPool } from './pages/SharedBookingPool';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { HelpCenterPage } from './pages/HelpCenterPage';
+import { SafetyCenterPage } from './pages/SafetyCenterPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { InsurancePage } from './pages/InsurancePage';
+import { HostGuidelinesPage } from './pages/HostGuidelinesPage';
+import { AboutPage } from './pages/AboutPage';
+import { HowItWorksPage } from './pages/HowItWorksPage';
 import { Toaster } from 'sonner';
 import { StatusGate } from './components/StatusGate';
+import { Footer } from './components/Footer';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: UserRole[] }> = ({ children, roles }) => {
   const { user, isLoading } = useAuth();
@@ -37,6 +46,26 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; roles?: UserRole[] }
 };
 
 function AppContent() {
+  const location = useLocation();
+  
+  const showFooter = [
+    '/',
+    '/search',
+    '/services',
+    '/map',
+    '/help',
+    '/safety',
+    '/terms',
+    '/privacy',
+    '/insurance',
+    '/guidelines',
+    '/about',
+    '/how-it-works',
+  ].includes(location.pathname) || 
+  location.pathname.startsWith('/hotel/') || 
+  location.pathname.startsWith('/experiences/') ||
+  location.pathname.startsWith('/naples/');
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -58,6 +87,15 @@ function AppContent() {
         <Route path="/services" element={<ServiceDirectory />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        
+        <Route path="/help" element={<HelpCenterPage />} />
+        <Route path="/safety" element={<SafetyCenterPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/insurance" element={<InsurancePage />} />
+        <Route path="/guidelines" element={<HostGuidelinesPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
         
         <Route path="/dashboard" element={
           <ProtectedRoute roles={[UserRole.CUSTOMER]}>
@@ -101,6 +139,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
       </Routes>
+      {showFooter && <Footer />}
     </div>
   );
 }

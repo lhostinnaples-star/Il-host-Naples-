@@ -14,56 +14,32 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
   const [images, setImages] = useState<string[]>(initialImages);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [stats, setStats] = useState<Array<{ before: string; after: string }>>([]);
 
-  // Ready for Firebase integration
-  const uploadToFirebase = async (file: File): Promise<string> => {
-    // Check file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(`File ${file.name} is too large. Max 5MB.`);
-      throw new Error('File too large');
-    }
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
 
-    return new Promise<string>((resolve, reject) => {
-      console.log(`[MOCK] Preparing for Firebase Storage: ${storagePath}/${Date.now()}_${file.name}`);
-      setIsUploading(true);
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        
-        // Auto convert to WebP if possible using canvas
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0);
-            const webpData = canvas.toDataURL('image/webp', 0.8);
-            
-            let progress = 0;
-            const interval = setInterval(() => {
-              progress += 20;
-              setUploadProgress(progress);
-              if (progress >= 100) {
-                clearInterval(interval);
-                console.log("Image ready for Firebase Storage");
-                resolve(webpData);
-              }
-            }, 100);
-          } else {
-            resolve(result); // Fallback to original Base64 if canvas fails
-          }
-        };
-        img.onerror = () => resolve(result);
-        img.src = result;
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const maxWidth = 1200;
+        const ratio = Math.min(maxWidth / img.width, 1);
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/webp', 0.85));
+        URL.revokeObjectURL(url);
       };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    }).finally(() => {
-      setIsUploading(false);
-      setUploadProgress(0);
+      img.src = url;
     });
   };
 
@@ -93,19 +69,48 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
 
     if (allowedFiles.length === 0) return;
 
+    setIsUploading(true);
+    setUploadProgress(10); // Start progress
+
     try {
-      const uploadedUrls = await Promise.all(allowedFiles.map(f => uploadToFirebase(f)));
-      const newImages = [...images, ...uploadedUrls];
+      const newImages = [...images];
+      const newStats = [...stats];
+
+      for (let i = 0; i < allowedFiles.length; i++) {
+        const file = allowedFiles[i];
+        const originalSize = file.size;
+
+        const webpData = await compressImage(file);
+        
+        // Approximate base64 size
+        const compressedSize = Math.round((webpData.length - 'data:image/webp;base64,'.length) * 3 / 4);
+        
+        newImages.push(webpData);
+        newStats.push({ 
+          before: formatSize(originalSize), 
+          after: formatSize(compressedSize) 
+        });
+
+        // Update progress per file
+        setUploadProgress(10 + Math.round(((i + 1) / allowedFiles.length) * 90));
+      }
+
       setImages(newImages);
+      setStats(newStats);
       onImagesChange(newImages);
     } catch (error) {
-      toast.error('Failed to upload image. Please try again.');
+      toast.error('Failed to process image. Please try again.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
   const removeImage = (index: number) => {
     const newImages = images.filter((_, i) => i !== index);
+    const newStats = stats.filter((_, i) => i !== index);
     setImages(newImages);
+    setStats(newStats);
     onImagesChange(newImages);
   };
 
@@ -118,10 +123,10 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
           className="group flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#334155] bg-[#0f172a] px-6 py-12 md:py-16 text-center transition-all hover:border-[#F5A623]/50 hover:bg-[#1e293b]"
         >
           {isUploading ? (
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-full max-w-xs mx-auto">
               <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-[#F5A623] mb-4" />
-              <p className="font-black text-white uppercase tracking-widest text-[10px]">Uploading... {Math.min(uploadProgress, 100)}%</p>
-              <div className="w-48 h-1 bg-[#334155] rounded-full mt-4 overflow-hidden">
+              <p className="font-black text-white uppercase tracking-widest text-[10px]">Optimizing... {uploadProgress}%</p>
+              <div className="w-full h-1 bg-[#334155] rounded-full mt-4 overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${uploadProgress}%` }}
@@ -133,13 +138,13 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
             <>
               <ArrowUpCircle className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 text-[#334155] group-hover:text-[#F5A623] transition-colors" />
               <p className="font-black text-white uppercase tracking-widest text-[10px]">Upload from Phone or Computer</p>
-              <p className="text-[10px] font-bold text-[#64748b] mt-2 group-hover:text-[#94a3b8]">Tap to browse or drag and drop images (Max 5MB)</p>
+              <p className="text-[10px] font-bold text-[#64748b] mt-2 group-hover:text-[#94a3b8]">Tap to browse or drag and drop images (No size limit)</p>
             </>
           )}
           <input
             type="file"
             className="hidden"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             multiple={maxImages > 1}
             onChange={handleFileInput}
             disabled={isUploading}
@@ -150,24 +155,31 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
       {images.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mt-6">
           {images.map((img, idx) => (
-            <div key={idx} className="group relative aspect-square overflow-hidden rounded-2xl border border-[#334155] bg-[#0f172a]">
-              <img src={img} alt={`Preview ${idx}`} className="h-full w-full object-cover" />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/60 transition-colors flex flex-col items-center justify-center gap-1">
-                {idx === 0 && (
-                  <span className="absolute top-2 left-2 bg-[#F5A623] text-black text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest shadow-lg">Main</span>
-                )}
-                <div className="bg-black/40 backdrop-blur-md border border-white/5 px-2 py-1 rounded-lg flex items-center gap-1.5">
-                  <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="text-[7px] font-black uppercase text-white/90 tracking-widest">Pending Sync</span>
+            <div key={idx} className="group relative overflow-hidden rounded-2xl border border-[#334155] bg-[#0f172a]">
+              <div className="aspect-square relative flex">
+                <img src={img} alt={`Preview ${idx}`} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/60 transition-colors flex flex-col items-center justify-center gap-1">
+                  {idx === 0 && (
+                    <span className="absolute top-2 left-2 bg-[#F5A623] text-black text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest shadow-lg">Main</span>
+                  )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => removeImage(idx)}
+                  className="absolute right-2 top-2 rounded-full border border-white/20 bg-black/50 p-2 text-white opacity-0 backdrop-blur-sm transition-all hover:bg-red-500 group-hover:opacity-100"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => removeImage(idx)}
-                className="absolute right-2 top-2 rounded-full border border-white/20 bg-black/50 p-2 text-white opacity-0 backdrop-blur-sm transition-all hover:bg-red-500 group-hover:opacity-100"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              {/* Show Stats if available (newly uploaded) */}
+              {stats[idx] && (
+                <div className="px-2 py-2 bg-[#1e293b] border-t border-[#334155]">
+                  <p className="text-[9px] font-bold text-neutral-400 text-center flex flex-col gap-0.5">
+                    <span className="line-through text-red-400/80">{stats[idx].before}</span>
+                    <span className="text-[#F5A623]">{stats[idx].after} WebP</span>
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>

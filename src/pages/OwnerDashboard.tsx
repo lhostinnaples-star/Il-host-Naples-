@@ -97,6 +97,8 @@ export const OwnerDashboard: React.FC = () => {
   const [showManualPoolModal, setShowManualPoolModal] = useState(false);
   const [manualPoolForm, setManualPoolForm] = useState({
     guestName: '',
+    guestEmail: '',
+    guestPhone: '',
     adults: 1,
     children: 0,
     specialNotes: '',
@@ -126,8 +128,8 @@ export const OwnerDashboard: React.FC = () => {
       itemName: `${manualPoolForm.propertyType} in ${manualPoolForm.area}`,
       customerId: `cust-${Date.now()}`,
       customerName: manualPoolForm.guestName,
-      customerEmail: 'guest-not-provided',
-      customerPhone: 'guest-not-provided',
+      customerEmail: manualPoolForm.guestEmail,
+      customerPhone: manualPoolForm.guestPhone,
       ownerId: 'unassigned', // Will be picked up by someone else
       startDate: manualPoolForm.checkIn,
       endDate: manualPoolForm.checkOut,
@@ -151,6 +153,8 @@ export const OwnerDashboard: React.FC = () => {
     setShowManualPoolModal(false);
     setManualPoolForm({
       guestName: '',
+      guestEmail: '',
+      guestPhone: '',
       adults: 1,
       children: 0,
       specialNotes: '',
@@ -941,6 +945,26 @@ export const OwnerDashboard: React.FC = () => {
                           placeholder="e.g. Maria"
                           value={manualPoolForm.guestName}
                           onChange={(e) => setManualPoolForm({...manualPoolForm, guestName: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1 md:col-span-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Guest Email (Optional)</label>
+                        <Input 
+                          type="email"
+                          placeholder="guest@email.com"
+                          value={manualPoolForm.guestEmail}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, guestEmail: e.target.value})}
+                          className="bg-[#0f172a] border-[#334155]"
+                        />
+                      </div>
+                      <div className="space-y-1 md:col-span-1">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Guest Phone (Optional)</label>
+                        <Input 
+                          type="tel"
+                          placeholder="+39 081 000 0000"
+                          value={manualPoolForm.guestPhone}
+                          onChange={(e) => setManualPoolForm({...manualPoolForm, guestPhone: e.target.value})}
                           className="bg-[#0f172a] border-[#334155]"
                         />
                       </div>

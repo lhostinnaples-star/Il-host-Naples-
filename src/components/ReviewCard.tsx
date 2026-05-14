@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -15,8 +15,10 @@ interface ReviewCardProps {
 }
 
 export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
-    <div className="rounded-2xl bg-neutral-50 p-6 shadow-sm border border-neutral-100 transition-all hover:bg-white hover:shadow-md">
+    <div className="rounded-2xl bg-neutral-50 p-6 shadow-sm border border-neutral-100 transition-all hover:bg-white hover:shadow-md flex flex-col h-full">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 overflow-hidden rounded-full bg-neutral-200 border-2 border-white shadow-sm">
@@ -35,9 +37,17 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
           ))}
         </div>
       </div>
-      <p className="text-sm md:text-base text-neutral-600 leading-relaxed italic">
-        "{review.comment}"
-      </p>
+      <div className="flex-1 flex flex-col items-start">
+        <p className={`text-sm md:text-base text-neutral-600 leading-relaxed italic ${!isExpanded ? 'line-clamp-3' : ''}`}>
+          "{review.comment}"
+        </p>
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="mt-2 text-xs font-bold text-[#F5A623] hover:text-[#e09400] transition-colors uppercase tracking-widest"
+        >
+          {isExpanded ? 'Read less' : 'Read more'}
+        </button>
+      </div>
     </div>
   );
 };

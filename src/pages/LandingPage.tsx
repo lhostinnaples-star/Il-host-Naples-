@@ -709,12 +709,7 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   {/* Row 2 */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 lg:mt-4">
-                    {/* Everyone/Rating */}
-                    <div className="hidden md:flex items-center h-12 lg:h-14 gap-3 bg-white border border-neutral-200 rounded-xl px-4 hover:border-[#fbbf24] transition-colors cursor-pointer group">
-                      <Star className="h-5 w-5 text-slate-500 group-hover:text-[#fbbf24] transition-colors shrink-0" />
-                      <span className="text-sm font-medium text-neutral-500">Everyone</span>
-                    </div>
+                  <div className="mt-2 lg:mt-4">
                     {/* SEARCH Button */}
                     <Button
                       className="bg-[#F5A623] text-[#0f172a] hover:bg-[#e09400] font-black text-sm lg:text-lg transition-colors h-14 lg:h-14 rounded-xl w-full uppercase tracking-widest"
@@ -826,7 +821,7 @@ export const LandingPage: React.FC = () => {
                       <span className="text-xl font-extrabold text-[#1e293b]">€{hotel.price}</span>
                       <span className="text-xs text-neutral-500 font-medium">/night</span>
                     </div>
-                    <Button variant="outline" size="sm" className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors rounded-full text-xs font-bold px-4">Details</Button>
+                    <Button variant="outline" size="sm" className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors rounded-full text-xs font-bold px-4" onClick={() => navigate(`/hotel/${hotel.id}`)}>Details</Button>
                   </div>
                 </div>
               </motion.div>
@@ -870,21 +865,24 @@ export const LandingPage: React.FC = () => {
                 icon: "🌆",
                 includes: ["2 nights stay", "Naples city tour"],
                 perfectFor: "First time visitors",
-                price: "€299/person"
+                price: "€299/person",
+                route: "/search?type=Holiday House"
               },
               {
                 title: "Foodie Naples",
                 icon: "🍕",
                 includes: ["3 nights stay", "Street food tour", "Private chef dinner"],
                 perfectFor: "Food lovers",
-                price: "€450/person"
+                price: "€450/person",
+                route: "/services?category=Lifestyle"
               },
               {
                 title: "Island Adventure",
                 icon: "🛥️",
                 includes: ["2 nights stay", "Capri boat tour", "Vespa city tour"],
                 perfectFor: "Adventure seekers",
-                price: "€380/person"
+                price: "€380/person",
+                route: "/search?area=Islands (Ischia & Procida)"
               }
             ].map((pkg, idx) => (
               <motion.div
@@ -911,7 +909,10 @@ export const LandingPage: React.FC = () => {
                 <div className="pt-6 border-t border-white/10 mt-auto">
                   <div className="text-xs text-neutral-400 uppercase tracking-widest font-bold mb-1">From</div>
                   <div className="text-2xl font-extrabold text-white mb-6">{pkg.price}</div>
-                  <Button className="w-full bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold rounded-xl h-12 transition-colors">
+                  <Button 
+                    className="w-full bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold rounded-xl h-12 transition-colors"
+                    onClick={() => navigate(pkg.route)}
+                  >
                     Explore Package
                   </Button>
                 </div>
@@ -1273,86 +1274,6 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
-
-      {/* Footer Section */}
-      <footer className="bg-[#0f172a] text-white pt-24 pb-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-16">
-            <div className="col-span-2 md:col-span-1 lg:col-span-2">
-              <div className="flex items-center gap-2 mb-8">
-                <Logo height={48} className="w-auto" />
-              </div>
-              <p className="text-neutral-400 text-sm leading-relaxed mb-8 max-w-sm font-medium">
-                The first comprehensive ecosystem for Neapolitan hospitality. We connect guests with the heart of Naples through a network of trusted hosts and premium local service providers.
-              </p>
-              <div className="flex gap-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
-                  <Facebook className="h-5 w-5" />
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
-                  <Instagram className="h-5 w-5" />
-                </a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
-                  <Twitter className="h-5 w-5" />
-                </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
-                  <Linkedin className="h-5 w-5" />
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">Company</h4>
-              <ul className="space-y-4 text-sm text-neutral-400 font-medium">
-                <li><a href="#about" className="hover:text-amber-500 transition-colors">About Us</a></li>
-                <li><a href="#how-it-works" className="hover:text-amber-500 transition-colors">How it Works</a></li>
-                <li><a href="/register" onClick={(e) => { e.preventDefault(); navigate('/register'); }} className="hover:text-amber-500 transition-colors">Community</a></li>
-                <li><a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }} className="hover:text-amber-500 transition-colors">Blog</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">For Hosts</h4>
-              <ul className="space-y-4 text-sm text-neutral-400 font-medium">
-                <li><a href="/register?role=lister" onClick={(e) => { e.preventDefault(); navigate('/register?role=lister'); }} className="hover:text-amber-500 transition-colors">List your Property</a></li>
-                <li><a href="/owner" onClick={(e) => { e.preventDefault(); navigate('/owner'); }} className="hover:text-amber-500 transition-colors">Owner Tools</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Insurance</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Host Guidelines</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">For Guests</h4>
-              <ul className="space-y-4 text-sm text-neutral-400 font-medium">
-                <li><a href="/search" onClick={(e) => { e.preventDefault(); navigate('/search'); }} className="hover:text-amber-500 transition-colors">Find a Stay</a></li>
-                <li><a href="/services" onClick={(e) => { e.preventDefault(); navigate('/services'); }} className="hover:text-amber-500 transition-colors">Experiences</a></li>
-                <li><a href="/map" onClick={(e) => { e.preventDefault(); navigate('/map'); }} className="hover:text-amber-500 transition-colors">Map</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Reviews</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.2em] text-amber-500 mb-8 italic">Support</h4>
-              <ul className="space-y-4 text-sm text-neutral-400 font-medium">
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Safety Center</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-amber-500 transition-colors">Privacy</a></li>
-                <li><a href="#contact" className="hover:text-amber-500 transition-colors">Contact Us</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs text-neutral-500 font-bold tracking-widest uppercase mb-10 md:mb-0">
-              © 2026 IL HOST IN NAPLES. MADE WITH ❤️ IN NAPLES.
-            </p>
-            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-10 md:mb-0">
-              <a href="#" className="hover:text-amber-500 transition-colors">EN | IT</a>
-            </div>
-          </div>
-        </div>
-      </footer>
 
       {/* Just Booked Ticker */}
       <JustBookedTicker />
