@@ -40,6 +40,7 @@ export const SupplierDashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<any>(null);
   const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+  const [orderTab, setOrderTab] = useState<'all' | 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'>('all');
 
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
@@ -363,11 +364,119 @@ export const SupplierDashboard: React.FC = () => {
     </motion.div>
   );
 
-  // Use allBookings to count active orders for my services
-  const myActiveOrders = bookings.filter(b => 
-    b.status === 'PENDING' && 
-    myServices.some(s => s.id === b.itemId)
-  ).length;
+  const myB2BOrders = useMemo(() => 
+    bookings.filter(b => b.bookingType === 'SERVICE' && myServices.some(s => s.id === b.itemId)),
+  [bookings, myServices]);
+
+  const myActiveOrders = myB2BOrders.filter(b => b.status === 'PENDING').length;
+
+  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
+    updateBooking(orderId, { status: newStatus as any });
+    if (newStatus === 'CONFIRMED') toast.success('Order accepted!');
+    if (newStatus === 'CANCELLED') toast.success('Order rejected');
+    if (newStatus === 'COMPLETED') toast.success('Order marked as complete');
+  };
+
+  const filteredOrders = useMemo(() => {
+    if (orderTab === 'all') return myB2BOrders;
+    return myB2BOrders.filter(o => o.status === orderTab);
+  }, [myB2BOrders, orderTab]);
+
+  const renderOrders = () => (
+    <div className="space-y-8">
+      <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] self-start mb-6 w-full lg:w-auto overflow-x-auto scrollbar-hide">
+        {(['all', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setOrderTab(tab)}
+            className={cn(
+              "px-5 sm:px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap flex-1 sm:flex-none",
+              orderTab === tab 
+                ? "bg-[#334155] text-white shadow-lg" 
+                : "text-[#94a3b8] hover:text-white"
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {filteredOrders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center border overflow-hidden rounded-[2rem] border-[#334155] bg-[#1e293b]">
+          <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+            <Package className="h-10 w-10 text-[#94a3b8]" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">No orders yet</h2>
+          <p className="text-[#94a3b8] max-w-sm text-sm font-medium">When Listers request your services, they will appear here</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {filteredOrders.map(order => (
+            <Card key={order.id} className="p-4 sm:p-6 border-[#334155] bg-[#1e293b] space-y-4 hover:border-[#F5A623]/30 transition-all">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm sm:text-base font-bold text-white">{order.itemName}</p>
+                  <p className="text-[10px] text-[#64748b] uppercase tracking-widest mt-1">Order #{order.reference}</p>
+                </div>
+                <span className={cn(
+                  "text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest",
+                  order.status === 'PENDING' ? "text-amber-500 bg-amber-500/10" :
+                  order.status === 'CONFIRMED' ? "text-green-500 bg-green-500/10" :
+                  order.status === 'COMPLETED' ? "text-blue-500 bg-blue-500/10" :
+                  "text-red-500 bg-red-500/10"
+                )}>
+                  {order.status}
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 py-4 border-y border-[#334155]">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-[#0f172a] flex items-center justify-center font-bold text-xs text-[#F5A623]">
+                    {order.customerName?.charAt(0).toUpperCase() || 'L'}
+                  </div>
+                  <div className="text-xs">
+                    <p className="text-white font-medium">{order.customerName}</p>
+                    <p className="text-[#94a3b8] truncate max-w-[200px]">{order.notes || "Location info directly with lister"}</p>
+                  </div>
+                </div>
+                <div className="sm:ml-auto text-xs font-medium text-[#94a3b8] flex items-center gap-2 bg-[#0f172a] px-3 py-1.5 rounded-lg border border-white/5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Due: {new Date(order.startDate).toLocaleDateString()}
+                </div>
+              </div>
+              
+              {order.status === 'PENDING' && (
+                <div className="flex gap-3 mt-4">
+                  <Button 
+                    onClick={() => handleUpdateOrderStatus(order.id, 'CONFIRMED')}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-black uppercase tracking-widest text-[10px] border-none h-10"
+                  >
+                    Accept
+                  </Button>
+                  <Button 
+                    onClick={() => handleUpdateOrderStatus(order.id, 'CANCELLED')}
+                    variant="outline"
+                    className="flex-1 bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 border-red-500/30 font-black uppercase tracking-widest text-[10px] h-10"
+                  >
+                    Reject
+                  </Button>
+                </div>
+              )}
+              {order.status === 'CONFIRMED' && (
+                <div className="mt-4">
+                  <Button 
+                    onClick={() => handleUpdateOrderStatus(order.id, 'COMPLETED')}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest text-[10px] border-none h-10"
+                  >
+                    Mark Complete
+                  </Button>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const handleAddService = () => {
     if (isDemoMode) {
@@ -495,23 +604,45 @@ export const SupplierDashboard: React.FC = () => {
         <div className="space-y-6">
           <h2 className="text-xl font-bold text-white">Recent Orders</h2>
           <div className="space-y-4">
-            <Card className="p-4 border-[#334155] bg-[#1e293b] space-y-4">
-                <div className="flex justify-between items-start">
-                   <div>
-                     <p className="text-sm font-bold text-white">Full Linen Refresh</p>
-                     <p className="text-[10px] text-[#64748b] uppercase tracking-widest mt-1">Order #8821</p>
-                   </div>
-                   <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full uppercase">New</span>
-                </div>
-                <div className="flex items-center gap-3 pt-3 border-t border-[#334155]">
-                   <div className="h-8 w-8 rounded-lg bg-[#0f172a] flex items-center justify-center font-bold text-xs text-[#F5A623]">V</div>
-                   <div className="text-xs">
-                     <p className="text-white font-medium">Villa Roma</p>
-                     <p className="text-[#94a3b8]">Delivery: tomorrow 10:00</p>
-                   </div>
-                </div>
-                <Button className="w-full h-10 bg-green-600 hover:bg-green-700 text-white font-black uppercase tracking-widest text-[10px] border-none">Accept Order</Button>
-            </Card>
+            {myB2BOrders.slice(0, 3).map(order => (
+              <Card key={order.id} className="p-4 border-[#334155] bg-[#1e293b] space-y-4 hover:border-[#F5A623]/30 transition-all">
+                  <div className="flex justify-between items-start">
+                     <div>
+                       <p className="text-sm font-bold text-white">{order.itemName}</p>
+                       <p className="text-[10px] text-[#64748b] uppercase tracking-widest mt-1">Order #{order.reference}</p>
+                     </div>
+                    <span className={cn(
+                      "text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest",
+                      order.status === 'PENDING' ? "text-amber-500 bg-amber-500/10" :
+                      order.status === 'CONFIRMED' ? "text-green-500 bg-green-500/10" :
+                      order.status === 'COMPLETED' ? "text-blue-500 bg-blue-500/10" :
+                      "text-red-500 bg-red-500/10"
+                    )}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 pt-3 border-t border-[#334155]">
+                     <div className="h-8 w-8 rounded-lg bg-[#0f172a] flex items-center justify-center font-bold text-xs text-[#F5A623]">
+                       {order.customerName?.charAt(0).toUpperCase() || 'L'}
+                     </div>
+                     <div className="text-xs">
+                       <p className="text-white font-medium">{order.customerName}</p>
+                       <p className="text-[#94a3b8]">Due: {new Date(order.startDate).toLocaleDateString()}</p>
+                     </div>
+                  </div>
+                  {order.status === 'PENDING' && (
+                    <Button 
+                      onClick={() => handleUpdateOrderStatus(order.id, 'CONFIRMED')}
+                      className="w-full h-10 bg-green-600 hover:bg-green-700 text-white font-black uppercase tracking-widest text-[10px] border-none"
+                    >
+                      Accept Order
+                    </Button>
+                  )}
+              </Card>
+            ))}
+            {myB2BOrders.length === 0 && (
+              <p className="text-sm text-[#94a3b8] italic">No recent orders found.</p>
+            )}
           </div>
         </div>
       </div>
@@ -530,7 +661,8 @@ export const SupplierDashboard: React.FC = () => {
 
         {section === 'overview' && renderOverview()}
         {section === 'profile' && renderProfile()}
-        {(section !== 'overview' && section !== 'profile') && (
+        {section === 'orders' && renderOrders()}
+        {(section !== 'overview' && section !== 'profile' && section !== 'orders') && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
              <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
                <Package className="h-10 w-10 text-neutral-600" />

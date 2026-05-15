@@ -25,6 +25,7 @@ interface User {
   phone?: string;
   rejectionReason?: string;
   roleDetails?: any;
+  supplierAccess?: 'none' | 'pending' | 'approved' | 'rejected';
 }
 
 interface AuthContextType {
@@ -34,6 +35,7 @@ interface AuthContextType {
   loginAsDemo: (role: UserRole) => void;
   updateUser: (updates: Partial<User>) => void;
   updateUserStatus: (userId: string, status: UserStatus, reason?: string) => void;
+  updateUserSupplierAccess: (userId: string, status: 'none' | 'pending' | 'approved' | 'rejected') => void;
   logout: () => void;
   isLoading: boolean;
   isDemoMode: boolean;
@@ -182,6 +184,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // or persist in local storage if we were using it for users
   }, []);
 
+  const updateUserSupplierAccess = React.useCallback((userId: string, status: 'none' | 'pending' | 'approved' | 'rejected') => {
+    setUser(prev => {
+      if (prev && prev.id === userId) {
+        return { ...prev, supplierAccess: status };
+      }
+      return prev;
+    });
+    
+    // Update MOCK_USERS so Admin sees the change
+    const userToUpdate = Object.values(MOCK_USERS).find(u => u.id === userId);
+    if (userToUpdate) {
+      userToUpdate.supplierAccess = status;
+    }
+  }, []);
+
   const value = React.useMemo(() => ({ 
     user, 
     token, 
@@ -189,10 +206,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loginAsDemo, 
     updateUser,
     updateUserStatus,
+    updateUserSupplierAccess,
     logout, 
     isLoading, 
     isDemoMode 
-  }), [user, token, login, loginAsDemo, updateUser, updateUserStatus, logout, isLoading, isDemoMode]);
+  }), [user, token, login, loginAsDemo, updateUser, updateUserStatus, updateUserSupplierAccess, logout, isLoading, isDemoMode]);
 
   return (
     <AuthContext.Provider value={value}>

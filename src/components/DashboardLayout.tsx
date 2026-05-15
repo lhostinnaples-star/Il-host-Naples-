@@ -11,6 +11,7 @@ import { useAuth, UserRole } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { Button } from './UI';
+import { toast } from 'sonner';
 
 interface NavItem {
   id: string;
@@ -30,6 +31,24 @@ export const DashboardSidebar: React.FC<{
   const { user, logout } = useAuth();
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  const navigate = useNavigate();
+
+  const handleSupplierNavigation = (e: React.MouseEvent, href?: string) => {
+    if (href === '/supplier-directory' && user?.role === UserRole.HOTEL_OWNER) {
+      if (user?.supplierAccess === 'approved') {
+        return; // default behavior
+      }
+      e.preventDefault();
+      if (user?.supplierAccess === 'pending') {
+        toast.info("Your request is pending admin approval");
+      } else if (user?.supplierAccess === 'rejected') {
+        toast.error("Your request was rejected. Contact us.");
+      } else {
+        navigate('/owner?supplier_modal=true');
+      }
+    }
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedItems(prev => 
@@ -156,6 +175,7 @@ export const DashboardSidebar: React.FC<{
               ) : (
                 <Link
                   to={item.href || '#'}
+                  onClick={(e) => handleSupplierNavigation(e, item.href)}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
                     isActive ? "bg-white/10 text-white shadow-sm" : "hover:bg-white/5 hover:text-neutral-200"
@@ -298,6 +318,23 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleSupplierNavigation = (e: React.MouseEvent, href?: string) => {
+    if (href === '/supplier-directory' && user?.role === UserRole.HOTEL_OWNER) {
+      if (user?.supplierAccess === 'approved') {
+        return; // default behavior
+      }
+      e.preventDefault();
+      if (user?.supplierAccess === 'pending') {
+        toast.info("Your request is pending admin approval");
+      } else if (user?.supplierAccess === 'rejected') {
+        toast.error("Your request was rejected. Contact us.");
+      } else {
+        navigate('/owner?supplier_modal=true');
+      }
+    }
+  };
 
   const getNavItems = (): NavItem[] => {
     if (!user) return [];
@@ -355,6 +392,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
             <Link 
               key={item.id} 
               to={item.href || '#'} 
+              onClick={(e) => handleSupplierNavigation(e, item.href)}
               className={cn(
                 "flex flex-col items-center gap-1 transition-colors flex-1 text-center truncate",
                 isActive ? "text-[#F5A623]" : "text-[#94a3b8]"

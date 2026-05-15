@@ -23,9 +23,9 @@ import { SupplierServiceFormModal } from '../components/SupplierServiceFormModal
 import { SEOHead } from '../components/SEOHead';
 
 export const AdminDashboard: React.FC = () => {
-  const { token, isDemoMode, updateUserStatus } = useAuth();
+  const { token, isDemoMode, updateUserStatus, updateUserSupplierAccess } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allHotels, allServices, bookings, updateHotel, updateService, deleteService, deleteHotel, reviews, updateReview, deleteReview, updateBooking, deleteBooking } = useHotels();
+  const { allHotels, allServices, bookings, updateHotel, updateService, deleteService, deleteHotel, reviews, updateReview, deleteReview, updateBooking, deleteBooking, supplierAccessRequests, updateSupplierAccessRequest } = useHotels();
   const { settings, updateSettings } = useSettings();
   const [searchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
@@ -47,7 +47,8 @@ export const AdminDashboard: React.FC = () => {
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [editingSupplierService, setEditingSupplierService] = useState<any>(null);
 
-  const [activeUserTab, setActiveUserTab] = useState<'all' | 'pending' | 'rejected'>('all');
+  const [activeUserTab, setActiveUserTab] = useState<'all' | 'pending' | 'rejected' | 'supplier_access'>('all');
+  const [supplierRequestFilter, setSupplierRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [activePropertyTab, setActivePropertyTab] = useState<'all' | 'pending' | 'rejected'>('all');
   const [activeExperienceTab, setActiveExperienceTab] = useState<'all' | 'pending' | 'rejected'>('all');
   const [activeSupplierTab, setActiveSupplierTab] = useState<'all' | 'pending' | 'rejected'>('all');
@@ -138,6 +139,20 @@ export const AdminDashboard: React.FC = () => {
     toast.success('User account approved!');
     // Update local state if needed
     setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, status: UserStatus.ACTIVE } : u));
+  };
+
+  const handleApproveSupplierRequest = (req: any) => {
+    updateSupplierAccessRequest(req.id, 'approved');
+    setAllUsers(prev => prev.map(u => u.id === req.userId ? { ...u, supplierAccess: 'approved' } : u));
+    updateUserSupplierAccess(req.userId, 'approved');
+    toast.success('Supplier access approved!');
+  };
+
+  const handleRejectSupplierRequest = (req: any) => {
+    updateSupplierAccessRequest(req.id, 'rejected');
+    setAllUsers(prev => prev.map(u => u.id === req.userId ? { ...u, supplierAccess: 'rejected' } : u));
+    updateUserSupplierAccess(req.userId, 'rejected');
+    toast.error('Supplier access rejected!');
   };
 
   const handleRejectUser = (userId: string) => {
@@ -299,7 +314,7 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] self-start mb-6 w-full lg:w-auto overflow-x-auto scrollbar-hide">
-        {(['all', 'pending', 'rejected'] as const).map((tab) => (
+        {(['all', 'pending', 'rejected', 'supplier_access'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveUserTab(tab)}
@@ -310,11 +325,108 @@ export const AdminDashboard: React.FC = () => {
                 : "text-[#94a3b8] hover:text-white"
             )}
           >
-            {tab} Users {tab === 'pending' && pendingUsers.length > 0 && `(${pendingUsers.length})`}
+            {tab === 'supplier_access' ? 'Supplier Access' : `${tab} Users`}
+            {tab === 'pending' && pendingUsers.length > 0 && ` (${pendingUsers.length})`}
+            {tab === 'supplier_access' && supplierAccessRequests.filter(r => r.status === 'pending').length > 0 && ` (${supplierAccessRequests.filter(r => r.status === 'pending').length})`}
           </button>
         ))}
       </div>
 
+      {activeUserTab === 'supplier_access' ? (
+        <>
+          <div className="flex bg-[#0f172a] p-1 rounded-xl border border-[#334155] self-start mb-6 overflow-x-auto scrollbar-hide">
+            {(['all', 'pending', 'approved', 'rejected'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSupplierRequestFilter(tab)}
+                className={cn(
+                  "px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                  supplierRequestFilter === tab 
+                    ? "bg-[#334155] text-white shadow-lg" 
+                    : "text-[#94a3b8] hover:text-white"
+                )}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#0f172a] border-b border-[#334155]">
+                    <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">User Details</th>
+                    <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Contact</th>
+                    <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Properties</th>
+                    <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-5 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#334155]">
+                  {supplierAccessRequests
+                    .filter(r => supplierRequestFilter === 'all' || r.status === supplierRequestFilter)
+                    .map((req) => (
+                    <tr key={req.id} className="hover:bg-[#0f172a]/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-white">{req.userName}</p>
+                        <p className="text-[10px] text-[#64748b]">{new Date(req.submittedAt).toLocaleDateString()}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-white">{req.email}</p>
+                        <p className="text-xs text-[#94a3b8]">{req.phone}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-white font-bold">{req.propertyCount}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className={cn(
+                          "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                          req.status === 'approved' ? "bg-green-500/10 text-green-500" :
+                          req.status === 'pending' ? "bg-amber-500/10 text-amber-500" :
+                          "bg-red-500/10 text-red-500"
+                        )}>
+                          {req.status}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {req.status === 'pending' && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleApproveSupplierRequest(req)}
+                                className="h-8 text-[9px] font-black uppercase bg-green-600 text-white border-none px-3"
+                              >
+                                Approve
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleRejectSupplierRequest(req)}
+                                className="h-8 text-[9px] font-black uppercase border-[#334155] text-red-500 hover:bg-red-500/10 px-3"
+                              >
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {supplierAccessRequests.filter(r => supplierRequestFilter === 'all' || r.status === supplierRequestFilter).length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-8 text-[#94a3b8] text-sm italic font-medium">
+                        No requests found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      ) : (
       <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto">
@@ -450,6 +562,7 @@ export const AdminDashboard: React.FC = () => {
           ))}
         </div>
       </Card>
+      )}
     </div>
   );
 

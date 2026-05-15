@@ -73,20 +73,54 @@ const CountdownTimer: React.FC<{ acceptedAt: string, onExpire: () => void }> = (
 };
 
 export const OwnerDashboard: React.FC = () => {
-  const { user, token, isDemoMode, updateUser } = useAuth();
+  const { user, token, isDemoMode, updateUser, updateUserSupplierAccess } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allHotels, addHotel, updateHotel, deleteHotel, bookings: allBookings, updateBooking, addBooking } = useHotels();
+  const { allHotels, addHotel, updateHotel, deleteHotel, bookings: allBookings, updateBooking, addBooking, addSupplierAccessRequest } = useHotels();
 
   if (user?.status === UserStatus.PENDING_APPROVAL || user?.status === UserStatus.REJECTED) {
     return <PendingApprovalScreen status={user.status} rejectionReason={user.rejectionReason} />;
   }
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const section = searchParams.get('section') || 'overview';
   
   const myHotels = allHotels.filter(h => h.ownerId === user?.id || (isDemoMode && !h.ownerId));
   const myBookings = allBookings.filter(b => b.ownerId === user?.id || (isDemoMode && !b.ownerId));
   const [activeBookingTab, setActiveBookingTab] = useState<'pending' | 'confirmed' | 'past' | 'pool' | 'pool_accepted'>('pending');
+
+  // Supplier Access Request Modal
+  const isSupplierModalOpen = searchParams.get('supplier_modal') === 'true';
+  const closeSupplierModal = () => {
+    searchParams.delete('supplier_modal');
+    setSearchParams(searchParams);
+  };
+  
+  const [supplierForm, setSupplierForm] = useState({
+    phone: user?.phone || '',
+    propertyCount: myHotels.length || 1
+  });
+
+  const handleSupplierRequestSubmit = () => {
+    if (!supplierForm.phone) {
+      toast.error('Please enter a phone number');
+      return;
+    }
+    
+    addSupplierAccessRequest({
+      id: `req-${Date.now()}`,
+      userId: user!.id,
+      userName: user!.name,
+      email: user!.email,
+      phone: supplierForm.phone,
+      propertyCount: supplierForm.propertyCount,
+      status: 'pending',
+      submittedAt: new Date().toISOString()
+    });
+
+    updateUserSupplierAccess(user!.id, 'pending');
+    toast.success('Request submitted!');
+    closeSupplierModal();
+  };
 
   // Modal States
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
@@ -1102,6 +1136,97 @@ export const OwnerDashboard: React.FC = () => {
                       Share to Booking Pool
                     </Button>
                   </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Supplier Access Request Modal */}
+        <AnimatePresence>
+          {isSupplierModalOpen && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeSupplierModal}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative w-full max-w-md bg-[#1e293b] border border-[#334155] rounded-3xl p-8 shadow-2xl"
+              >
+                <div className="flex justify-between items-center mb-6 border-b border-[#334155] pb-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Request Supplier Directory Access</h3>
+                    <p className="text-xs text-[#94a3b8] mt-1 font-medium">Get access to professional B2B services</p>
+                  </div>
+                  <button 
+                    onClick={closeSupplierModal}
+                    className="p-2 hover:bg-[#0f172a] rounded-full transition-colors text-[#94a3b8] hover:text-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Full Name</label>
+                    <Input 
+                      value={user?.name || ''}
+                      readOnly
+                      className="bg-black/40 border-white/5 text-[#94a3b8] cursor-not-allowed"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Email</label>
+                    <Input 
+                      value={user?.email || ''}
+                      readOnly
+                      className="bg-black/40 border-white/5 text-[#94a3b8] cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Phone Number *</label>
+                    <Input 
+                      value={supplierForm.phone}
+                      onChange={(e) => setSupplierForm({ ...supplierForm, phone: e.target.value })}
+                      placeholder="+39 123 456 7890"
+                      className="bg-[#0f172a] border-[#334155]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Number of Properties Managed</label>
+                    <Input 
+                      type="number"
+                      min="1"
+                      value={supplierForm.propertyCount}
+                      onChange={(e) => setSupplierForm({ ...supplierForm, propertyCount: parseInt(e.target.value) || 1 })}
+                      className="bg-[#0f172a] border-[#334155]"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                  <Button 
+                    variant="outline"
+                    onClick={closeSupplierModal}
+                    className="flex-1 border-[#334155] text-white hover:bg-[#0f172a] font-black uppercase text-[10px] tracking-widest"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleSupplierRequestSubmit}
+                    className="flex-1 bg-[#F5A623] hover:bg-[#F5A623]/90 text-black font-black uppercase text-[10px] tracking-widest"
+                  >
+                    Submit Request
+                  </Button>
                 </div>
               </motion.div>
             </div>

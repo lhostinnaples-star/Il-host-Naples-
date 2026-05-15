@@ -72,7 +72,7 @@ export interface Service {
   areas?: string[];
 }
 
-export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SHARED' | 'ACCEPTED' | 'CLOSED' | 'EXPIRED';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SHARED' | 'ACCEPTED' | 'CLOSED' | 'EXPIRED' | 'COMPLETED';
 
 export interface Booking {
   id: string;
@@ -115,6 +115,17 @@ export interface Review {
   status: 'approved' | 'pending' | 'rejected';
 }
 
+export interface SupplierAccessRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  email: string;
+  phone: string;
+  propertyCount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  submittedAt: string;
+}
+
 export interface HotelsContextType {
   hotels: Hotel[];
   allHotels: Hotel[];
@@ -122,6 +133,7 @@ export interface HotelsContextType {
   allServices: Service[];
   bookings: Booking[];
   reviews: Review[];
+  supplierAccessRequests: SupplierAccessRequest[];
   isLoading: boolean;
   refreshHotels: () => Promise<void>;
   addHotel: (hotel: Hotel) => void;
@@ -135,6 +147,8 @@ export interface HotelsContextType {
   updateReview: (id: string, updates: Partial<Review>) => void;
   deleteReview: (id: string) => void;
   deleteHotel: (id: string) => void;
+  addSupplierAccessRequest: (request: SupplierAccessRequest) => void;
+  updateSupplierAccessRequest: (id: string, status: 'pending' | 'approved' | 'rejected') => void;
   globalCategory: string | null;
   setGlobalCategory: (category: string | null) => void;
   selectedAreas: string[];
@@ -154,6 +168,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [allServices, setAllServices] = useState<Service[]>(MOCK_SERVICES as any);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [supplierAccessRequests, setSupplierAccessRequests] = useState<SupplierAccessRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [globalCategory, setGlobalCategoryState] = useState<string | null>(null);
   const [selectedAreas, setSelectedAreasState] = useState<string[]>([]);
@@ -313,6 +328,11 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setReviews(MOCK_REVIEWS as any);
         localStorage.setItem('stay_ease_reviews', JSON.stringify(MOCK_REVIEWS));
       }
+
+      const savedSupplierRequests = localStorage.getItem('stay_ease_supplier_requests');
+      if (savedSupplierRequests) {
+        setSupplierAccessRequests(JSON.parse(savedSupplierRequests));
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -416,6 +436,22 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
+  const addSupplierAccessRequest = useCallback((request: SupplierAccessRequest) => {
+    setSupplierAccessRequests(prev => {
+      const updated = [request, ...prev];
+      localStorage.setItem('stay_ease_supplier_requests', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const updateSupplierAccessRequest = useCallback((id: string, status: 'pending' | 'approved' | 'rejected') => {
+    setSupplierAccessRequests(prev => {
+      const updated = prev.map(r => r.id === id ? { ...r, status } : r);
+      localStorage.setItem('stay_ease_supplier_requests', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const refreshHotels = refreshData;
 
   useEffect(() => {
@@ -496,6 +532,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     allServices,
     bookings,
     reviews,
+    supplierAccessRequests,
     isLoading, 
     refreshHotels, 
     addHotel, 
@@ -509,6 +546,8 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     updateReview,
     deleteReview,
     deleteHotel,
+    addSupplierAccessRequest,
+    updateSupplierAccessRequest,
     globalCategory, 
     setGlobalCategory,
     selectedAreas,
@@ -524,6 +563,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     allServices, 
     bookings,
     reviews,
+    supplierAccessRequests,
     isLoading, 
     refreshHotels, 
     addHotel, 
@@ -534,6 +574,8 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     updateBooking,
     updateReview,
     deleteReview,
+    addSupplierAccessRequest,
+    updateSupplierAccessRequest,
     globalCategory, 
     selectedAreas, 
     priceRange, 
