@@ -58,7 +58,8 @@ export const MOCK_USERS: Record<string, User> = {
     email: 'lister@demo.com',
     role: UserRole.HOTEL_OWNER,
     status: UserStatus.ACTIVE,
-    phone: '+39 333 765 4321'
+    phone: '+39 333 765 4321',
+    supplierAccess: 'approved'
   },
   supplier: {
     id: 'demo-supplier',

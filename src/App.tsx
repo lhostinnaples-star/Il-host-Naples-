@@ -122,7 +122,7 @@ function AppContent() {
         } />
 
         <Route path="/supplier-directory" element={
-          <ProtectedRoute roles={[UserRole.HOTEL_OWNER]}>
+          <ProtectedRoute roles={[UserRole.HOTEL_OWNER, UserRole.ADMIN]}>
             <SupplierDirectory />
           </ProtectedRoute>
         } />

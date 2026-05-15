@@ -78,7 +78,13 @@ export const DashboardSidebar: React.FC<{
             ]
           },
           { id: 'experiences', label: 'Experiences', icon: Map, href: '/admin?section=experiences' },
-          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/admin?section=suppliers' },
+          { 
+            id: 'suppliers', label: 'Suppliers', icon: Wrench,
+            subItems: [
+              { id: 'all-suppliers', label: 'All B2B Services', href: '/admin?section=suppliers' },
+              { id: 'supplier-dir', label: 'View Supplier Directory', href: '/supplier-directory' }
+            ]
+          },
           { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/admin?section=bookings' },
           { id: 'reviews', label: 'Reviews', icon: Star, href: '/admin?section=reviews' },
           { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin?section=analytics' },

@@ -132,6 +132,47 @@ export const SupplierDirectory: React.FC = () => {
 
   const myProperties = allHotels.filter(h => h.ownerId === user?.id);
 
+  // Global Request Form State
+  const { addGlobalServiceRequest } = useHotels();
+  const [globalReqForm, setGlobalReqForm] = useState({
+    name: '',
+    phone: '',
+    whatsapp: '',
+    serviceNeeded: '',
+    area: '',
+  });
+  const [sameAsPhone, setSameAsPhone] = useState(false);
+  const [isSubmittingGlobalReq, setIsSubmittingGlobalReq] = useState(false);
+
+  const handleGlobalRequestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!globalReqForm.name || !globalReqForm.phone || !globalReqForm.serviceNeeded || !globalReqForm.area) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmittingGlobalReq(true);
+    setTimeout(() => {
+      console.log('📧 EMAIL TO ALL SUPPLIERS:\nNew service request!\nFrom:', globalReqForm.name, '\nService needed:', globalReqForm.serviceNeeded, '\nArea:', globalReqForm.area, '\nPhone:', globalReqForm.phone, '\nWhatsApp:', sameAsPhone ? globalReqForm.phone : globalReqForm.whatsapp);
+      
+      addGlobalServiceRequest({
+        id: `greq-${Date.now()}`,
+        userId: user?.id || 'unknown',
+        userName: globalReqForm.name,
+        phone: globalReqForm.phone,
+        whatsapp: sameAsPhone ? globalReqForm.phone : globalReqForm.whatsapp,
+        serviceNeeded: globalReqForm.serviceNeeded,
+        area: globalReqForm.area,
+        submittedAt: new Date().toISOString()
+      });
+
+      toast.success('✅ Request sent! All suppliers have been notified.');
+      setIsSubmittingGlobalReq(false);
+      setGlobalReqForm({ name: '', phone: '', whatsapp: '', serviceNeeded: '', area: '' });
+      setSameAsPhone(false);
+    }, 1500);
+  };
+
   const filteredSuppliers = combinedSuppliers.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           s.area.toLowerCase().includes(searchTerm.toLowerCase());
@@ -191,6 +232,125 @@ export const SupplierDirectory: React.FC = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Supplier Directory</h1>
           <p className="text-[#94a3b8]">Find local professionals to support your property management in Naples.</p>
         </div>
+
+        {/* Global Request Form */}
+        {((user?.role === 'hotel_owner' && user?.status === 'active') || user?.role === 'admin') && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 max-w-[800px] mx-auto"
+          >
+            {user?.supplierAccess === 'approved' || user?.role === 'admin' ? (
+              <Card className="bg-[#1e293b] border-[#334155] rounded-2xl p-6 md:p-8">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-[#F5A623] mb-2">Request a Service</h2>
+                  <p className="text-[#94a3b8]">Tell us what you need and all suppliers will be notified</p>
+                </div>
+                
+                <form onSubmit={handleGlobalRequestSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-1">Full Name *</label>
+                      <Input
+                        required
+                        value={globalReqForm.name}
+                        onChange={(e) => setGlobalReqForm({ ...globalReqForm, name: e.target.value })}
+                        placeholder="Your name"
+                        className="bg-[#0f172a] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] h-12 rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-1">Phone Number *</label>
+                      <Input
+                        required
+                        value={globalReqForm.phone}
+                        onChange={(e) => setGlobalReqForm({ ...globalReqForm, phone: e.target.value })}
+                        placeholder="+39 081 000 0000"
+                        className="bg-[#0f172a] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] h-12 rounded-xl"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-1">WhatsApp Number (Optional)</label>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input 
+                          type="checkbox"
+                          id="sameAsPhone"
+                          checked={sameAsPhone}
+                          onChange={(e) => setSameAsPhone(e.target.checked)}
+                          className="rounded bg-[#0f172a] border-[#334155] text-[#F5A623] focus:ring-[#F5A623]"
+                        />
+                        <label htmlFor="sameAsPhone" className="text-xs text-[#94a3b8] cursor-pointer">Same as phone number</label>
+                      </div>
+                      {!sameAsPhone && (
+                        <Input
+                          value={globalReqForm.whatsapp}
+                          onChange={(e) => setGlobalReqForm({ ...globalReqForm, whatsapp: e.target.value })}
+                          placeholder="+39 081 000 0000"
+                          className="bg-[#0f172a] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] h-12 rounded-xl"
+                        />
+                      )}
+                    </div>
+                    
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-1">Service Needed *</label>
+                      <textarea
+                        required
+                        value={globalReqForm.serviceNeeded}
+                        onChange={(e) => setGlobalReqForm({ ...globalReqForm, serviceNeeded: e.target.value })}
+                        placeholder="Describe what service you need e.g. Weekly cleaning for 2 bedroom apartment..."
+                        rows={4}
+                        className="w-full bg-[#0f172a] border border-[#334155] text-white placeholder-[#64748b] focus:border-[#F5A623] focus:ring-1 focus:ring-[#F5A623] rounded-xl p-3 resize-none outline-none transition-all"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1 md:col-span-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-1">Area in Naples *</label>
+                      <Input
+                        required
+                        value={globalReqForm.area}
+                        onChange={(e) => setGlobalReqForm({ ...globalReqForm, area: e.target.value })}
+                        placeholder="e.g. Centro Storico, Posillipo, Vomero..."
+                        className="bg-[#0f172a] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] h-12 rounded-xl"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2">
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmittingGlobalReq}
+                      className="w-full sm:w-auto px-8 h-12 bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold rounded-xl flex items-center justify-center"
+                    >
+                      {isSubmittingGlobalReq ? (
+                        <>
+                          <div className="h-4 w-4 border-2 border-[#0f172a]/30 border-t-[#0f172a] rounded-full animate-spin mr-2" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Send Request to All Suppliers"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Card>
+            ) : (
+              <Card className="bg-[#1e293b] border-[#334155] rounded-2xl p-6 md:p-8 text-center flex flex-col items-center justify-center">
+                <div className="h-16 w-16 rounded-full bg-[#F5A623]/10 flex items-center justify-center mb-4">
+                  <ShieldAlert className="h-8 w-8 text-[#F5A623]" />
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">Request supplier access to use this feature</h2>
+                <p className="text-[#94a3b8] max-w-sm mb-6">You need to have approved supplier access to broadcast service requests to all our verified professionals.</p>
+                <Button 
+                  onClick={() => navigate('/owner?section=suppliers')}
+                  className="bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold px-8"
+                >
+                  Request Access
+                </Button>
+              </Card>
+            )}
+          </motion.div>
+        )}
 
         {/* Search & Filter Bar */}
         <div className="sticky top-20 z-30 bg-[#0f172a]/80 backdrop-blur-md py-4 mb-8">

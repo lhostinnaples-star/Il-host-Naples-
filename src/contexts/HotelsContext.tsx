@@ -126,6 +126,17 @@ export interface SupplierAccessRequest {
   submittedAt: string;
 }
 
+export interface GlobalServiceRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  phone: string;
+  whatsapp?: string;
+  serviceNeeded: string;
+  area: string;
+  submittedAt: string;
+}
+
 export interface HotelsContextType {
   hotels: Hotel[];
   allHotels: Hotel[];
@@ -134,6 +145,7 @@ export interface HotelsContextType {
   bookings: Booking[];
   reviews: Review[];
   supplierAccessRequests: SupplierAccessRequest[];
+  globalServiceRequests: GlobalServiceRequest[];
   isLoading: boolean;
   refreshHotels: () => Promise<void>;
   addHotel: (hotel: Hotel) => void;
@@ -149,6 +161,7 @@ export interface HotelsContextType {
   deleteHotel: (id: string) => void;
   addSupplierAccessRequest: (request: SupplierAccessRequest) => void;
   updateSupplierAccessRequest: (id: string, status: 'pending' | 'approved' | 'rejected') => void;
+  addGlobalServiceRequest: (request: GlobalServiceRequest) => void;
   globalCategory: string | null;
   setGlobalCategory: (category: string | null) => void;
   selectedAreas: string[];
@@ -169,6 +182,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [supplierAccessRequests, setSupplierAccessRequests] = useState<SupplierAccessRequest[]>([]);
+  const [globalServiceRequests, setGlobalServiceRequests] = useState<GlobalServiceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [globalCategory, setGlobalCategoryState] = useState<string | null>(null);
   const [selectedAreas, setSelectedAreasState] = useState<string[]>([]);
@@ -333,6 +347,11 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (savedSupplierRequests) {
         setSupplierAccessRequests(JSON.parse(savedSupplierRequests));
       }
+
+      const savedGlobalRequests = localStorage.getItem('stay_ease_global_service_requests');
+      if (savedGlobalRequests) {
+        setGlobalServiceRequests(JSON.parse(savedGlobalRequests));
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -444,6 +463,14 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
+  const addGlobalServiceRequest = useCallback((request: GlobalServiceRequest) => {
+    setGlobalServiceRequests(prev => {
+      const updated = [request, ...prev];
+      localStorage.setItem('stay_ease_global_service_requests', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const updateSupplierAccessRequest = useCallback((id: string, status: 'pending' | 'approved' | 'rejected') => {
     setSupplierAccessRequests(prev => {
       const updated = prev.map(r => r.id === id ? { ...r, status } : r);
@@ -548,6 +575,8 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     deleteHotel,
     addSupplierAccessRequest,
     updateSupplierAccessRequest,
+    globalServiceRequests,
+    addGlobalServiceRequest,
     globalCategory, 
     setGlobalCategory,
     selectedAreas,

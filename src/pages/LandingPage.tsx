@@ -23,6 +23,7 @@ import { SEOHead } from '../components/SEOHead';
 import { Logo } from '../components/Logo';
 import { RecentlyViewedProperties } from '../components/RecentlyViewedProperties';
 import { generateOrganizationSchema, generateSlug } from '../utils/seo';
+import NaplesGlobe from '../components/NaplesGlobe';
 import { MOCK_PROPERTIES } from '../utils/mockData';
 
 const JustBookedTicker: React.FC = () => {
@@ -1098,6 +1099,9 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
+
+      {/* Naples Ecosystem Globe */}
+      <NaplesGlobe />
 
       {/* Testimonials Section */}
       <motion.section 
