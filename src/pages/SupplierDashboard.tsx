@@ -26,7 +26,7 @@ import { SUPPLIER_CATEGORIES } from '../constants';
 export const SupplierDashboard: React.FC = () => {
   const { user, isDemoMode, updateUser } = useAuth();
   const { formatPrice } = useCurrency();
-  const { allHotels, allServices, addService, updateService, deleteService, bookings } = useHotels();
+  const { allHotels, allServices, addService, updateService, deleteService, bookings, updateBooking } = useHotels();
 
   if (user?.status === UserStatus.PENDING_APPROVAL || user?.status === UserStatus.REJECTED) {
     return <PendingApprovalScreen status={user.status} rejectionReason={user.rejectionReason} />;

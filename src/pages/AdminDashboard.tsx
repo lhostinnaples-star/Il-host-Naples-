@@ -23,7 +23,7 @@ import { SupplierServiceFormModal } from '../components/SupplierServiceFormModal
 import { SEOHead } from '../components/SEOHead';
 
 export const AdminDashboard: React.FC = () => {
-  const { token, isDemoMode, updateUserStatus, updateUserSupplierAccess } = useAuth();
+  const { token, isDemoMode, updateUserStatus, updateUserSupplierAccess, updateUser } = useAuth();
   const { formatPrice } = useCurrency();
   const { allHotels, allServices, bookings, updateHotel, updateService, deleteService, deleteHotel, reviews, updateReview, deleteReview, updateBooking, deleteBooking, supplierAccessRequests, updateSupplierAccessRequest } = useHotels();
   const { settings, updateSettings } = useSettings();
@@ -46,6 +46,9 @@ export const AdminDashboard: React.FC = () => {
   
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [editingSupplierService, setEditingSupplierService] = useState<any>(null);
+
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
 
   const [activeUserTab, setActiveUserTab] = useState<'all' | 'pending' | 'rejected' | 'supplier_access'>('all');
   const [supplierRequestFilter, setSupplierRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
@@ -132,6 +135,20 @@ export const AdminDashboard: React.FC = () => {
     if (!reason) return;
     updateService(id, { status: 'rejected', rejectionReason: reason });
     toast.error('Service rejected');
+  };
+
+  const handleEditUser = (user: any) => {
+    setEditingUser(user);
+    setIsUserModalOpen(true);
+  };
+
+  const handleSaveUser = () => {
+    if (!editingUser) return;
+    setAllUsers(prev => prev.map(u => u.id === editingUser.id ? editingUser : u));
+    updateUser(editingUser); // Update AuthContext
+    toast.success('User updated successfully');
+    setIsUserModalOpen(false);
+    setEditingUser(null);
   };
 
   const handleApproveUser = (userId: string) => {
@@ -497,7 +514,7 @@ export const AdminDashboard: React.FC = () => {
                           Approve
                         </Button>
                       )}
-                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-white hover:bg-[#1e293b]"><Edit2 className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleEditUser(u)} className="h-8 w-8 hover:text-white hover:bg-[#1e293b]"><Edit2 className="h-4 w-4" /></Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
@@ -555,7 +572,7 @@ export const AdminDashboard: React.FC = () => {
                 {u.status === UserStatus.PENDING_APPROVAL && (
                   <Button size="sm" variant="outline" onClick={() => handleRejectUser(u.id)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Reject</Button>
                 )}
-                <Button variant="outline" size="sm" className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">Edit</Button>
+                <Button variant="outline" size="sm" onClick={() => handleEditUser(u)} className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-white min-w-[100px]">Edit</Button>
                 <Button variant="outline" size="sm" className="flex-1 h-10 text-[10px] uppercase font-black tracking-widest border-[#334155] text-red-500 min-w-[100px]">Delete</Button>
               </div>
             </div>
@@ -1515,6 +1532,58 @@ export const AdminDashboard: React.FC = () => {
           }
         }}
       />
+
+      {isUserModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e293b] p-6 rounded-2xl border border-[#334155] w-full max-w-md space-y-4">
+            <h3 className="text-xl font-bold text-white">Edit User</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Name</label>
+                <Input 
+                  value={editingUser.name} 
+                  onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Email</label>
+                <Input 
+                  value={editingUser.email} 
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Phone</label>
+                <Input 
+                  value={editingUser.phone} 
+                  onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white">Role</label>
+                <select 
+                  value={editingUser.role} 
+                  onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                  className="w-full h-10 px-3 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-white"
+                >
+                  <option value={UserRole.CUSTOMER}>Customer</option>
+                  <option value={UserRole.HOTEL_OWNER}>Property Manager</option>
+                  <option value={UserRole.SERVICE_PROVIDER}>Experience Provider</option>
+                  <option value={UserRole.SUPPLIER}>Supplier</option>
+                  <option value={UserRole.ADMIN}>Admin</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-6">
+              <Button variant="outline" onClick={() => setIsUserModalOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveUser} className="bg-[#F5A623] text-black">Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
     </>
   );

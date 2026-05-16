@@ -11,7 +11,7 @@ const NaplesGlobe = () => {
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
-      canvas.height = 500;
+      canvas.height = window.innerWidth < 768 ? 400 : 600;
     };
     resize();
     window.addEventListener('resize', resize);
@@ -20,18 +20,18 @@ const NaplesGlobe = () => {
     let animId: number;
 
     const nodes = [
-      {label:'Centro Storico',lat:0.7,lon:0.5,color:'#F5A623',size:7,role:false},
-      {label:'Posillipo',lat:0.3,lon:1.8,color:'#F5A623',size:6,role:false},
-      {label:'Vomero',lat:0.5,lon:3.2,color:'#F5A623',size:6,role:false},
-      {label:'Chiaia',lat:-0.2,lon:4.5,color:'#F5A623',size:6,role:false},
-      {label:'Ischia',lat:-0.5,lon:5.8,color:'#F5A623',size:6,role:false},
-      {label:'Procida',lat:0.4,lon:0.2,color:'#F5A623',size:5,role:false},
-      {label:'Mergellina',lat:-0.3,lon:2.5,color:'#F5A623',size:5,role:false},
-      {label:'Pozzuoli',lat:0.6,lon:5.0,color:'#F5A623',size:5,role:false},
-      {label:'Supplier',lat:0.8,lon:2.2,color:'#7F77DD',size:10,role:true},
-      {label:'Lister',lat:-0.6,lon:3.8,color:'#fbbf24',size:10,role:true},
-      {label:'Provider',lat:0.2,lon:5.5,color:'#1D9E75',size:10,role:true},
-      {label:'Customer',lat:-0.7,lon:1.2,color:'#D4537E',size:10,role:true},
+      {label:'Centro Storico',lat:0.7,lon:0.5,color:'#F5A623',size:8.4,role:false},
+      {label:'Posillipo',lat:0.3,lon:1.8,color:'#F5A623',size:7.2,role:false},
+      {label:'Vomero',lat:0.5,lon:3.2,color:'#F5A623',size:7.2,role:false},
+      {label:'Chiaia',lat:-0.2,lon:4.5,color:'#F5A623',size:7.2,role:false},
+      {label:'Ischia',lat:-0.5,lon:5.8,color:'#F5A623',size:7.2,role:false},
+      {label:'Procida',lat:0.4,lon:0.2,color:'#F5A623',size:6,role:false},
+      {label:'Mergellina',lat:-0.3,lon:2.5,color:'#F5A623',size:6,role:false},
+      {label:'Pozzuoli',lat:0.6,lon:5.0,color:'#F5A623',size:6,role:false},
+      {label:'Supplier',lat:0.8,lon:2.2,color:'#7F77DD',size:12,role:true},
+      {label:'Lister',lat:-0.6,lon:3.8,color:'#fbbf24',size:12,role:true},
+      {label:'Provider',lat:0.2,lon:5.5,color:'#1D9E75',size:12,role:true},
+      {label:'Customer',lat:-0.7,lon:1.2,color:'#D4537E',size:12,role:true},
     ];
 
     const connections = [
@@ -57,7 +57,7 @@ const NaplesGlobe = () => {
     function project(lat:number,lon:number,rot:number){
       const W=canvas.width, H=canvas.height;
       const cx=W/2, cy=H/2;
-      const R=Math.min(W,H)*0.33;
+      const R=Math.min(W,H)*0.38;
       const x=Math.cos(lat)*Math.cos(lon+rot);
       const y=Math.sin(lat);
       const z=Math.cos(lat)*Math.sin(lon+rot);
@@ -67,7 +67,7 @@ const NaplesGlobe = () => {
     function drawFrame(rot:number){
       const W=canvas.width, H=canvas.height;
       const cx=W/2, cy=H/2;
-      const R=Math.min(W,H)*0.33;
+      const R=Math.min(W,H)*0.38;
       ctx.clearRect(0,0,W,H);
 
       const g=ctx.createRadialGradient(cx,cy,0,cx,cy,R*1.3);
@@ -217,8 +217,8 @@ const NaplesGlobe = () => {
   },[]);
 
   return (
-    <section className="py-16 bg-[#0f172a]">
-      <div className="max-w-7xl mx-auto px-4 text-center mb-8">
+    <section className="py-8 bg-[#0f172a]">
+      <div className="max-w-7xl mx-auto px-4 text-center mb-4">
         <p className="text-[#F5A623] text-sm font-semibold uppercase tracking-widest mb-3">
           Our Ecosystem
         </p>
@@ -233,7 +233,7 @@ const NaplesGlobe = () => {
       <canvas
         ref={canvasRef}
         className="w-full block"
-        style={{height:'500px',background:'#0f172a'}}
+        style={{background:'#0f172a'}}
       />
     </section>
   );

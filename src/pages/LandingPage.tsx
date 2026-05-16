@@ -342,9 +342,12 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen pt-32 bg-white">
       <SEOHead 
+        title={settings.seo?.title || undefined}
+        description={settings.seo?.description || undefined}
         schema={generateOrganizationSchema()}
       />
       {/* Hero Section */}
+      {settings.sections.hero && (
       <section className="relative bg-gradient-to-br from-[#0f172a] to-[#1e293b] px-6 py-24 text-white md:py-32">
         {/* Subtle SVG Grid Pattern Overlay */}
         <div 
@@ -362,10 +365,12 @@ export const LandingPage: React.FC = () => {
             className="mb-12"
           >
             <h1 className="mb-4 text-5xl font-extrabold tracking-tight md:text-7xl">
-              Live Naples <span className="text-[#F5A623]">Like a Local</span>
+              {settings.heroTitle || (
+                <>Live Naples <span className="text-[#F5A623]">Like a Local</span></>
+              )}
             </h1>
             <p className="text-xl font-light text-neutral-300">
-              Authentic stays, real experiences, trusted local hosts in Naples
+              {settings.heroSubtitle || "Authentic stays, real experiences, trusted local hosts in Naples"}
             </p>
           </motion.div>
 
@@ -729,10 +734,14 @@ export const LandingPage: React.FC = () => {
           </motion.div>
         </div>
       </section>
+      )}
 
       <div id="area-selection-section" className="mt-24">
         {settings.sections.areas && <AreaSelection />}
       </div>
+
+      {/* Naples Ecosystem Globe */}
+      <NaplesGlobe />
 
       {/* Featured Properties Section */}
       {settings.sections.featuredProperties && (
@@ -846,7 +855,8 @@ export const LandingPage: React.FC = () => {
       {/* Recently Viewed Section */}
       <RecentlyViewedProperties />
 
-      {/* Napoli Packages */}
+      {/* Authentic Naples Experiences */}
+      {settings.sections.featuredExperiences && (
       <motion.section 
         initial={{ opacity: 0, y: 30 }} 
         whileInView={{ opacity: 1, y: 0 }} 
@@ -855,136 +865,93 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">Curated Naples Experiences</h2>
-            <p className="text-lg text-[#F5A623] max-w-2xl mx-auto font-medium">Stay + Experience Bundles</p>
+            <span className="text-[#F5A623] text-sm font-bold uppercase tracking-widest mb-3 block">EXPLORE NAPLES</span>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
+              Authentic Naples <span className="text-[#F5A623]">Experiences</span>
+            </h2>
+            <p className="text-lg text-[#94a3b8] max-w-2xl mx-auto font-medium">
+              Discover what Naples has to offer — from island escapes to culinary adventures
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {[
               {
-                title: "Weekend Escape",
-                icon: "🌆",
-                includes: ["2 nights stay", "Naples city tour"],
-                perfectFor: "First time visitors",
-                price: "€299/person",
-                route: "/search?type=Holiday House"
+                title: "Transport",
+                icon: Car,
+                description: "Get around Naples in style",
+                items: ["Car Rental", "Scooter Rental", "Airport Transfer", "Private NCC"],
+                button: "Explore Transport",
+                route: "/services?category=Transport"
               },
               {
-                title: "Foodie Naples",
-                icon: "🍕",
-                includes: ["3 nights stay", "Street food tour", "Private chef dinner"],
-                perfectFor: "Food lovers",
-                price: "€450/person",
+                title: "Tours & Leisure",
+                icon: Ship,
+                description: "Explore Naples like a local",
+                items: ["Capri Boat Tour", "Coastline Tour", "Private Tour", "City Tour"],
+                button: "Explore Tours",
+                route: "/services?category=Tours"
+              },
+              {
+                title: "Food & Lifestyle",
+                icon: ChefHat,
+                description: "Taste the real Naples",
+                items: ["Private Chef", "Cooking Class", "Restaurant Booking", "Spa & Massage"],
+                button: "Explore Food",
                 route: "/services?category=Lifestyle"
-              },
-              {
-                title: "Island Adventure",
-                icon: "🛥️",
-                includes: ["2 nights stay", "Capri boat tour", "Vespa city tour"],
-                perfectFor: "Adventure seekers",
-                price: "€380/person",
-                route: "/search?area=Islands (Ischia & Procida)"
               }
-            ].map((pkg, idx) => (
+            ].map((category, idx) => {
+              const IconComponent = category.icon;
+              return (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-[#1e293b] rounded-[2rem] border border-[#F5A623]/30 p-8 hover:border-[#F5A623] transition-colors relative flex flex-col h-full"
+                className="bg-[#1e293b] rounded-2xl border border-[#334155] p-8 hover:border-[#F5A623] transition-colors flex flex-col h-full group"
               >
-                <div className="text-4xl mb-6">{pkg.icon}</div>
-                <h3 className="text-2xl font-bold text-white mb-2">{pkg.title}</h3>
-                <p className="text-sm text-[#F5A623] font-medium mb-6">Perfect for: {pkg.perfectFor}</p>
+                <div className="bg-[#F5A623]/10 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                  <IconComponent className="h-8 w-8 text-[#F5A623]" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">{category.title}</h3>
+                <p className="text-[#94a3b8] font-medium mb-6 pb-6 border-b border-white/10">{category.description}</p>
                 
-                <ul className="mb-8 space-y-3 flex-1 text-neutral-300">
-                  {pkg.includes.map((item, i) => (
-                     <li key={i} className="flex items-start gap-2 text-sm italic">
-                        <CheckCircle2 className="h-4 w-4 text-[#F5A623] mt-0.5 shrink-0" />
+                <ul className="mb-8 space-y-4 flex-1">
+                  {category.items.map((item, i) => (
+                     <li key={i} className="flex items-center text-[#94a3b8] group-hover:text-white transition-colors">
+                        <ArrowRight className="h-4 w-4 text-[#F5A623] mr-3 shrink-0" />
                         {item}
                      </li>
                   ))}
                 </ul>
                 
-                <div className="pt-6 border-t border-white/10 mt-auto">
-                  <div className="text-xs text-neutral-400 uppercase tracking-widest font-bold mb-1">From</div>
-                  <div className="text-2xl font-extrabold text-white mb-6">{pkg.price}</div>
+                <div className="pt-6 mt-auto">
                   <Button 
-                    className="w-full bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold rounded-xl h-12 transition-colors"
-                    onClick={() => navigate(pkg.route)}
+                    variant="outline"
+                    className="w-full border-[#F5A623] text-[#F5A623] hover:bg-[#F5A623] hover:text-[#0f172a] font-bold rounded-xl h-12 transition-colors"
+                    onClick={() => navigate(category.route)}
                   >
-                    Explore Package
+                    {category.button}
                   </Button>
                 </div>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-       {/* Curated Naples Experiences (Experiences Section) */}
-      {settings.sections.featuredExperiences && (
-        <motion.section 
-        initial={{ opacity: 0, y: 30 }} 
-        whileInView={{ opacity: 1, y: 0 }} 
-        viewport={{ once: true }} 
-        className="py-24 px-6 bg-white overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-4">Authentic Naples Experiences</h2>
-            <p className="text-lg text-neutral-500 max-w-2xl mx-auto italic">More than just a room. Discover our premium services curated for the ultimate Naples experience.</p>
+            )})}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {allServices
-              .filter(s => s.status === 'approved' && s.serviceType === 'B2C')
-              .slice(0, 14)
-              .map((service, idx) => {
-                const IconComponent = service.category === 'Transport' ? Plane : service.category === 'B2B' ? Briefcase : service.id === '1' || service.id === '6' ? Ship : ChefHat;
-                const colorClass = service.category === 'Transport' 
-                  ? 'bg-blue-50 text-blue-600' 
-                  : service.category === 'Lifestyle' 
-                    ? 'bg-rose-50 text-rose-600' 
-                    : 'bg-amber-50 text-amber-600';
-
-                return (
-                  <motion.div
-                    key={service.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="group relative bg-white border border-neutral-100 rounded-3xl p-6 text-center shadow-sm hover:shadow-xl transition-all hover:-translate-y-2 border-b-4 hover:border-b-[#fbbf24] cursor-pointer"
-                  onClick={() => navigate(`/experiences/naples/${generateSlug(service.serviceType || 'experience')}/${generateSlug(service.name)}-${service.id}`)}
-                >
-                  <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${colorClass}`}>
-                    <IconComponent className="h-8 w-8" />
-                  </div>
-                  <h3 className="font-bold text-[#1e293b] mb-1 line-clamp-1">{service.name}</h3>
-                  <p className="text-xs text-neutral-400 mb-4 font-medium italic">From €{service.price}/{service.priceUnit}</p>
-                  <button className="text-[10px] font-extrabold uppercase tracking-widest text-[#F5A623] group-hover:text-[#e09400] transition-colors flex items-center justify-center w-full">
-                    Request to Book
-                  </button>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <div className="mt-16 text-center">
+          <div className="text-center">
             <Button 
-              variant="outline"
-              className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors px-10 py-6 text-lg font-bold rounded-full group shadow-xl"
+              className="bg-[#F5A623] hover:bg-[#e09400] text-[#0f172a] font-bold px-8 h-12 rounded-full transition-colors"
               onClick={() => navigate('/services')}
             >
               View All Experiences
-              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
       </motion.section>
       )}
+
+
 
       {/* Booking Pool Teaser Section */}
       <motion.section 
@@ -1099,9 +1066,6 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </motion.section>
-
-      {/* Naples Ecosystem Globe */}
-      <NaplesGlobe />
 
       {/* Testimonials Section */}
       <motion.section 

@@ -126,6 +126,7 @@ export const OwnerDashboard: React.FC = () => {
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<any>(null);
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
+  const [closingBookingId, setClosingBookingId] = useState<string | null>(null);
 
   // Manual Pool Share State
   const [showManualPoolModal, setShowManualPoolModal] = useState(false);
@@ -712,21 +713,30 @@ export const OwnerDashboard: React.FC = () => {
                            toast.error('Pool booking acceptance expired');
                         }} 
                       />
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                           updateBooking(booking.id, {
-                             status: 'SHARED',
-                             ownerId: booking.originalListerId || 'demo-owner',
-                             acceptedAt: undefined
-                           });
-                           toast.success('Booking returned to pool');
-                        }}
-                        className="text-red-500 hover:bg-red-500/10 font-black uppercase text-[10px] tracking-widest h-9 border border-red-500/20"
-                      >
-                        Cancel & Return
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                             updateBooking(booking.id, {
+                               status: 'SHARED',
+                               ownerId: booking.originalListerId || 'demo-owner',
+                               acceptedAt: undefined
+                             });
+                             toast.success('Booking returned to pool');
+                          }}
+                          className="text-red-500 hover:bg-red-500/10 font-black uppercase text-[10px] tracking-widest h-9 border border-red-500/20"
+                        >
+                          Cancel & Return
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setClosingBookingId(booking.id)}
+                          className="bg-green-500 text-white hover:bg-green-600 font-bold uppercase text-[10px] tracking-widest h-9"
+                        >
+                          Close Deal
+                        </Button>
+                      </div>
                     </div>
                   )}
                   {booking.status === 'CONFIRMED' && (
@@ -1226,6 +1236,55 @@ export const OwnerDashboard: React.FC = () => {
                     className="flex-1 bg-[#F5A623] hover:bg-[#F5A623]/90 text-black font-black uppercase text-[10px] tracking-widest"
                   >
                     Submit Request
+                  </Button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+        {/* Close Deal Modal */}
+        <AnimatePresence>
+          {closingBookingId && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setClosingBookingId(null)}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative bg-[#1e293b] border border-[#334155] rounded-2xl w-full max-w-md p-6 overflow-hidden"
+              >
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/20">
+                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Close Deal</h3>
+                  <p className="text-[#94a3b8]">Have you confirmed the booking with the guest?</p>
+                </div>
+                
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setClosingBookingId(null)}
+                    className="flex-1 border-[#334155] text-white hover:bg-[#0f172a] font-black uppercase tracking-widest text-[10px]"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      updateBooking(closingBookingId, { status: 'CLOSED' });
+                      toast.success('Deal closed successfully!');
+                      console.log('BOOKING CLOSED: Guest booking confirmed by lister');
+                      setClosingBookingId(null);
+                    }}
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest text-[10px]"
+                  >
+                    Yes, Close Deal
                   </Button>
                 </div>
               </motion.div>

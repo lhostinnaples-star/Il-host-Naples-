@@ -5,14 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { PROPERTY_AREAS } from '../constants';
 
 const areas = [
-  { id: 'islands', name: 'Islands (Ischia & Procida)', title: '🌋 Island Escape', search: 'Islands (Ischia & Procida)', image: 'https://images.unsplash.com/photo-1558223067-872f0af3cbf6?auto=format&fit=crop&q=80&w=600' },
-  { id: 'center', name: 'Center (Centro Storico)', title: '🍕 The Soul of Naples', search: 'Center (Centro Storico)', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/P.Plebiscito_Napoli.jpg/960px-P.Plebiscito_Napoli.jpg' },
-  { id: 'seafront', name: 'Seafront (Chiaia - Posillipo)', title: '🌊 Sea & Luxury', search: 'Seafront (Chiaia - Posillipo)', image: 'https://images.unsplash.com/photo-1533676802871-eca1ae998cd5?auto=format&fit=crop&q=80&w=600' },
-  { id: 'station', name: 'Station (Piazza Garibaldi)', title: '🚉 Transport Hub', search: 'Station (Piazza Garibaldi)', image: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?auto=format&fit=crop&q=80&w=600' },
-  { id: 'stadium', name: 'Stadium (Fuorigrotta - Fair)', title: '⚽ Events & Sports', search: 'Stadium (Fuorigrotta - Fair)', image: 'https://images.unsplash.com/photo-1600762111309-8d197600778c?auto=format&fit=crop&q=80&w=600' },
-  { id: 'vomero', name: 'Vomero', title: '☕ Local Daily Life', search: 'Vomero', image: 'https://images.unsplash.com/photo-1534008897995-27a23e859048?auto=format&fit=crop&q=80&w=600' },
-  { id: 'mergellina', name: 'Mergellina', title: '🎭 Romantic Naples', search: 'Mergellina', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Castel_dell%27_Ovo.jpg/960px-Castel_dell%27_Ovo.jpg' },
-  { id: 'pozzuoli', name: 'Pozzuoli', title: '⚓ Authentic Fishing Town', search: 'Pozzuoli', image: 'https://images.unsplash.com/photo-1634594503761-0f7236d8d6dc?auto=format&fit=crop&q=80&w=600' },
+  { id: 'islands', name: 'Islands (Ischia & Procida)', title: '🌋 Island Escape', search: 'Islands (Ischia & Procida)', image: 'https://images.unsplash.com/photo-1591930444969-9e3f3f8b5e8a?w=800' },
+  { id: 'center', name: 'Center (Centro Storico)', title: '🍕 The Soul of Naples', search: 'Center (Centro Storico)', image: 'https://images.unsplash.com/photo-1529516548873-9ce57c8f155e?w=800' },
+  { id: 'seafront', name: 'Seafront (Chiaia - Posillipo)', title: '🌊 Sea & Luxury', search: 'Seafront (Chiaia - Posillipo)', image: 'https://images.unsplash.com/photo-1534445867742-43195f401b6c?w=800' },
+  { id: 'station', name: 'Station (Piazza Garibaldi)', title: '🚉 Transport Hub', search: 'Station (Piazza Garibaldi)', image: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=800' },
+  { id: 'stadium', name: 'Stadium (Fuorigrotta - Fair)', title: '⚽ Events & Sports', search: 'Stadium (Fuorigrotta - Fair)', image: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800' },
+  { id: 'vomero', name: 'Vomero', title: '☕ Local Daily Life', search: 'Vomero', image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800' },
+  { id: 'mergellina', name: 'Mergellina', title: '🎭 Romantic Naples', search: 'Mergellina', image: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800' },
+  { id: 'pozzuoli', name: 'Pozzuoli', title: '⚓ Authentic Fishing Town', search: 'Pozzuoli', image: 'https://images.unsplash.com/photo-1569230919100-d3fd5e1132f4?w=800' },
 ];
 
 export const AreaSelection: React.FC = () => {
@@ -36,6 +36,9 @@ export const AreaSelection: React.FC = () => {
               alt={area.name}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800';
+              }}
             />
             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-900/90 via-slate-800/40 to-transparent" />
             <div className="absolute bottom-4 left-0 w-full text-center px-2 flex flex-col gap-1">
