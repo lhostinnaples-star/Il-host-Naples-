@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Home, Map, Wrench, Calendar, 
   Star, MessageSquare, BarChart3, Globe, Settings, Eye,
   Palette, FileText, ChevronLeft, ChevronRight, Bell, Search, 
-  Plus, User as UserIcon, LogOut, Menu, X, CheckCircle2, AlertCircle
+  Plus, User as UserIcon, LogOut, Menu, X, CheckCircle2, AlertCircle, Heart
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, UserRole } from '../contexts/AuthContext';
@@ -88,6 +88,9 @@ export const DashboardSidebar: React.FC<{
           { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/admin?section=bookings' },
           { id: 'reviews', label: 'Reviews', icon: Star, href: '/admin?section=reviews' },
           { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/admin?section=analytics' },
+          { id: 'testimonials', label: 'Testimonials', icon: MessageSquare, href: '/admin?section=testimonials' },
+          { id: 'cityGuide', label: 'City Guide', icon: Map, href: '/admin?section=cityGuide' },
+          { id: 'joinSection', label: 'Join Section', icon: Users, href: '/admin?section=joinSection' },
           { id: 'seo', label: 'SEO Settings', icon: Globe, href: '/admin?section=seo' },
           { id: 'appearance', label: 'Appearance', icon: Palette, href: '/admin?section=appearance' },
           { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
@@ -102,10 +105,11 @@ export const DashboardSidebar: React.FC<{
         ];
       case UserRole.CUSTOMER:
         return [
-          { id: 'overview', label: 'My Bookings', icon: Calendar, href: '/dashboard' },
-          { id: 'wishlist', label: 'Wishlist', icon: Star, href: '/dashboard?section=wishlist' },
-          { id: 'experiences', label: 'Experiences', icon: Map, href: '/dashboard?section=experiences' },
-          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/dashboard?section=profile' },
+          { id: 'overview', label: 'Overview', icon: Home, href: '/dashboard' },
+          { id: 'trips', label: 'Trips', icon: Calendar, href: '/dashboard?section=trips' },
+          { id: 'experiences', label: 'Experiences', icon: Star, href: '/dashboard?section=experiences' },
+          { id: 'wishlist', label: 'Wishlist', icon: Heart, href: '/dashboard?section=wishlist' },
+          { id: 'settings', label: 'Settings', icon: Settings, href: '/dashboard?section=settings' },
         ];
       case UserRole.SERVICE_PROVIDER:
         return [
@@ -363,11 +367,11 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
         ];
       case UserRole.CUSTOMER:
         return [
-          { id: 'overview', label: 'Bookings', icon: Calendar, href: '/dashboard' },
-          { id: 'experiences', label: 'Experiences', icon: Map, href: '/dashboard?section=experiences' },
-          { id: 'wishlist', label: 'Wishlist', icon: Star, href: '/dashboard?section=wishlist' },
-          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/dashboard?section=profile' },
-          { id: 'search', label: 'Search', icon: Search, href: '/search' },
+          { id: 'overview', label: 'Overview', icon: Home, href: '/dashboard' },
+          { id: 'trips', label: 'Trips', icon: Calendar, href: '/dashboard?section=trips' },
+          { id: 'experiences', label: 'Experiences', icon: Star, href: '/dashboard?section=experiences' },
+          { id: 'wishlist', label: 'Wishlist', icon: Heart, href: '/dashboard?section=wishlist' },
+          { id: 'settings', label: 'Settings', icon: Settings, href: '/dashboard?section=settings' },
         ];
       case UserRole.SERVICE_PROVIDER:
         return [
@@ -392,7 +396,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
     <div className="min-h-screen bg-[#0f172a] pb-24 md:pb-0">
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#1e293b] border-t border-[#334155] px-2 py-3 flex items-center justify-between shadow-2xl">
-        {navItems.slice(0, 5).map((item) => {
+        {navItems.slice(0, navItems.length > 5 ? 4 : 5).map((item) => {
           const isActive = location.pathname + location.search === item.href;
           return (
             <Link 
@@ -405,17 +409,19 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
               )}
             >
               <item.icon className="h-5 w-5" />
-              <span className="text-[8px] font-bold uppercase tracking-tighter w-full truncate px-0.5">{item.label}</span>
+              <span className="text-[9px] font-bold uppercase tracking-tighter w-full truncate px-0.5">{item.label}</span>
             </Link>
           );
         })}
-        <button 
-          onClick={() => setMobileOpen(true)}
-          className="flex flex-col items-center gap-1 text-[#94a3b8] flex-1 text-center"
-        >
-          <Menu className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-tighter">More</span>
-        </button>
+        {navItems.length > 5 && (
+          <button 
+            onClick={() => setMobileOpen(true)}
+            className="flex flex-col items-center gap-1 text-[#94a3b8] flex-1 text-center"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="text-[9px] font-bold uppercase tracking-tighter">More</span>
+          </button>
+        )}
       </div>
 
       <DashboardSidebar 

@@ -365,12 +365,12 @@ export const LandingPage: React.FC = () => {
             className="mb-12"
           >
             <h1 className="mb-4 text-5xl font-extrabold tracking-tight md:text-7xl">
-              {settings.heroTitle || (
+              {settings.homepage.heroTitle || (
                 <>Live Naples <span className="text-[#F5A623]">Like a Local</span></>
               )}
             </h1>
             <p className="text-xl font-light text-neutral-300">
-              {settings.heroSubtitle || "Authentic stays, real experiences, trusted local hosts in Naples"}
+              {settings.homepage.heroSubtitle || "Authentic stays, real experiences, trusted local hosts in Naples"}
             </p>
           </motion.div>
 
@@ -754,8 +754,8 @@ export const LandingPage: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">Handpicked Stays in Naples</h2>
-                <p className="text-neutral-500 max-w-2xl">Hand-picked stays in the most beautiful corners of Naples, from cozy B&Bs to luxury holiday houses.</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#0f172a] mb-4">{settings.homepage.featuredPropertiesTitle}</h2>
+                <p className="text-neutral-500 max-w-2xl">{settings.homepage.featuredPropertiesSubtitle}</p>
               </div>
               <div className="flex bg-white p-1 rounded-xl shadow-sm border border-neutral-200 self-start">
                 {(['all', 'holiday_house', 'bnb'] as const).map((tab) => (
@@ -867,10 +867,10 @@ export const LandingPage: React.FC = () => {
           <div className="text-center mb-16">
             <span className="text-[#F5A623] text-sm font-bold uppercase tracking-widest mb-3 block">EXPLORE NAPLES</span>
             <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
-              Authentic Naples <span className="text-[#F5A623]">Experiences</span>
+              {settings.homepage.experiencesSectionTitle}
             </h2>
             <p className="text-lg text-[#94a3b8] max-w-2xl mx-auto font-medium">
-              Discover what Naples has to offer — from island escapes to culinary adventures
+              {settings.homepage.experiencesSubtitle}
             </p>
           </div>
 
@@ -962,8 +962,8 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12">
           <div className="lg:w-1/2">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 italic">Never Lose a Booking Again</h2>
-            <p className="text-lg text-neutral-400 mb-8 max-w-xl">Our exclusive Host Network ensures every guest finds their perfect stay</p>
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-4 italic">{settings.homepage.bookingPoolTitle}</h2>
+            <p className="text-lg text-neutral-400 mb-8 max-w-xl">{settings.homepage.bookingPoolSubtitle}</p>
             <div className="space-y-6">
               {[
                 { title: 'When one host is full, another helps', desc: 'When your property is busy, refer your guests to the community pool and help them find an alternative.' },
@@ -1031,8 +1031,7 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-4">Every Stay is Il Host Verified</h2>
-            <p className="text-lg text-[#F5A623] max-w-2xl mx-auto font-medium">We go beyond standard checks to ensure your perfect Naples experience</p>
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-4">{settings.homepage.verifiedTitle}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -1076,31 +1075,11 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-6">What Our Community Says</h2>
-            <p className="text-lg text-neutral-500 max-w-2xl mx-auto italic font-medium">Stories from the people who make Il Host in Naples possible.</p>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-6">{settings.homepage.testimonialsTitle}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                text: "Il Host Naples found us the perfect apartment in Posillipo. The host was incredibly helpful and the booking pool saved our holiday when our first choice was full!",
-                name: "James Wilson, London",
-                role: "Guest",
-                avatar: "https://i.pravatar.cc/150?u=james"
-              },
-              {
-                text: "The booking pool has transformed my business. I never lose a guest anymore and the referral commissions are fantastic!",
-                name: "Marco Esposito, Naples",
-                role: "Lister",
-                avatar: "https://i.pravatar.cc/150?u=marco"
-              },
-              {
-                text: "As a local tour guide, Il Host Naples has tripled my bookings. The platform truly understands authentic Naples experiences.",
-                name: "Sofia Ragozzino, Naples",
-                role: "Service Provider",
-                avatar: "https://i.pravatar.cc/150?u=sofia"
-              }
-            ].map((t, idx) => (
+            {settings.testimonials.map((t, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
@@ -1136,31 +1115,12 @@ export const LandingPage: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] italic">Naples City Guide</h2>
+            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] italic">{settings.homepage.cityGuideTitle}</h2>
             <Button variant="outline" onClick={() => navigate('/services')} className="border-[#F5A623] text-[#F5A623] bg-transparent hover:bg-[#F5A623] hover:text-[#0f172a] transition-colors font-bold">Explore Blog <ArrowRight className="ml-2 h-4 w-4 inline-block" /></Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Best Areas to Stay in Naples 2026",
-                desc: "From the luxury of Vomero to the historic heart of the Cento Storico, find the perfect base for your trip.",
-                img: "https://images.unsplash.com/photo-1590059963351-4043b8bed72a?auto=format&fit=crop&w=800&q=80",
-                onClick: () => navigate('/search?area=Center (Centro Storico)')
-              },
-              {
-                title: "Top 10 Authentic Naples Experiences",
-                desc: "Discover underground ruins, secret catacombs, and the true soul of the city with our local guide.",
-                img: "https://images.unsplash.com/photo-1595181781204-7c3fffbebd16?auto=format&fit=crop&w=800&q=80",
-                onClick: () => navigate('/services')
-              },
-              {
-                title: "Naples Food Guide: Beyond Pizza",
-                desc: "Where to find the best Margherita and traditional street food that locals actually eat.",
-                img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
-                onClick: () => navigate('/search')
-              }
-            ].map((guide, idx) => (
+            {settings.cityGuide.map((guide, idx) => (
               <motion.div
                 key={idx}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -1170,7 +1130,7 @@ export const LandingPage: React.FC = () => {
                 className="bg-white rounded-3xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all"
               >
                 <div className="h-64 overflow-hidden relative">
-                  <img src={guide.img} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={guide.title} />
+                  <img src={guide.imageUrl} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={guide.title} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                   <div className="absolute bottom-4 left-4">
                     <span className="px-3 py-1 rounded-full bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest">Guide</span>
@@ -1178,8 +1138,8 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <div className="p-8">
                   <h3 className="text-xl font-bold text-[#1e293b] mb-3 group-hover:text-amber-500 transition-colors">{guide.title}</h3>
-                  <p className="text-neutral-500 text-sm leading-relaxed mb-6">{guide.desc}</p>
-                  <button onClick={(e) => { e.stopPropagation(); guide.onClick(); }} className="flex items-center gap-2 font-black text-xs text-[#F5A623] hover:text-[#e09400] transition-colors uppercase tracking-widest hover:gap-4">
+                  <p className="text-neutral-500 text-sm leading-relaxed mb-6">{guide.description}</p>
+                  <button onClick={(e) => { e.stopPropagation(); navigate(guide.linkUrl); }} className="flex items-center gap-2 font-black text-xs text-[#F5A623] hover:text-[#e09400] transition-colors uppercase tracking-widest hover:gap-4">
                     Read More <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -1197,45 +1157,28 @@ export const LandingPage: React.FC = () => {
         className="py-24 px-6 bg-white border-t border-neutral-100"
       >
         <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-[#0f172a] text-center">{settings.homepage.joinTitle}</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Become an Il Host Lister",
-                role: "lister",
-                desc: "List your Naples property and join our verified host community. Access the exclusive booking pool.",
-                icon: Home,
-                cta: "Start Listing"
-              },
-              {
-                title: "Share Your Naples",
-                role: "service_provider",
-                desc: "Offer authentic local experiences to guests. Cars, tours, food experiences and more.",
-                icon: Car,
-                cta: "Become a Provider"
-              },
-              {
-                title: "Supply to Top Hosts",
-                role: "supplier",
-                desc: "Offer your B2B services to our network of verified Naples hosts. Cleaning, linen, welcome kits and more.",
-                icon: Briefcase,
-                cta: "Join Network"
-              }
-            ].map((p, idx) => (
+            {settings.joinSection.map((p, idx) => (
               <motion.div
                 key={idx}
                 whileHover={{ y: -8 }}
                 className="p-10 rounded-[3rem] bg-[#1e293b] text-white text-center border-b-[8px] border-amber-500 hover:bg-[#0f172a] transition-all"
               >
                 <div className="mx-auto w-20 h-20 rounded-[2rem] bg-white/10 flex items-center justify-center mb-8">
-                  <p.icon className="h-10 w-10 text-amber-500" />
+                  {p.role === 'lister' && <Home className="h-10 w-10 text-amber-500" />}
+                  {p.role === 'provider' && <Car className="h-10 w-10 text-amber-500" />}
+                  {p.role === 'supplier' && <Briefcase className="h-10 w-10 text-amber-500" />}
                 </div>
                 <h3 className="text-2xl font-black mb-4 italic tracking-tight">{p.title}</h3>
-                <p className="text-neutral-400 text-sm mb-10 leading-relaxed font-medium">{p.desc}</p>
+                <p className="text-neutral-400 text-sm mb-10 leading-relaxed font-medium">{p.description}</p>
                 <Button 
                   onClick={(e) => { e.stopPropagation(); navigate(`/auth?role=${p.role}`); }}
                   className="w-full bg-[#F5A623] text-[#0f172a] hover:bg-[#e09400] transition-colors font-black py-4 rounded-2xl"
                 >
-                  {p.cta}
+                  {p.buttonText}
                 </Button>
               </motion.div>
             ))}

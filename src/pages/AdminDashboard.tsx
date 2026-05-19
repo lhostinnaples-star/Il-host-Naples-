@@ -50,6 +50,18 @@ export const AdminDashboard: React.FC = () => {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
 
+  const [isTestimonialModalOpen, setIsTestimonialModalOpen] = useState(false);
+  const [editingTestimonial, setEditingTestimonial] = useState<any>(null);
+
+  const [isAreaModalOpen, setIsAreaModalOpen] = useState(false);
+  const [editingArea, setEditingArea] = useState<any>(null);
+
+  const [isCityGuideModalOpen, setIsCityGuideModalOpen] = useState(false);
+  const [editingCityGuide, setEditingCityGuide] = useState<any>(null);
+
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [editingJoin, setEditingJoin] = useState<any>(null);
+
   const [activeUserTab, setActiveUserTab] = useState<'all' | 'pending' | 'rejected' | 'supplier_access'>('all');
   const [supplierRequestFilter, setSupplierRequestFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [activePropertyTab, setActivePropertyTab] = useState<'all' | 'pending' | 'rejected'>('all');
@@ -881,6 +893,89 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 
+  const renderTestimonials = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">Testimonials Management</h2>
+        <Button className="bg-[#F5A623] text-black">Add Testimonial</Button>
+      </div>
+      <Card className="border-[#334155] bg-[#1e293b] overflow-hidden rounded-[2rem]">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-[#0f172a] border-b border-[#334155]">
+              <th className="px-6 py-4 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Name</th>
+              <th className="px-6 py-4 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Role</th>
+              <th className="px-6 py-4 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Quote</th>
+              <th className="px-6 py-4 text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#334155]">
+            {settings.testimonials.map(t => (
+              <tr key={t.id} className="hover:bg-[#0f172a]/50 transition-colors">
+                <td className="px-6 py-4 text-sm font-bold text-white">{t.name}</td>
+                <td className="px-6 py-4 text-xs text-[#94a3b8]">{t.role}</td>
+                <td className="px-6 py-4 text-xs text-[#94a3b8] truncate max-w-[200px]">{t.text}</td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" onClick={() => { setEditingTestimonial(t); setIsTestimonialModalOpen(true); }} className="h-8 px-3 border border-[#334155] text-white">Edit</Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-3 border border-red-500/30 text-red-500">Delete</Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  );
+
+  const renderCityGuide = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">City Guide Management</h2>
+        <Button className="bg-[#F5A623] text-black">Add Article</Button>
+      </div>
+      <Card className="border-[#334155] bg-[#1e293b] p-6 rounded-[2rem]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {settings.cityGuide.map(guide => (
+            <div key={guide.id} className="flex flex-col bg-[#0f172a] rounded-xl overflow-hidden border border-[#334155]">
+              <img src={guide.imageUrl} className="h-40 w-full object-cover" />
+              <div className="p-4 space-y-2 flex-1">
+                <h4 className="font-bold text-white text-sm">{guide.title}</h4>
+                <p className="text-xs text-[#94a3b8] line-clamp-2">{guide.description}</p>
+                <div className="pt-4 mt-auto">
+                  <Button variant="outline" size="sm" onClick={() => { setEditingCityGuide(guide); setIsCityGuideModalOpen(true); }} className="w-full border-[#334155] text-white hover:bg-[#1e293b]">Edit Area Guide</Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderJoinSection = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">Join Platform Section</h2>
+      </div>
+      <Card className="border-[#334155] bg-[#1e293b] p-6 rounded-[2rem]">
+        <div className="space-y-4">
+          {settings.joinSection.map(card => (
+            <div key={card.id} className="flex items-center justify-between p-4 bg-[#0f172a] rounded-xl border border-[#334155]">
+              <div>
+                <h4 className="font-bold text-white text-sm">{card.title}</h4>
+                <p className="text-xs text-[#94a3b8]">{card.description}</p>
+                <p className="text-[10px] text-[#F5A623] mt-1 font-black uppercase">{card.buttonText}</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => { setEditingJoin(card); setIsJoinModalOpen(true); }} className="border-[#334155] text-white">Edit Block</Button>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+
   const renderContent = () => {
     switch (section) {
       case 'overview': return renderOverview();
@@ -888,6 +983,9 @@ export const AdminDashboard: React.FC = () => {
       case 'bookings': return renderBookings();
       case 'reviews': return renderReviews();
       case 'analytics': return renderAnalytics();
+      case 'testimonials': return renderTestimonials();
+      case 'cityGuide': return renderCityGuide();
+      case 'joinSection': return renderJoinSection();
       case 'seo':
         return (
           <div className="max-w-4xl space-y-8">
@@ -966,6 +1064,68 @@ export const AdminDashboard: React.FC = () => {
               </div>
               <Button onClick={() => toast.success('Branding applied!')} className="w-full bg-[#F5A623] text-black font-black uppercase py-4 shadow-lg shadow-[#F5A623]/10">Apply Branding</Button>
             </Card>
+
+            <Card className="p-8 border-[#334155] bg-[#1e293b] space-y-8 rounded-[2rem]">
+              <div className="flex items-center justify-between border-b border-[#334155] pb-4">
+                <h3 className="text-lg font-bold text-white">Area Cards</h3>
+              </div>
+              <div className="space-y-4">
+                {settings.areas.map(area => (
+                  <div key={area.id} className="flex items-center justify-between p-4 bg-[#0f172a] rounded-xl border border-[#334155]">
+                    <div className="flex items-center gap-4">
+                      <img src={area.imageUrl} className="h-10 w-10 object-cover rounded-lg" />
+                      <div>
+                        <p className="text-sm font-bold text-white">{area.name}</p>
+                        <p className="text-xs text-[#94a3b8]">{area.tagline}</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => { setEditingArea(area); setIsAreaModalOpen(true); }} className="border-[#334155] text-white">Edit</Button>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-8 border-[#334155] bg-[#1e293b] space-y-8 rounded-[2rem]">
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-white border-b border-[#334155] pb-4">Footer Settings</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Tagline</label>
+                    <textarea 
+                      className="w-full h-24 rounded-xl border border-[#334155] bg-[#0f172a] px-4 py-3 text-sm text-white focus:border-[#F5A623] outline-none" 
+                      value={settings.footer.tagline}
+                      onChange={(e) => updateSettings({ footer: { ...settings.footer, tagline: e.target.value } })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Facebook URL</label>
+                    <Input 
+                      value={settings.footer.facebookUrl}
+                      onChange={(e) => updateSettings({ footer: { ...settings.footer, facebookUrl: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Instagram URL</label>
+                    <Input 
+                      value={settings.footer.instagramUrl}
+                      onChange={(e) => updateSettings({ footer: { ...settings.footer, instagramUrl: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Copyright Text</label>
+                    <Input 
+                      value={settings.footer.copyrightText}
+                      onChange={(e) => updateSettings({ footer: { ...settings.footer, copyrightText: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                </div>
+              </div>
+              <Button onClick={() => toast.success('Footer Settings updated!')} className="w-full bg-[#F5A623] text-black font-black uppercase py-4 shadow-lg shadow-[#F5A623]/10">Save Footer Settings</Button>
+            </Card>
+
           </div>
         );
       case 'settings':
@@ -1011,6 +1171,112 @@ export const AdminDashboard: React.FC = () => {
               </div>
               <Button onClick={() => toast.success('General Settings updated!')} className="w-full bg-[#F5A623] text-black font-black uppercase py-4 shadow-lg shadow-[#F5A623]/10">Save General Settings</Button>
             </Card>
+
+            <Card className="p-8 border-[#334155] bg-[#1e293b] space-y-8 rounded-[2rem]">
+              <div className="space-y-6">
+                <h3 className="text-lg font-bold text-white border-b border-[#334155] pb-4">Homepage Content</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Hero Title</label>
+                    <Input 
+                      value={settings.homepage.heroTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, heroTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Hero Subtitle</label>
+                    <Input 
+                      value={settings.homepage.heroSubtitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, heroSubtitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Featured Properties Title</label>
+                    <Input 
+                      value={settings.homepage.featuredPropertiesTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, featuredPropertiesTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Featured Properties Subtitle</label>
+                    <Input 
+                      value={settings.homepage.featuredPropertiesSubtitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, featuredPropertiesSubtitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Experiences Title</label>
+                    <Input 
+                      value={settings.homepage.experiencesSectionTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, experiencesSectionTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Experiences Subtitle</label>
+                    <Input 
+                      value={settings.homepage.experiencesSubtitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, experiencesSubtitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Booking Pool Title</label>
+                    <Input 
+                      value={settings.homepage.bookingPoolTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, bookingPoolTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Booking Pool Subtitle</label>
+                    <Input 
+                      value={settings.homepage.bookingPoolSubtitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, bookingPoolSubtitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Verified Title</label>
+                    <Input 
+                      value={settings.homepage.verifiedTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, verifiedTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Testimonials Title</label>
+                    <Input 
+                      value={settings.homepage.testimonialsTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, testimonialsTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">City Guide Title</label>
+                    <Input 
+                      value={settings.homepage.cityGuideTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, cityGuideTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase text-[#94a3b8] tracking-widest">Join Section Title</label>
+                    <Input 
+                      value={settings.homepage.joinTitle}
+                      onChange={(e) => updateSettings({ homepage: { ...settings.homepage, joinTitle: e.target.value } })}
+                      className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                    />
+                  </div>
+                </div>
+              </div>
+              <Button onClick={() => toast.success('Homepage Content updated!')} className="w-full bg-[#F5A623] text-black font-black uppercase py-4 shadow-lg shadow-[#F5A623]/10">Save Homepage Content</Button>
+            </Card>
+
           </div>
         );
       case 'properties':
@@ -1580,6 +1846,189 @@ export const AdminDashboard: React.FC = () => {
             <div className="flex gap-2 justify-end mt-6">
               <Button variant="outline" onClick={() => setIsUserModalOpen(false)}>Cancel</Button>
               <Button onClick={handleSaveUser} className="bg-[#F5A623] text-black">Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Testimonial Modal */}
+      {isTestimonialModalOpen && editingTestimonial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e293b] p-6 rounded-2xl border border-[#334155] w-full max-w-md space-y-4">
+            <h3 className="text-xl font-bold text-white">Edit Testimonial</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Name</label>
+                <Input 
+                  value={editingTestimonial.name} 
+                  onChange={(e) => setEditingTestimonial({ ...editingTestimonial, name: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Role</label>
+                <Input 
+                  value={editingTestimonial.role} 
+                  onChange={(e) => setEditingTestimonial({ ...editingTestimonial, role: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Quote</label>
+                <textarea 
+                  value={editingTestimonial.text} 
+                  onChange={(e) => setEditingTestimonial({ ...editingTestimonial, text: e.target.value })}
+                  className="w-full h-24 rounded-xl border border-[#334155] bg-[#0f172a] px-4 py-3 text-sm text-white focus:border-[#F5A623] outline-none" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Avatar URL</label>
+                <Input 
+                  value={editingTestimonial.avatar} 
+                  onChange={(e) => setEditingTestimonial({ ...editingTestimonial, avatar: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-6">
+              <Button variant="outline" onClick={() => setIsTestimonialModalOpen(false)} className="border-[#334155] text-white">Cancel</Button>
+              <Button onClick={() => {
+                const newTestimonials = settings.testimonials.map(t => t.id === editingTestimonial.id ? editingTestimonial : t);
+                updateSettings({ testimonials: newTestimonials });
+                toast.success('Saved!');
+                setIsTestimonialModalOpen(false);
+              }} className="bg-[#F5A623] text-black font-black uppercase">Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Area Modal */}
+      {isAreaModalOpen && editingArea && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e293b] p-6 rounded-2xl border border-[#334155] w-full max-w-md space-y-4">
+            <h3 className="text-xl font-bold text-white">Edit Area</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Area Name</label>
+                <Input 
+                  value={editingArea.name} 
+                  onChange={(e) => setEditingArea({ ...editingArea, name: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Tagline</label>
+                <Input 
+                  value={editingArea.tagline} 
+                  onChange={(e) => setEditingArea({ ...editingArea, tagline: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Image URL</label>
+                <Input 
+                  value={editingArea.imageUrl} 
+                  onChange={(e) => setEditingArea({ ...editingArea, imageUrl: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-6">
+              <Button variant="outline" onClick={() => setIsAreaModalOpen(false)} className="border-[#334155] text-white">Cancel</Button>
+              <Button onClick={() => {
+                const newAreas = settings.areas.map(a => a.id === editingArea.id ? editingArea : a);
+                updateSettings({ areas: newAreas });
+                toast.success('Saved!');
+                setIsAreaModalOpen(false);
+              }} className="bg-[#F5A623] text-black font-black uppercase">Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* City Guide Modal */}
+      {isCityGuideModalOpen && editingCityGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e293b] p-6 rounded-2xl border border-[#334155] w-full max-w-md space-y-4">
+            <h3 className="text-xl font-bold text-white">Edit City Guide Article</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Title</label>
+                <Input 
+                  value={editingCityGuide.title} 
+                  onChange={(e) => setEditingCityGuide({ ...editingCityGuide, title: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Description</label>
+                <textarea 
+                  value={editingCityGuide.description} 
+                  onChange={(e) => setEditingCityGuide({ ...editingCityGuide, description: e.target.value })}
+                  className="w-full h-24 rounded-xl border border-[#334155] bg-[#0f172a] px-4 py-3 text-sm text-white focus:border-[#F5A623] outline-none" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Image URL</label>
+                <Input 
+                  value={editingCityGuide.imageUrl} 
+                  onChange={(e) => setEditingCityGuide({ ...editingCityGuide, imageUrl: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-6">
+              <Button variant="outline" onClick={() => setIsCityGuideModalOpen(false)} className="border-[#334155] text-white">Cancel</Button>
+              <Button onClick={() => {
+                const newGuides = settings.cityGuide.map(g => g.id === editingCityGuide.id ? editingCityGuide : g);
+                updateSettings({ cityGuide: newGuides });
+                toast.success('Saved!');
+                setIsCityGuideModalOpen(false);
+              }} className="bg-[#F5A623] text-black font-black uppercase">Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Join Section Modal */}
+      {isJoinModalOpen && editingJoin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e293b] p-6 rounded-2xl border border-[#334155] w-full max-w-md space-y-4">
+            <h3 className="text-xl font-bold text-white">Edit Join Block</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Title</label>
+                <Input 
+                  value={editingJoin.title} 
+                  onChange={(e) => setEditingJoin({ ...editingJoin, title: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Description</label>
+                <textarea 
+                  value={editingJoin.description} 
+                  onChange={(e) => setEditingJoin({ ...editingJoin, description: e.target.value })}
+                  className="w-full h-24 rounded-xl border border-[#334155] bg-[#0f172a] px-4 py-3 text-sm text-white focus:border-[#F5A623] outline-none" 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">Button Text</label>
+                <Input 
+                  value={editingJoin.buttonText} 
+                  onChange={(e) => setEditingJoin({ ...editingJoin, buttonText: e.target.value })}
+                  className="bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]" 
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end mt-6">
+              <Button variant="outline" onClick={() => setIsJoinModalOpen(false)} className="border-[#334155] text-white">Cancel</Button>
+              <Button onClick={() => {
+                const newJoin = settings.joinSection.map(j => j.id === editingJoin.id ? editingJoin : j);
+                updateSettings({ joinSection: newJoin });
+                toast.success('Saved!');
+                setIsJoinModalOpen(false);
+              }} className="bg-[#F5A623] text-black font-black uppercase">Save</Button>
             </div>
           </div>
         </div>

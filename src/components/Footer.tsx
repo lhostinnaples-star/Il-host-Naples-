@@ -2,9 +2,11 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Facebook, Instagram } from 'lucide-react';
 import { Logo } from './Logo';
+import { useSettings } from '../contexts/SettingsContext';
 
 export const Footer: React.FC = () => {
   const navigate = useNavigate();
+  const { settings } = useSettings();
 
   const handleContactClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -27,13 +29,13 @@ export const Footer: React.FC = () => {
               <Logo height={48} className="w-auto" />
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed mb-8 max-w-sm font-medium">
-              The first comprehensive ecosystem for Neapolitan hospitality. We connect guests with the heart of Naples through a network of trusted hosts and premium local service providers.
+              {settings.footer.tagline}
             </p>
             <div className="flex gap-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
+              <a href={settings.footer.facebookUrl} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
+              <a href={settings.footer.instagramUrl} target="_blank" rel="noopener noreferrer" className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-[#0f172a] transition-all">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
@@ -82,8 +84,8 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-[#334155] mt-8 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[#64748b] text-sm">
-            © 2026 IL HOST IN NAPLES. MADE WITH ❤️ IN NAPLES.
+          <p className="text-[#64748b] text-sm uppercase font-bold tracking-widest">
+            {settings.footer.copyrightText}
           </p>
           <p className="text-[#64748b] text-sm">
             EN | IT

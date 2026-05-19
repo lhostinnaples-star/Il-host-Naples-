@@ -72,6 +72,149 @@ const CountdownTimer: React.FC<{ acceptedAt: string, onExpire: () => void }> = (
   );
 };
 
+const AvailabilityCalendar: React.FC<{ property: any, onClose: () => void, onSave: (dates: string[]) => void }> = ({ property, onClose, onSave }) => {
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [unavailableDates, setUnavailableDates] = useState<string[]>(property?.unavailableDates || []);
+
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const blanks = Array.from({ length: firstDay }, (_, i) => i);
+
+  const nextMonth = () => {
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(currentYear + 1); }
+    else { setCurrentMonth(currentMonth + 1); }
+  };
+
+  const prevMonth = () => {
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(currentYear - 1); }
+    else { setCurrentMonth(currentMonth - 1); }
+  };
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const toggleDate = (day: number) => {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setUnavailableDates(prev => {
+      if (prev.includes(dateStr)) {
+        return prev.filter(d => d !== dateStr);
+      } else {
+        return [...prev, dateStr];
+      }
+    });
+  };
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  return (
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+      />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative bg-[#1e293b] border border-[#334155] rounded-2xl w-full max-w-md p-6 overflow-hidden flex flex-col"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-bold text-white">Manage Availability</h3>
+            <p className="text-xs text-[#94a3b8] mt-1">{property?.name}</p>
+          </div>
+          <button onClick={onClose} className="text-[#94a3b8] hover:text-white">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="bg-[#0f172a] rounded-xl p-4 border border-[#334155]">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={prevMonth} className="p-2 bg-[#1e293b] text-white hover:bg-[#334155] rounded-lg">
+              &lt;
+            </button>
+            <div className="text-white font-bold text-sm">
+              {monthNames[currentMonth]} {currentYear}
+            </div>
+            <button onClick={nextMonth} className="p-2 bg-[#1e293b] text-white hover:bg-[#334155] rounded-lg">
+              &gt;
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 mb-2">
+           {dayNames.map(d => (
+             <div key={d} className="text-[10px] text-center font-black uppercase tracking-widest text-[#94a3b8]">
+                {d}
+             </div>
+           ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1">
+            {blanks.map(b => (
+              <div key={`blank-${b}`} className="p-2" />
+            ))}
+            {days.map(d => {
+              const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+              const isUnavailable = unavailableDates.includes(dateStr);
+              
+              const currentItemDate = new Date(currentYear, currentMonth, d);
+              const isPast = currentItemDate < today;
+
+              return (
+                <button
+                  key={d}
+                  onClick={() => toggleDate(d)}
+                  className={cn(
+                    "h-10 w-full rounded-md flex items-center justify-center text-xs font-medium transition-colors border",
+                    isUnavailable 
+                      ? "bg-red-500/20 text-red-500 border-red-500/20 hover:bg-red-500/30" 
+                      : "bg-[#1e293b] text-white border-[#334155] hover:bg-[#334155]",
+                    isPast && !isUnavailable && "opacity-50"
+                  )}
+                >
+                  {d}
+                </button>
+              )
+            })}
+          </div>
+          
+        </div>
+        
+        <div className="mt-4 flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-[#1e293b] border border-[#334155] rounded-sm" />
+            <span className="text-[#94a3b8]">Available</span>
+          </div>
+           <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500/20 border border-red-500/20 rounded-sm" />
+            <span className="text-[#94a3b8]">Blocked</span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex gap-3">
+           <Button variant="outline" onClick={onClose} className="flex-1 border-[#334155] text-white h-10 text-[10px] uppercase font-black tracking-widest">
+             Cancel
+           </Button>
+           <Button onClick={() => onSave(unavailableDates)} className="flex-1 bg-[#F5A623] hover:bg-[#F5A623]/90 text-black h-10 text-[10px] uppercase font-black tracking-widest">
+             Save Dates
+           </Button>
+        </div>
+
+      </motion.div>
+    </div>
+  );
+};
+
 export const OwnerDashboard: React.FC = () => {
   const { user, token, isDemoMode, updateUser, updateUserSupplierAccess } = useAuth();
   const { formatPrice } = useCurrency();
@@ -127,6 +270,8 @@ export const OwnerDashboard: React.FC = () => {
   const [editingProperty, setEditingProperty] = useState<any>(null);
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
   const [closingBookingId, setClosingBookingId] = useState<string | null>(null);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [calendarProperty, setCalendarProperty] = useState<any>(null);
 
   // Manual Pool Share State
   const [showManualPoolModal, setShowManualPoolModal] = useState(false);
@@ -833,12 +978,12 @@ export const OwnerDashboard: React.FC = () => {
                       variant="outline" 
                       size="sm" 
                       onClick={() => {
-                        setEditingProperty(hotel);
-                        setIsPropertyModalOpen(true);
+                        setCalendarProperty(hotel);
+                        setIsCalendarModalOpen(true);
                       }}
                       className="h-9 text-[9px] font-black uppercase border-[#334155] text-white hover:bg-white/5"
                     >
-                      Dates
+                      Manage Dates
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => handleEditProperty(hotel)} className="h-9 text-[9px] font-black uppercase border-[#334155] text-white hover:bg-white/5">Edit</Button>
                     <Button variant="outline" size="sm" onClick={() => setPropertyToDelete(hotel.id)} className="h-9 text-[9px] font-black uppercase border-[#334155] text-red-500 hover:bg-red-500/10">Delete</Button>
@@ -901,6 +1046,20 @@ export const OwnerDashboard: React.FC = () => {
           onSubmit={handlePropertySubmit}
           initialData={editingProperty}
         />
+
+        <AnimatePresence>
+          {isCalendarModalOpen && calendarProperty && (
+             <AvailabilityCalendar
+               property={calendarProperty}
+               onClose={() => setIsCalendarModalOpen(false)}
+               onSave={(dates) => {
+                 updateHotel(calendarProperty.id, { unavailableDates: dates });
+                 toast.success('Availability updated!');
+                 setIsCalendarModalOpen(false);
+               }}
+             />
+          )}
+        </AnimatePresence>
 
         {/* Delete Confirmation Modal */}
         <AnimatePresence>

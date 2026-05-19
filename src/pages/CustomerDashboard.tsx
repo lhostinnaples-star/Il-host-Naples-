@@ -49,7 +49,7 @@ export const CustomerDashboard: React.FC = () => {
   useEffect(() => {
     if (section === 'experiences') {
       setBookingTypeFilter('SERVICE');
-    } else if (section === 'overview') {
+    } else if (section === 'trips' || section === 'overview') {
       setBookingTypeFilter('PROPERTY');
     }
   }, [section]);
@@ -367,11 +367,12 @@ export const CustomerDashboard: React.FC = () => {
         </div>
 
         {section === 'overview' && renderOverview()}
+        {section === 'trips' && renderOverview()}
         {section === 'experiences' && renderOverview()}
         {section === 'profile' && renderProfile()}
         {section === 'settings' && renderSettings()}
         {section === 'wishlist' && renderWishlist()}
-        {!['overview', 'profile', 'settings', 'wishlist', 'experiences'].includes(section) && (
+        {!['overview', 'trips', 'profile', 'settings', 'wishlist', 'experiences'].includes(section) && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
              <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
                <Star className="h-10 w-10 text-neutral-600" />
