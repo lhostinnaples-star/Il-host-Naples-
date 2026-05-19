@@ -77,6 +77,7 @@ interface SiteSettings {
   seo: {
     title: string;
     description: string;
+    allowIndexing?: boolean;
   };
 }
 
@@ -257,6 +258,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   seo: {
     title: 'Il Host in Naples - Luxury Property Management',
     description: 'Find authentic holiday houses, B&Bs and experiences in Naples, Italy',
+    allowIndexing: true,
   }
 };
 

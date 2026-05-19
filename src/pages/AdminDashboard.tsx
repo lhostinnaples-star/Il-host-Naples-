@@ -1010,6 +1010,18 @@ export const AdminDashboard: React.FC = () => {
                       onChange={(e) => updateSettings({ seo: { ...settings.seo, description: e.target.value } })}
                     />
                   </div>
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-[#0f172a] border border-[#334155]">
+                    <div>
+                      <span className="text-sm text-white font-bold block mb-1">Search Engine Visibility</span>
+                      <span className="text-xs text-[#94a3b8]">When OFF, 'noindex' is added to discourage search engines from indexing the site.</span>
+                    </div>
+                    <input 
+                      type="checkbox" 
+                      checked={settings.seo.allowIndexing ?? true}
+                      onChange={(e) => updateSettings({ seo: { ...settings.seo, allowIndexing: e.target.checked } })}
+                      className="w-5 h-5 accent-[#F5A623]"
+                    />
+                  </div>
                 </div>
               </div>
               <Button onClick={() => toast.success('SEO Settings updated!')} className="w-full bg-[#F5A623] text-black font-black uppercase py-4">Save SEO Settings</Button>

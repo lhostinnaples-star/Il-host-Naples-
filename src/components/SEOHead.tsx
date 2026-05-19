@@ -3,6 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { getDefaultMetaTags } from '../utils/seo';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface SEOHeadProps {
   title?: string;
@@ -24,6 +25,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   noindex 
 }) => {
   const location = useLocation();
+  const { settings } = useSettings();
   const defaults = getDefaultMetaTags(location.pathname + location.search);
 
   const finalTitle = title ? `${title} | Il Host in Naples` : defaults.title;
@@ -31,7 +33,10 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   const finalImage = image || defaults.image;
   const finalType = type || defaults.type;
   const finalUrl = canonical ? `https://www.ilhostinnaples.com${canonical}` : defaults.url;
-  const shouldNoIndex = noindex !== undefined ? noindex : defaults.noindex;
+  
+  // Site-wide setting overrides component-specific indexing if it's set to off, 
+  // otherwise we use component-specific or default noindex strategy
+  const shouldNoIndex = settings.seo.allowIndexing === false ? true : (noindex !== undefined ? noindex : defaults.noindex);
 
   return (
     <Helmet>
