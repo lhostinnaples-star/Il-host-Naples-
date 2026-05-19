@@ -5,7 +5,7 @@ import {
   setDoc,
   onSnapshot 
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, handleFirestoreError, OperationType } from '../config/firebase';
 import { toast } from 'sonner';
 
 interface SiteSettings {
@@ -320,7 +320,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           }));
         }
       }, (error) => {
-        console.error("Error fetching settings from Firestore:", error);
+        handleFirestoreError(error, OperationType.GET, 'site_settings/global');
       });
       return () => unsubscribe();
     }

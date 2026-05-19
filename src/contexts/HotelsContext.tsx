@@ -186,7 +186,7 @@ import {
   query,
   where
 } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, auth, handleFirestoreError, OperationType } from '../config/firebase';
 
 const HotelsContext = createContext<HotelsContextType | undefined>(undefined);
 
@@ -379,38 +379,50 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           localStorage.setItem('stay_ease_reviews', JSON.stringify(MOCK_REVIEWS));
         }
       } else {
-        // Fetch all bookings normally
-        try {
-          const bookingsRef = collection(db, 'bookings');
-          const bookingsSnap = await getDocs(bookingsRef);
-          if (!bookingsSnap.empty) {
-            const fbBookings = bookingsSnap.docs.map(doc => ({id: doc.id, ...doc.data()}) as Booking);
-            setBookings(fbBookings);
-            localStorage.setItem('stay_ease_bookings', JSON.stringify(fbBookings));
-          } else {
-            setBookings([]);
-          }
+        // Subscribe to auth state so we reliably know when user is authenticated
+        const unsubscribeAuth = import('firebase/auth').then(({ onAuthStateChanged }) => {
+          return onAuthStateChanged(auth, async (user) => {
+            if (user) {
+              // Fetch all bookings normally
+              try {
+                const bookingsRef = collection(db, 'bookings');
+                const bookingsSnap = await getDocs(bookingsRef);
+                if (!bookingsSnap.empty) {
+                  const fbBookings = bookingsSnap.docs.map(doc => ({id: doc.id, ...doc.data()}) as Booking);
+                  setBookings(fbBookings);
+                  localStorage.setItem('stay_ease_bookings', JSON.stringify(fbBookings));
+                } else {
+                  setBookings([]);
+                }
 
-          // Real-time Booking Pool Listener
-          const poolQuery = query(
-            bookingsRef,
-            where('status', '==', 'SHARED')
-          );
-          
-          onSnapshot(poolQuery, (snapshot) => {
-            const poolBookings = snapshot.docs.map(
-              doc => ({id: doc.id, ...doc.data()}) as Booking
-            );
-            // We just update the state to overlay pool bookings
-            setBookings(prev => {
-              const nonShared = prev.filter(b => b.status !== 'SHARED');
-              return [...nonShared, ...poolBookings];
-            });
+                // Real-time Booking Pool Listener
+                const poolQuery = query(
+                  bookingsRef,
+                  where('status', '==', 'SHARED')
+                );
+                
+                const unsubscribePool = onSnapshot(poolQuery, (snapshot) => {
+                  const poolBookings = snapshot.docs.map(
+                    doc => ({id: doc.id, ...doc.data()}) as Booking
+                  );
+                  // We just update the state to overlay pool bookings
+                  setBookings(prev => {
+                    const nonShared = prev.filter(b => b.status !== 'SHARED');
+                    return [...nonShared, ...poolBookings];
+                  });
+                }, (error) => {
+                  handleFirestoreError(error, OperationType.GET, 'bookings');
+                });
+              } catch (e) {
+                console.error("Failed to fetch bookings from Firestore", e);
+                if (savedBookings) setBookings(JSON.parse(savedBookings));
+              }
+            } else {
+               // Not authenticated, set mock or clear bookings
+               if (savedBookings) setBookings(JSON.parse(savedBookings));
+            }
           });
-        } catch (e) {
-          console.error("Failed to fetch bookings from Firestore", e);
-          if (savedBookings) setBookings(JSON.parse(savedBookings));
-        }
+        });
 
         // Fetch all reviews normally
         try {
