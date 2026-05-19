@@ -14,7 +14,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{email?: string, password?: string}>({});
   const [isLoading, setIsLoading] = useState(false);
-  const { login, loginAsDemo } = useAuth();
+  const { login, signIn, loginAsDemo } = useAuth();
   const navigate = useNavigate();
 
   const handleDemoLogin = (role: UserRole) => {
@@ -43,33 +43,15 @@ export const LoginPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        login(data.token, data.user);
-        
-        // Handle redirection based on role and status
-        const { role, status } = data.user;
-        
-        if (status === UserStatus.ACTIVE || status === UserStatus.PENDING_APPROVAL || status === UserStatus.REJECTED || status === UserStatus.SUSPENDED) {
-           if (role === UserRole.ADMIN) navigate('/admin');
-           else if (role === UserRole.HOTEL_OWNER) navigate('/owner');
-           else if (role === UserRole.SUPPLIER) navigate('/supplier');
-           else if (role === UserRole.SERVICE_PROVIDER) navigate('/service-dashboard');
-           else navigate('/dashboard');
-        } else if (status === UserStatus.PENDING_VERIFICATION) {
-           // We will stay on a verification screen or navigate to dashboard where StatusGate handles it
-           navigate('/dashboard');
-        }
-      } else {
-        setError(data.error);
-      }
-    } catch (err) {
-      setError('Something went wrong');
+      await signIn(email, password);
+      // The onAuthStateChanged listener in AuthContext will handle state and we'll navigate
+      // But we can also navigate here if we want immediate feedback
+      toast.success('Successfully signed in');
+      navigate('/');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Login failed');
+      toast.error(err.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -192,7 +174,7 @@ type Step = 'role-selection' | 'basic-info' | 'role-specific' | 'verification';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signUp } = useAuth();
   const [step, setStep] = useState<Step>('role-selection');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -248,28 +230,13 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      // Simulate registration
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          status: formData.role === UserRole.CUSTOMER ? UserStatus.ACTIVE : UserStatus.PENDING_APPROVAL
-        })
-      });
-      const data = await response.json();
-      
-      if (response.ok) {
-        console.log('Sending verification email to:', formData.email);
-        login(data.token, data.user);
-        setStep('verification');
-      } else {
-        setError(data.error);
-        toast.error(data.error);
-      }
-    } catch (err) {
-      setError('Registration failed');
-      toast.error('Something went wrong');
+      await signUp(formData.email, formData.password, formData.name, formData.role);
+      console.log('User signed up with role:', formData.role);
+      setStep('verification');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Registration failed');
+      toast.error(err.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }

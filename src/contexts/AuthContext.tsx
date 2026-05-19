@@ -1,4 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  User as FirebaseUser,
+  updateProfile
+} from 'firebase/auth';
+import { auth } from '../config/firebase';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -32,6 +41,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (token: string, user: User) => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   loginAsDemo: (role: UserRole) => void;
   updateUser: (updates: Partial<User>) => void;
   updateUserStatus: (userId: string, status: UserStatus, reason?: string) => void;
@@ -93,47 +104,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDemoMode, setIsDemoMode] = useState(localStorage.getItem('isDemoMode') === 'true');
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (isDemoMode) {
-        const demoUserRole = localStorage.getItem('demoRole');
-        if (demoUserRole) {
-          const userKey = demoUserRole === UserRole.HOTEL_OWNER ? 'lister' : 
-                         demoUserRole === UserRole.SERVICE_PROVIDER ? 'service_provider' : 
-                         demoUserRole;
-          
-          setUser(MOCK_USERS[userKey] || null);
-        }
-        setIsLoading(false);
-        return;
+    if (isDemoMode) {
+      const demoUserRole = localStorage.getItem('demoRole');
+      if (demoUserRole) {
+        const userKey = demoUserRole === UserRole.HOTEL_OWNER ? 'lister' : 
+                       demoUserRole === UserRole.SERVICE_PROVIDER ? 'service_provider' : 
+                       demoUserRole;
+        
+        setUser(MOCK_USERS[userKey] || null);
       }
+      setIsLoading(false);
+      return;
+    }
 
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // Fallback role logic: check if email matches a mock user
+        const mockUser = Object.values(MOCK_USERS).find(u => u.email === firebaseUser.email);
+        
+        if (mockUser) {
+          setUser({
+            ...mockUser,
+            id: firebaseUser.uid
+          });
         } else {
-          localStorage.removeItem('token');
-          setToken(null);
+          setUser({
+            id: firebaseUser.uid,
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+            email: firebaseUser.email || '',
+            role: UserRole.CUSTOMER,
+            status: UserStatus.ACTIVE
+          });
         }
-      } catch (error) {
-        console.error('Failed to fetch user', error);
-      } finally {
-        setIsLoading(false);
+      } else {
+        setUser(null);
       }
-    };
+      setIsLoading(false);
+    });
 
-    fetchUser();
-  }, [token, isDemoMode]);
+    return () => unsubscribe();
+  }, [isDemoMode]);
 
   const login = React.useCallback((newToken: string, newUser: User) => {
     localStorage.removeItem('isDemoMode');
@@ -142,6 +152,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(newUser);
+  }, []);
+
+  const signIn = React.useCallback(async (email: string, password: string) => {
+    setIsDemoMode(false);
+    await signInWithEmailAndPassword(auth, email, password);
+  }, []);
+
+  const signUp = React.useCallback(async (email: string, password: string, name: string, role: UserRole) => {
+    setIsDemoMode(false);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(userCredential.user, { displayName: name });
+    // In a real app, we'd save the role to Firestore here
   }, []);
 
   const loginAsDemo = React.useCallback((role: UserRole) => {
@@ -157,7 +179,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken('demo-token');
   }, []);
 
-  const logout = React.useCallback(() => {
+  const logout = React.useCallback(async () => {
+    await signOut(auth);
     localStorage.removeItem('token');
     localStorage.removeItem('isDemoMode');
     localStorage.removeItem('demoRole');
@@ -204,6 +227,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user, 
     token, 
     login, 
+    signIn,
+    signUp,
     loginAsDemo, 
     updateUser,
     updateUserStatus,
@@ -211,7 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout, 
     isLoading, 
     isDemoMode 
-  }), [user, token, login, loginAsDemo, updateUser, updateUserStatus, updateUserSupplierAccess, logout, isLoading, isDemoMode]);
+  }), [user, token, login, signIn, signUp, loginAsDemo, updateUser, updateUserStatus, updateUserSupplierAccess, logout, isLoading, isDemoMode]);
 
   return (
     <AuthContext.Provider value={value}>
