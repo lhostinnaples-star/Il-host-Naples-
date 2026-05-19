@@ -2,6 +2,12 @@ import React, { useCallback, useState } from 'react';
 import { X, Loader2, ArrowUpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
+import { storage } from '../config/firebase';
+import { 
+  ref, 
+  uploadBytesResumable, 
+  getDownloadURL 
+} from 'firebase/storage';
 
 interface ImageUploadProps {
   maxImages?: number;
@@ -81,26 +87,63 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
         const originalSize = file.size;
 
         const webpData = await compressImage(file);
+        let finalUrl = webpData;
         
+        try {
+          const blob = await fetch(webpData).then(res => res.blob());
+          const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '') || 'image.webp'}`;
+          const fullPath = `${storagePath}/${filename}`;
+          
+          finalUrl = await new Promise((resolve, reject) => {
+            const storageRef = ref(storage, fullPath);
+            const uploadTask = uploadBytesResumable(storageRef, blob);
+            
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                const stepProgress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                const baseProgress = (i / allowedFiles.length) * 90;
+                const currentFileProgress = (stepProgress / 100) * (90 / allowedFiles.length);
+                setUploadProgress(10 + Math.round(baseProgress + currentFileProgress));
+              },
+              (error) => reject(error),
+              async () => {
+                try {
+                  const url = await getDownloadURL(uploadTask.snapshot.ref);
+                  resolve(url);
+                } catch (e) {
+                  reject(e);
+                }
+              }
+            );
+          });
+        } catch (e) {
+          console.warn('Firebase Storage upload failed, falling back to Base64', e);
+          toast.warning('Storage upload failed, using local fallback.');
+        }
+
         // Approximate base64 size
         const compressedSize = Math.round((webpData.length - 'data:image/webp;base64,'.length) * 3 / 4);
         
-        newImages.push(webpData);
+        newImages.push(finalUrl);
         newStats.push({ 
           before: formatSize(originalSize), 
           after: formatSize(compressedSize) 
         });
 
-        // Update progress per file
         setUploadProgress(10 + Math.round(((i + 1) / allowedFiles.length) * 90));
       }
 
+      setUploadProgress(100);
       setImages(newImages);
       setStats(newStats);
       onImagesChange(newImages);
+      
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 1000); // Wait 1s to show "Upload complete!"
     } catch (error) {
       toast.error('Failed to process image. Please try again.');
-    } finally {
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -125,7 +168,7 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
           {isUploading ? (
             <div className="flex flex-col items-center w-full max-w-xs mx-auto">
               <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-[#F5A623] mb-4" />
-              <p className="font-black text-white uppercase tracking-widest text-[10px]">Optimizing... {uploadProgress}%</p>
+              <p className="font-black text-white uppercase tracking-widest text-[10px]">{uploadProgress >= 100 ? 'Upload complete!' : `Uploading... ${uploadProgress}%`}</p>
               <div className="w-full h-1 bg-[#334155] rounded-full mt-4 overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}

@@ -230,7 +230,7 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      await signUp(formData.email, formData.password, formData.name, formData.role);
+      await signUp(formData.email, formData.password, formData.name, formData.role, formData.phone);
       console.log('User signed up with role:', formData.role);
       setStep('verification');
     } catch (err: any) {

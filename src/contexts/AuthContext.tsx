@@ -7,7 +7,8 @@ import {
   User as FirebaseUser,
   updateProfile
 } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../config/firebase';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -42,7 +43,7 @@ interface AuthContextType {
   token: string | null;
   login: (token: string, user: User) => void;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+  signUp: (email: string, password: string, name: string, role: UserRole, phone?: string) => Promise<void>;
   loginAsDemo: (role: UserRole) => void;
   updateUser: (updates: Partial<User>) => void;
   updateUserStatus: (userId: string, status: UserStatus, reason?: string) => void;
@@ -117,24 +118,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // Fallback role logic: check if email matches a mock user
-        const mockUser = Object.values(MOCK_USERS).find(u => u.email === firebaseUser.email);
-        
-        if (mockUser) {
-          setUser({
-            ...mockUser,
-            id: firebaseUser.uid
-          });
-        } else {
-          setUser({
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-            email: firebaseUser.email || '',
-            role: UserRole.CUSTOMER,
-            status: UserStatus.ACTIVE
-          });
+        try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDocInfo = await getDoc(userDocRef);
+          
+          if (userDocInfo.exists()) {
+            const data = userDocInfo.data();
+            setUser({
+              id: firebaseUser.uid,
+              name: data.name || firebaseUser.displayName || 'User',
+              email: data.email || firebaseUser.email || '',
+              role: data.role as UserRole,
+              status: data.status as UserStatus,
+              phone: data.phone || '',
+              supplierAccess: data.supplierAccess || 'none'
+            });
+          } else {
+            // Fallback role logic: check if email matches a mock user
+            const mockUser = Object.values(MOCK_USERS).find(u => u.email === firebaseUser.email);
+            
+            if (mockUser) {
+              setUser({
+                ...mockUser,
+                id: firebaseUser.uid
+              });
+            } else {
+              setUser({
+                id: firebaseUser.uid,
+                name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+                email: firebaseUser.email || '',
+                role: UserRole.CUSTOMER,
+                status: UserStatus.ACTIVE
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user data setup", error);
+          // Fallback role logic: check if email matches a mock user
+          const mockUser = Object.values(MOCK_USERS).find(u => u.email === firebaseUser.email);
+          
+          if (mockUser) {
+            setUser({
+              ...mockUser,
+              id: firebaseUser.uid
+            });
+          } else {
+            setUser({
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+              email: firebaseUser.email || '',
+              role: UserRole.CUSTOMER,
+              status: UserStatus.ACTIVE
+            });
+          }
         }
       } else {
         setUser(null);
@@ -159,11 +197,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signInWithEmailAndPassword(auth, email, password);
   }, []);
 
-  const signUp = React.useCallback(async (email: string, password: string, name: string, role: UserRole) => {
+  const signUp = React.useCallback(async (email: string, password: string, name: string, role: UserRole, phone: string = '') => {
     setIsDemoMode(false);
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, { displayName: name });
-    // In a real app, we'd save the role to Firestore here
+    
+    // Save the user profile to Firestore
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      uid: userCredential.user.uid,
+      name,
+      email,
+      phone,
+      role,
+      status: role === UserRole.CUSTOMER ? UserStatus.ACTIVE : UserStatus.PENDING_APPROVAL,
+      createdAt: serverTimestamp(),
+      supplierAccess: 'none',
+      profilePhoto: '',
+      bio: ''
+    });
   }, []);
 
   const loginAsDemo = React.useCallback((role: UserRole) => {

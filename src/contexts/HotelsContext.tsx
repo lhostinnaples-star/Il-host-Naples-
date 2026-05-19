@@ -173,6 +173,20 @@ export interface HotelsContextType {
 }
 
 import { MOCK_PROPERTIES, MOCK_SERVICES, MOCK_REVIEWS } from '../utils/mockData';
+import { toast } from 'sonner';
+import { 
+  collection,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  where
+} from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 const HotelsContext = createContext<HotelsContextType | undefined>(undefined);
 
@@ -208,139 +222,213 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Try local storage first
-      const savedHotels = localStorage.getItem('stay_ease_hotels');
-      const savedServices = localStorage.getItem('stay_ease_services');
+      const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+
+      if (isDemoMode) {
+        const savedHotels = localStorage.getItem('stay_ease_hotels');
+        const savedServices = localStorage.getItem('stay_ease_services');
+        
+        if (savedHotels) {
+          const parsed = JSON.parse(savedHotels);
+          if (parsed && parsed.length > 0) {
+            setAllHotels(parsed);
+          } else {
+            localStorage.removeItem('stay_ease_hotels');
+            setAllHotels(MOCK_PROPERTIES as any);
+          }
+        } else {
+          setAllHotels(MOCK_PROPERTIES as any);
+        }
+
+        if (savedServices) {
+          const parsed = JSON.parse(savedServices);
+          if (parsed && parsed.length > 0) {
+            setAllServices(parsed);
+          } else {
+            localStorage.removeItem('stay_ease_services');
+            setAllServices(MOCK_SERVICES as any);
+          }
+        } else {
+          setAllServices(MOCK_SERVICES as any);
+        }
+      } else {
+        try {
+          const hotelsRef = collection(db, 'properties');
+          const hotelsSnap = await getDocs(hotelsRef);
+          if (!hotelsSnap.empty) {
+            const fbHotels = hotelsSnap.docs.map(doc => doc.data() as Hotel);
+            setAllHotels(fbHotels);
+            localStorage.setItem('stay_ease_hotels', JSON.stringify(fbHotels));
+          } else {
+            setAllHotels(MOCK_PROPERTIES as any);
+          }
+        } catch (e) {
+          console.error("Failed to fetch properties from Firestore", e);
+          toast.warning("Using offline mode for properties");
+          const savedHotels = localStorage.getItem('stay_ease_hotels');
+          if (savedHotels) {
+             const parsed = JSON.parse(savedHotels);
+             if (parsed && parsed.length > 0) setAllHotels(parsed);
+             else setAllHotels(MOCK_PROPERTIES as any);
+          } else {
+             setAllHotels(MOCK_PROPERTIES as any);
+          }
+        }
+
+        try {
+          const servicesRef = collection(db, 'services');
+          const servicesSnap = await getDocs(servicesRef);
+          if (!servicesSnap.empty) {
+            const fbServices = servicesSnap.docs.map(doc => doc.data() as Service);
+            setAllServices(fbServices);
+            localStorage.setItem('stay_ease_services', JSON.stringify(fbServices));
+          } else {
+            setAllServices(MOCK_SERVICES as any);
+          }
+        } catch (e) {
+          console.error("Failed to fetch services from Firestore", e);
+          toast.warning("Using offline mode for services");
+          const savedServices = localStorage.getItem('stay_ease_services');
+          if (savedServices) {
+             const parsed = JSON.parse(savedServices);
+             if (parsed && parsed.length > 0) setAllServices(parsed);
+             else setAllServices(MOCK_SERVICES as any);
+          } else {
+             setAllServices(MOCK_SERVICES as any);
+          }
+        }
+      }
+
       const savedBookings = localStorage.getItem('stay_ease_bookings');
-      const savedReviews = localStorage.getItem('stay_ease_reviews');
-
-      if (savedHotels) {
-        const parsed = JSON.parse(savedHotels);
-        if (parsed && parsed.length > 0) {
-          setAllHotels(parsed);
+      
+      if (isDemoMode) {
+        if (savedBookings) {
+          setBookings(JSON.parse(savedBookings));
         } else {
-          localStorage.removeItem('stay_ease_hotels');
-          setAllHotels(MOCK_PROPERTIES as any);
+          const demoBookings: Booking[] = [
+            {
+              id: 'demo-pool-1',
+              reference: 'REF-POOL-1',
+              bookingType: 'PROPERTY',
+              status: 'SHARED',
+              itemId: 'hotel-1',
+              itemName: 'Villa Partenope',
+              customerId: 'user-guest-1',
+              customerName: 'James W.',
+              customerEmail: 'james.w@example.com',
+              customerPhone: '+44 7700 900077',
+              ownerId: 'demo-owner',
+              startDate: '2026-06-15T12:00:00Z',
+              endDate: '2026-06-19T10:00:00Z',
+              guests: 2,
+              totalPrice: 720,
+              createdAt: new Date().toISOString(),
+              area: 'Seafront (Chiaia - Posillipo)',
+              sharedAt: new Date().toISOString()
+            },
+            {
+              id: 'demo-pool-2',
+              reference: 'REF-POOL-2',
+              bookingType: 'PROPERTY',
+              status: 'SHARED',
+              itemId: 'hotel-2',
+              itemName: 'Centro Storico B&B',
+              customerId: 'user-guest-2',
+              customerName: 'Sophie M.',
+              customerEmail: 'sophie.m@example.com',
+              customerPhone: '+33 6 12 34 56 78',
+              ownerId: 'demo-owner',
+              startDate: '2026-07-01T14:00:00Z',
+              endDate: '2026-07-05T10:00:00Z',
+              guests: 3,
+              totalPrice: 450,
+              createdAt: new Date().toISOString(),
+              area: 'Center (Centro Storico)',
+              sharedAt: new Date().toISOString()
+            },
+            {
+              id: 'demo-pool-3',
+              reference: 'REF-POOL-3',
+              bookingType: 'PROPERTY',
+              status: 'SHARED',
+              itemId: 'hotel-3',
+              itemName: 'Chiaia Sea View',
+              customerId: 'user-guest-3',
+              customerName: 'Roberto K.',
+              customerEmail: 'roberto.k@example.com',
+              customerPhone: '+49 151 23456789',
+              ownerId: 'demo-owner',
+              startDate: '2026-07-10T15:00:00Z',
+              endDate: '2026-07-14T11:00:00Z',
+              guests: 3,
+              totalPrice: 850,
+              createdAt: new Date().toISOString(),
+              area: 'Seafront (Chiaia - Posillipo)',
+              sharedAt: new Date().toISOString()
+            }
+          ];
+          setBookings(demoBookings);
+          localStorage.setItem('stay_ease_bookings', JSON.stringify(demoBookings));
+        }
+
+        const savedReviews = localStorage.getItem('stay_ease_reviews');
+        if (savedReviews) {
+          setReviews(JSON.parse(savedReviews));
+        } else {
+          setReviews(MOCK_REVIEWS as any);
+          localStorage.setItem('stay_ease_reviews', JSON.stringify(MOCK_REVIEWS));
         }
       } else {
-        // Fallback to fetch or mock
+        // Fetch all bookings normally
         try {
-          const hotelsRes = await fetch('/api/hotels');
-          if (hotelsRes.ok) {
-            const data = await hotelsRes.json();
-            if (data && data.length > 0) {
-              setAllHotels(data);
-              localStorage.setItem('stay_ease_hotels', JSON.stringify(data));
-            } else {
-              setAllHotels(MOCK_PROPERTIES as any);
-            }
+          const bookingsRef = collection(db, 'bookings');
+          const bookingsSnap = await getDocs(bookingsRef);
+          if (!bookingsSnap.empty) {
+            const fbBookings = bookingsSnap.docs.map(doc => ({id: doc.id, ...doc.data()}) as Booking);
+            setBookings(fbBookings);
+            localStorage.setItem('stay_ease_bookings', JSON.stringify(fbBookings));
+          } else {
+            setBookings([]);
+          }
+
+          // Real-time Booking Pool Listener
+          const poolQuery = query(
+            bookingsRef,
+            where('status', '==', 'SHARED')
+          );
+          
+          onSnapshot(poolQuery, (snapshot) => {
+            const poolBookings = snapshot.docs.map(
+              doc => ({id: doc.id, ...doc.data()}) as Booking
+            );
+            // We just update the state to overlay pool bookings
+            setBookings(prev => {
+              const nonShared = prev.filter(b => b.status !== 'SHARED');
+              return [...nonShared, ...poolBookings];
+            });
+          });
+        } catch (e) {
+          console.error("Failed to fetch bookings from Firestore", e);
+          if (savedBookings) setBookings(JSON.parse(savedBookings));
+        }
+
+        // Fetch all reviews normally
+        try {
+          const reviewsRef = collection(db, 'reviews');
+          const reviewsSnap = await getDocs(reviewsRef);
+          if (!reviewsSnap.empty) {
+            const fbReviews = reviewsSnap.docs.map(doc => ({id: doc.id, ...doc.data()}) as Review);
+            setReviews(fbReviews);
+            localStorage.setItem('stay_ease_reviews', JSON.stringify(fbReviews));
+          } else {
+            setReviews(MOCK_REVIEWS as any);
           }
         } catch (e) {
-          console.log('Using mock hotels fallback');
-          setAllHotels(MOCK_PROPERTIES as any);
+          console.error("Failed to fetch reviews from Firestore", e);
+          const savedReviews = localStorage.getItem('stay_ease_reviews');
+          if (savedReviews) setReviews(JSON.parse(savedReviews));
+          else setReviews(MOCK_REVIEWS as any);
         }
-      }
-
-      if (savedServices) {
-        const parsed = JSON.parse(savedServices);
-        if (parsed && parsed.length > 0) {
-          setAllServices(parsed);
-        } else {
-          localStorage.removeItem('stay_ease_services');
-          setAllServices(MOCK_SERVICES as any);
-        }
-      } else {
-        try {
-          const servicesRes = await fetch('/api/services');
-          if (servicesRes.ok) {
-            const data = await servicesRes.json();
-            if (data && data.length > 0) {
-              setAllServices(data);
-              localStorage.setItem('stay_ease_services', JSON.stringify(data));
-            } else {
-              setAllServices(MOCK_SERVICES as any);
-            }
-          }
-        } catch (e) {
-          console.log('Using mock services fallback');
-          setAllServices(MOCK_SERVICES as any);
-        }
-      }
-
-      if (savedBookings) {
-        setBookings(JSON.parse(savedBookings));
-      } else {
-        const demoBookings: Booking[] = [
-          {
-            id: 'demo-pool-1',
-            reference: 'REF-POOL-1',
-            bookingType: 'PROPERTY',
-            status: 'SHARED',
-            itemId: 'hotel-1',
-            itemName: 'Villa Partenope',
-            customerId: 'user-guest-1',
-            customerName: 'James W.',
-            customerEmail: 'james.w@example.com',
-            customerPhone: '+44 7700 900077',
-            ownerId: 'demo-owner',
-            startDate: '2026-06-15T12:00:00Z',
-            endDate: '2026-06-19T10:00:00Z',
-            guests: 2,
-            totalPrice: 720,
-            createdAt: new Date().toISOString(),
-            area: 'Seafront (Chiaia - Posillipo)',
-            sharedAt: new Date().toISOString()
-          },
-          {
-            id: 'demo-pool-2',
-            reference: 'REF-POOL-2',
-            bookingType: 'PROPERTY',
-            status: 'SHARED',
-            itemId: 'hotel-2',
-            itemName: 'Centro Storico B&B',
-            customerId: 'user-guest-2',
-            customerName: 'Sophie M.',
-            customerEmail: 'sophie.m@example.com',
-            customerPhone: '+33 6 12 34 56 78',
-            ownerId: 'demo-owner',
-            startDate: '2026-07-01T14:00:00Z',
-            endDate: '2026-07-05T10:00:00Z',
-            guests: 3,
-            totalPrice: 450,
-            createdAt: new Date().toISOString(),
-            area: 'Center (Centro Storico)',
-            sharedAt: new Date().toISOString()
-          },
-          {
-            id: 'demo-pool-3',
-            reference: 'REF-POOL-3',
-            bookingType: 'PROPERTY',
-            status: 'SHARED',
-            itemId: 'hotel-3',
-            itemName: 'Chiaia Sea View',
-            customerId: 'user-guest-3',
-            customerName: 'Roberto K.',
-            customerEmail: 'roberto.k@example.com',
-            customerPhone: '+49 151 23456789',
-            ownerId: 'demo-owner',
-            startDate: '2026-07-10T15:00:00Z',
-            endDate: '2026-07-14T11:00:00Z',
-            guests: 3,
-            totalPrice: 850,
-            createdAt: new Date().toISOString(),
-            area: 'Seafront (Chiaia - Posillipo)',
-            sharedAt: new Date().toISOString()
-          }
-        ];
-        setBookings(demoBookings);
-        localStorage.setItem('stay_ease_bookings', JSON.stringify(demoBookings));
-      }
-
-      if (savedReviews) {
-        setReviews(JSON.parse(savedReviews));
-      } else {
-        setReviews(MOCK_REVIEWS as any);
-        localStorage.setItem('stay_ease_reviews', JSON.stringify(MOCK_REVIEWS));
       }
 
       const savedSupplierRequests = localStorage.getItem('stay_ease_supplier_requests');
@@ -359,23 +447,44 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, []);
 
-  const addHotel = useCallback((hotel: Hotel) => {
-    setAllHotels(prev => {
-      const hotelWithCoords = { 
-        ...hotel, 
-        status: hotel.status || 'pending' 
-      };
-      if ((!hotelWithCoords.lat || !hotelWithCoords.lng) && hotelWithCoords.area && AREA_COORDINATES[hotelWithCoords.area]) {
-        hotelWithCoords.lat = AREA_COORDINATES[hotelWithCoords.area].lat;
-        hotelWithCoords.lng = AREA_COORDINATES[hotelWithCoords.area].lng;
+  const addHotel = useCallback(async (hotel: Hotel) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    const hotelWithCoords = { 
+      ...hotel, 
+      status: hotel.status || 'pending' 
+    };
+    if ((!hotelWithCoords.lat || !hotelWithCoords.lng) && hotelWithCoords.area && AREA_COORDINATES[hotelWithCoords.area]) {
+      hotelWithCoords.lat = AREA_COORDINATES[hotelWithCoords.area].lat;
+      hotelWithCoords.lng = AREA_COORDINATES[hotelWithCoords.area].lng;
+    }
+    
+    if (!isDemoMode) {
+      try {
+        await setDoc(doc(db, 'properties', hotelWithCoords.id), hotelWithCoords);
+      } catch (err) {
+        console.error('Error adding hotel to Firestore:', err);
+        toast.warning('Offline mode: Saved locally');
       }
+    }
+
+    setAllHotels(prev => {
       const updated = [...prev, hotelWithCoords];
       localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
       return updated;
     });
   }, []);
 
-  const updateHotel = useCallback((id: string, updates: Partial<Hotel>) => {
+  const updateHotel = useCallback(async (id: string, updates: Partial<Hotel>) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await updateDoc(doc(db, 'properties', id), updates);
+      } catch (err) {
+        console.error('Error updating hotel in Firestore:', err);
+        toast.warning('Offline mode: Updated locally');
+      }
+    }
+
     setAllHotels(prev => {
       const updated = prev.map(h => h.id === id ? { ...h, ...updates } : h);
       localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
@@ -383,15 +492,37 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const addService = useCallback((service: Service) => {
+  const addService = useCallback(async (service: Service) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    const serviceWithStatus = { ...service, status: service.status || 'pending' };
+    
+    if (!isDemoMode) {
+      try {
+        await setDoc(doc(db, 'services', serviceWithStatus.id), serviceWithStatus);
+      } catch (err) {
+        console.error('Error adding service to Firestore:', err);
+        toast.warning('Offline mode: Saved locally');
+      }
+    }
+
     setAllServices(prev => {
-      const updated = [...prev, { ...service, status: service.status || 'pending' }];
+      const updated = [...prev, serviceWithStatus];
       localStorage.setItem('stay_ease_services', JSON.stringify(updated));
       return updated;
     });
   }, []);
 
-  const updateService = useCallback((id: string, updates: Partial<Service>) => {
+  const updateService = useCallback(async (id: string, updates: Partial<Service>) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await updateDoc(doc(db, 'services', id), updates);
+      } catch (err) {
+        console.error('Error updating service in Firestore:', err);
+        toast.warning('Offline mode: Updated locally');
+      }
+    }
+
     setAllServices(prev => {
       const updated = prev.map(s => s.id === id ? { ...s, ...updates } : s);
       localStorage.setItem('stay_ease_services', JSON.stringify(updated));
@@ -399,7 +530,16 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const deleteService = useCallback((id: string) => {
+  const deleteService = useCallback(async (id: string) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await deleteDoc(doc(db, 'services', id));
+      } catch (err) {
+        console.error('Error deleting service in Firestore:', err);
+      }
+    }
+
     setAllServices(prev => {
       const updated = prev.filter(s => s.id !== id);
       localStorage.setItem('stay_ease_services', JSON.stringify(updated));
@@ -407,7 +547,16 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const deleteHotel = useCallback((id: string) => {
+  const deleteHotel = useCallback(async (id: string) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await deleteDoc(doc(db, 'properties', id));
+      } catch (err) {
+        console.error('Error deleting hotel in Firestore:', err);
+      }
+    }
+
     setAllHotels(prev => {
       const updated = prev.filter(h => h.id !== id);
       localStorage.setItem('stay_ease_hotels', JSON.stringify(updated));
@@ -415,7 +564,24 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const addBooking = useCallback((booking: Booking) => {
+  const addBooking = useCallback(async (booking: Booking) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        const bookingRef = booking.id ? doc(db, 'bookings', booking.id) : doc(collection(db, 'bookings'));
+        const bookingData = {
+           ...booking,
+           id: bookingRef.id,
+           createdAt: serverTimestamp()
+        };
+        await setDoc(bookingRef, bookingData);
+        // Replace id with the one generated if missing
+        booking.id = bookingRef.id;
+      } catch (err) {
+        console.error('Error adding booking in Firestore:', err);
+      }
+    }
+
     setBookings(prev => {
       const updated = [booking, ...prev];
       localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
@@ -423,7 +589,16 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const updateBooking = useCallback((id: string, updates: Partial<Booking>) => {
+  const updateBooking = useCallback(async (id: string, updates: Partial<Booking>) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await updateDoc(doc(db, 'bookings', id), updates);
+      } catch (err) {
+        console.error('Error updating booking in Firestore:', err);
+      }
+    }
+
     setBookings(prev => {
       const updated = prev.map(b => b.id === id ? { ...b, ...updates } : b);
       localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
@@ -431,7 +606,16 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const deleteBooking = useCallback((id: string) => {
+  const deleteBooking = useCallback(async (id: string) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await deleteDoc(doc(db, 'bookings', id));
+      } catch (err) {
+        console.error('Error deleting booking in Firestore:', err);
+      }
+    }
+
     setBookings(prev => {
       const updated = prev.filter(b => b.id !== id);
       localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
@@ -439,7 +623,16 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const updateReview = useCallback((id: string, updates: Partial<Review>) => {
+  const updateReview = useCallback(async (id: string, updates: Partial<Review>) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await updateDoc(doc(db, 'reviews', id), updates);
+      } catch (err) {
+        console.error('Error updating review in Firestore:', err);
+      }
+    }
+
     setReviews(prev => {
       const updated = prev.map(r => r.id === id ? { ...r, ...updates } : r);
       localStorage.setItem('stay_ease_reviews', JSON.stringify(updated));
@@ -447,7 +640,16 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   }, []);
 
-  const deleteReview = useCallback((id: string) => {
+  const deleteReview = useCallback(async (id: string) => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        await deleteDoc(doc(db, 'reviews', id));
+      } catch (err) {
+        console.error('Error deleting review in Firestore:', err);
+      }
+    }
+
     setReviews(prev => {
       const updated = prev.filter(r => r.id !== id);
       localStorage.setItem('stay_ease_reviews', JSON.stringify(updated));

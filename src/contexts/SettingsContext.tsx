@@ -1,4 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  doc, 
+  getDoc, 
+  setDoc,
+  onSnapshot 
+} from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { toast } from 'sonner';
 
 interface SiteSettings {
   siteName: string;
@@ -289,7 +297,34 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.title = settings.seo.title || settings.siteName;
   }, [settings]);
 
-  const updateSettings = React.useCallback((newSettings: Partial<SiteSettings>) => {
+  useEffect(() => {
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      const settingsRef = doc(db, 'site_settings', 'global');
+      const unsubscribe = onSnapshot(settingsRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setSettings(prev => ({
+            ...prev,
+            ...data,
+            homepage: { ...prev.homepage, ...(data.homepage || {}) },
+            footer: { ...prev.footer, ...(data.footer || {}) },
+            sections: { ...prev.sections, ...(data.sections || {}) },
+            seo: { ...prev.seo, ...(data.seo || {}) },
+            testimonials: data.testimonials || prev.testimonials,
+            areas: data.areas || prev.areas,
+            cityGuide: data.cityGuide || prev.cityGuide,
+            joinSection: data.joinSection || prev.joinSection,
+          }));
+        }
+      }, (error) => {
+        console.error("Error fetching settings from Firestore:", error);
+      });
+      return () => unsubscribe();
+    }
+  }, []);
+
+  const updateSettings = React.useCallback(async (newSettings: Partial<SiteSettings>) => {
     setSettings(prev => ({
       ...prev,
       ...newSettings,
@@ -298,10 +333,32 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sections: newSettings.sections ? { ...prev.sections, ...newSettings.sections } : prev.sections,
       seo: newSettings.seo ? { ...prev.seo, ...newSettings.seo } : prev.seo
     }));
+
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        const settingsRef = doc(db, 'site_settings', 'global');
+        await setDoc(settingsRef, newSettings, { merge: true });
+      } catch (e) {
+        console.error("Error saving settings to Firestore:", e);
+        toast.warning("Offline mode: Settings saved locally");
+      }
+    }
   }, []);
 
-  const resetSettings = React.useCallback(() => {
+  const resetSettings = React.useCallback(async () => {
     setSettings(DEFAULT_SETTINGS);
+
+    const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
+    if (!isDemoMode) {
+      try {
+        const settingsRef = doc(db, 'site_settings', 'global');
+        await setDoc(settingsRef, DEFAULT_SETTINGS);
+      } catch (e) {
+        console.error("Error resetting settings in Firestore:", e);
+        toast.warning("Offline mode: Settings reset locally");
+      }
+    }
   }, []);
 
   const value = React.useMemo(() => ({ 
