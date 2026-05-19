@@ -12,6 +12,7 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{email?: string, password?: string}>({});
   const [isLoading, setIsLoading] = useState(false);
   const { login, loginAsDemo } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +30,17 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    const errors: {email?: string, password?: string} = {};
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      errors.email = "Invalid email format";
+    }
+    if (password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
     setIsLoading(true);
     try {
       const response = await fetch('/api/auth/login', {
@@ -85,7 +97,7 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <div className="rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">{error}</div>}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-neutral-400">Email Address</label>
+              <label className="text-sm font-medium text-neutral-400">Email Address <span className="text-red-400">*</span></label>
               <Input 
                 type="email" 
                 placeholder="name@example.com" 
@@ -94,9 +106,10 @@ export const LoginPage: React.FC = () => {
                 required
                 className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]"
               />
+              {validationErrors.email && <p className="text-xs text-red-500">{validationErrors.email}</p>}
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-neutral-400">Password</label>
+              <label className="text-sm font-medium text-neutral-400">Password <span className="text-red-400">*</span></label>
               <Input 
                 type="password" 
                 placeholder="••••••••" 
@@ -105,6 +118,7 @@ export const LoginPage: React.FC = () => {
                 required
                 className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]"
               />
+              {validationErrors.password && <p className="text-xs text-red-500">{validationErrors.password}</p>}
             </div>
             <Button className="w-full bg-[#fbbf24] text-black hover:bg-yellow-400 font-bold h-12" type="submit" disabled={isLoading}>
               {isLoading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Sign In'}
@@ -182,6 +196,7 @@ export const RegisterPage: React.FC = () => {
   const [step, setStep] = useState<Step>('role-selection');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<any>({});
 
   // Form State
   const [formData, setFormData] = useState({
@@ -209,15 +224,18 @@ export const RegisterPage: React.FC = () => {
 
   const nextStep = () => {
     if (step === 'basic-info') {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error("Passwords don't match");
-        return;
-      }
-      if (!formData.acceptTerms) {
-        toast.error("Please accept terms & conditions");
-        return;
-      }
+      const errors: any = {};
+      if (!formData.name) errors.name = "Full Name is required";
+      if (!formData.phone) errors.phone = "Phone Number is required";
+      if (!formData.email) errors.email = "Email Address is required";
+      if (!formData.password) errors.password = "Password is required";
+      else if (formData.password.length < 6) errors.password = "Password must be at least 6 characters";
+      if (formData.password !== formData.confirmPassword) errors.confirmPassword = "Passwords must match";
+      if (!formData.acceptTerms) errors.acceptTerms = "You must accept terms & conditions";
+      setValidationErrors(errors);
       
+      if (Object.keys(errors).length > 0) return;
+
       if (formData.role === UserRole.CUSTOMER) {
         handleFinalSubmit();
       } else {
@@ -336,7 +354,7 @@ export const RegisterPage: React.FC = () => {
                 <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); nextStep(); }}>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Full Name</label>
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Full Name <span className="text-red-500">*</span></label>
                         <Input 
                             placeholder="John Doe" 
                             className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
@@ -344,9 +362,10 @@ export const RegisterPage: React.FC = () => {
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
                             required
                         />
+                        {validationErrors.name && <p className="text-xs text-red-500">{validationErrors.name}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Phone Number</label>
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Phone Number <span className="text-red-500">*</span></label>
                         <Input 
                             placeholder="+39 333..." 
                             className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
@@ -354,10 +373,11 @@ export const RegisterPage: React.FC = () => {
                             onChange={(e) => setFormData({...formData, phone: e.target.value})}
                             required
                         />
+                        {validationErrors.phone && <p className="text-xs text-red-500">{validationErrors.phone}</p>}
                     </div>
                   </div>
                   <div className="space-y-2">
-                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Email Address</label>
+                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Email Address <span className="text-red-500">*</span></label>
                       <Input 
                         type="email"
                         placeholder="john@example.com" 
@@ -366,10 +386,11 @@ export const RegisterPage: React.FC = () => {
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         required
                       />
+                      {validationErrors.email && <p className="text-xs text-red-500">{validationErrors.email}</p>}
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Password</label>
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Password <span className="text-red-500">*</span></label>
                         <Input 
                             type="password"
                             placeholder="••••••••" 
@@ -378,9 +399,10 @@ export const RegisterPage: React.FC = () => {
                             onChange={(e) => setFormData({...formData, password: e.target.value})}
                             required
                         />
+                        {validationErrors.password && <p className="text-xs text-red-500">{validationErrors.password}</p>}
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Confirm Password</label>
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Confirm Password <span className="text-red-500">*</span></label>
                         <Input 
                             type="password"
                             placeholder="••••••••" 
@@ -389,21 +411,25 @@ export const RegisterPage: React.FC = () => {
                             onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                             required
                         />
+                        {validationErrors.confirmPassword && <p className="text-xs text-red-500">{validationErrors.confirmPassword}</p>}
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 pt-4">
-                    <input 
-                        type="checkbox" 
-                        id="terms" 
-                        className="mt-1"
-                        checked={formData.acceptTerms}
-                        onChange={(e) => setFormData({...formData, acceptTerms: e.target.checked})}
-                        required
-                    />
-                    <label htmlFor="terms" className="text-sm text-neutral-400 leading-tight">
-                        I agree to the <span className="text-[#fbbf24] hover:underline cursor-pointer">Terms of Service</span> and <span className="text-[#fbbf24] hover:underline cursor-pointer">Privacy Policy</span>
-                    </label>
+                  <div className="pt-4">
+                    <div className="flex items-start gap-3">
+                      <input 
+                          type="checkbox" 
+                          id="terms" 
+                          className="mt-1"
+                          checked={formData.acceptTerms}
+                          onChange={(e) => setFormData({...formData, acceptTerms: e.target.checked})}
+                          required
+                      />
+                      <label htmlFor="terms" className="text-sm text-neutral-400 leading-tight">
+                          I agree to the <span className="text-[#fbbf24] hover:underline cursor-pointer">Terms of Service</span> and <span className="text-[#fbbf24] hover:underline cursor-pointer">Privacy Policy</span> <span className="text-red-500">*</span>
+                      </label>
+                    </div>
+                    {validationErrors.acceptTerms && <p className="text-xs text-red-500 mt-1">{validationErrors.acceptTerms}</p>}
                   </div>
 
                   <Button className="w-full bg-[#fbbf24] text-black hover:bg-yellow-400 font-bold h-12 mt-4" type="submit">

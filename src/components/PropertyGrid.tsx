@@ -57,9 +57,7 @@ export const PropertyGrid: React.FC = () => {
                   className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
                 />
-                <button className="absolute right-3 top-3 rounded-full bg-white/80 p-2 text-neutral-600 backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500">
-                  <Heart className="h-4 w-4" />
-                </button>
+                <button className="absolute right-3 top-3 rounded-full bg-white/80 p-2 text-neutral-600 backdrop-blur-sm transition-colors hover:bg-white hover:text-red-500" aria-label="Add to wishlist"><Heart className="h-4 w-4" /></button>
               </div>
               <div className="p-4">
                 <div className="mb-1 flex items-center gap-2">

@@ -71,6 +71,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [isFetchingGMB, setIsFetchingGMB] = useState(false);
   const [fetchedGMBData, setFetchedGMBData] = useState<any>(null);
+  const [validationErrors, setValidationErrors] = useState<any>({});
   const [formData, setFormData] = useState<any>({
     name: '',
     type: 'Holiday House',
@@ -107,9 +108,23 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
   }, [initialData]);
 
   const handleNext = () => {
+    const errors: any = {};
     if (currentStep === 1) {
-      if (!formData.name || !formData.address) {
-        toast.error('Please fill in name and address');
+      if (!formData.name) errors.name = "Property Name is required";
+      if (!formData.address) errors.address = "Address is required";
+      setValidationErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        toast.error('Please fix the errors before proceeding');
+        return;
+      }
+    }
+    if (currentStep === 2) {
+      if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+        errors.price = "Price must be a number > 0";
+      }
+      setValidationErrors(errors);
+      if (Object.keys(errors).length > 0) {
+        toast.error('Please fix the errors before proceeding');
         return;
       }
     }
@@ -191,9 +206,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               <p className="text-xs text-neutral-500 font-medium">Step {currentStep} of {steps.length}: {steps[currentStep-1].title}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
-            <X className="h-6 w-6 text-neutral-400" />
-          </button>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors" aria-label="Close"><X className="h-6 w-6 text-neutral-400" /></button>
         </div>
 
         {/* Progress Bar */}

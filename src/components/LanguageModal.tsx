@@ -44,9 +44,7 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({ isOpen, onClose })
               <button
                 onClick={onClose}
                 className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
-              >
-                <X className="h-6 w-6" />
-              </button>
+               aria-label="Close"><X className="h-6 w-6" /></button>
             </div>
 
             {/* Content */}

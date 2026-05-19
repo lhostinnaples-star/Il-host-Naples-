@@ -151,14 +151,14 @@ export const ExperienceDetailsPage: React.FC = () => {
       />
 
       <nav className="mx-auto max-w-7xl px-6 py-4">
-        <ol className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-          <li><Link to="/" className="hover:text-black transition-colors">Home</Link></li>
-          <li><ChevronRight className="h-3 w-3" /></li>
-          <li><Link to="/services" className="hover:text-black transition-colors">Experiences</Link></li>
-          <li><ChevronRight className="h-3 w-3" /></li>
-          <li><Link to={`/services?category=${categorySlug}`} className="hover:text-black transition-colors">{service.serviceType || 'Service'}</Link></li>
-          <li><ChevronRight className="h-3 w-3 text-neutral-300" /></li>
-          <li className="text-black truncate max-w-[150px] md:max-w-none">{service.name}</li>
+        <ol className="flex items-center space-x-2 text-sm text-[#94a3b8]">
+          <li><Link to="/" className="hover:text-[#F5A623] transition-colors">Home</Link></li>
+          <li>/</li>
+          <li><Link to="/services" className="hover:text-[#F5A623] transition-colors">Experiences</Link></li>
+          <li>/</li>
+          <li><Link to={`/services?category=${categorySlug}`} className="hover:text-[#F5A623] transition-colors">{service.serviceType || 'Service'}</Link></li>
+          <li>/</li>
+          <li className="text-white truncate max-w-[150px] md:max-w-none">{service.name}</li>
         </ol>
       </nav>
 

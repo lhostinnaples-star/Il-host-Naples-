@@ -406,7 +406,7 @@ export const LandingPage: React.FC = () => {
                     >
                       <div className="flex items-center justify-between mb-4 lg:hidden">
                         <h3 className="font-bold text-lg">Select Dates</h3>
-                        <button onClick={(e) => { e.stopPropagation(); setIsDatePickerOpen(false); }} className="p-2"><X className="h-6 w-6" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); setIsDatePickerOpen(false); }} className="p-2" aria-label="Close"><X className="h-6 w-6" /></button>
                       </div>
                       <DateRange
                         editableDateInputs={true}
@@ -597,7 +597,7 @@ export const LandingPage: React.FC = () => {
                           >
                             <div className="flex items-center justify-between mb-6 lg:hidden">
                               <h3 className="font-bold text-lg">Guest Selection</h3>
-                              <button onClick={(e) => { e.stopPropagation(); setShowOccupancyModal(false); }} className="p-2"><X className="h-6 w-6" /></button>
+                              <button onClick={(e) => { e.stopPropagation(); setShowOccupancyModal(false); }} className="p-2" aria-label="Close"><X className="h-6 w-6" /></button>
                             </div>
                             <div className="space-y-6">
                               <CounterRow 

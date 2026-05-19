@@ -636,8 +636,8 @@ export const ServiceProviderDashboard: React.FC = () => {
                           <div className="flex items-end justify-between mt-2">
                              <p className="text-[10px] text-[#64748b] uppercase tracking-widest font-black truncate max-w-[150px]">{service.category}</p>
                              <div className="flex items-center gap-1">
-                               <Button variant="ghost" size="icon" onClick={() => handleEditService(service)} className="h-8 w-8 text-[#94a3b8] hover:text-white hover:bg-white/5"><Edit2 className="h-3.5 w-3.5" /></Button>
-                               <Button variant="ghost" size="icon" onClick={() => setServiceToDelete(service.id)} className="h-8 w-8 text-[#94a3b8] hover:text-red-500 hover:bg-red-500/10"><Trash2 className="h-3.5 w-3.5" /></Button>
+                               <Button variant="ghost" size="icon" onClick={() => handleEditService(service)} className="h-8 w-8 text-[#94a3b8] hover:text-white hover:bg-white/5" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></Button>
+                               <Button variant="ghost" size="icon" onClick={() => setServiceToDelete(service.id)} className="h-8 w-8 text-[#94a3b8] hover:text-red-500 hover:bg-red-500/10" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
                              </div>
                           </div>
                         </div>

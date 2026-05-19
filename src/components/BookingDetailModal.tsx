@@ -8,7 +8,7 @@ export const BookingDetailModal: React.FC<{ booking: any, onClose: () => void }>
             <Card className="max-w-lg w-full p-6 bg-[#1e293b] border border-white/10">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-white">Booking Details #{booking.reference}</h2>
-                    <button onClick={onClose} className="text-white hover:text-neutral-400"><X /></button>
+                    <button onClick={onClose} className="text-white hover:text-neutral-400" aria-label="Close"><X /></button>
                 </div>
                 <div className="space-y-4 text-white">
                     <p><strong>Property:</strong> {booking.itemName}</p>

@@ -133,9 +133,7 @@ const AvailabilityCalendar: React.FC<{ property: any, onClose: () => void, onSav
             <h3 className="text-xl font-bold text-white">Manage Availability</h3>
             <p className="text-xs text-[#94a3b8] mt-1">{property?.name}</p>
           </div>
-          <button onClick={onClose} className="text-[#94a3b8] hover:text-white">
-            <X className="h-5 w-5" />
-          </button>
+          <button onClick={onClose} className="text-[#94a3b8] hover:text-white" aria-label="Close"><X className="h-5 w-5" /></button>
         </div>
 
         <div className="bg-[#0f172a] rounded-xl p-4 border border-[#334155]">
@@ -468,7 +466,7 @@ export const OwnerDashboard: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-6 items-start">
                 <div className="h-24 w-24 rounded-3xl overflow-hidden bg-black/20 border border-white/5 shrink-0">
                   {profileForm.photoUrl ? (
-                    <img src={profileForm.photoUrl} className="h-full w-full object-cover" />
+                    <img src={profileForm.photoUrl} alt="Profile Photo" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center">
                       <ImageIcon className="h-8 w-8 text-[#334155]" />
@@ -767,7 +765,7 @@ export const OwnerDashboard: React.FC = () => {
               <div className="flex flex-col md:flex-row justify-between gap-6">
                 <div className="flex gap-4">
                   <div className="h-20 w-24 rounded-xl overflow-hidden bg-[#0f172a]">
-                    <img src={booking.itemImage} className="h-full w-full object-cover" />
+                    <img src={booking.itemImage} alt="Booking Item" className="h-full w-full object-cover" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -945,7 +943,7 @@ export const OwnerDashboard: React.FC = () => {
             {myHotels.map(hotel => (
               <Card key={hotel.id} className="p-0 border-[#334155] bg-[#1e293b] overflow-hidden group hover:border-[#F5A623]/30 transition-all">
                 <div className="h-40 relative">
-                  <img src={hotel.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
                     <span className={cn(
                       "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md shadow-sm border",
@@ -1336,9 +1334,7 @@ export const OwnerDashboard: React.FC = () => {
                   <button 
                     onClick={closeSupplierModal}
                     className="p-2 hover:bg-[#0f172a] rounded-full transition-colors text-[#94a3b8] hover:text-white"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+                   aria-label="Close"><X className="h-5 w-5" /></button>
                 </div>
                 
                 <div className="space-y-4">

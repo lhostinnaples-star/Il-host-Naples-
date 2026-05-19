@@ -117,7 +117,7 @@ export const CustomerDashboard: React.FC = () => {
             if (!item) return null;
             return (
               <Card key={id} className="p-0 bg-[#1e293b] border-[#334155] flex flex-col gap-0 overflow-hidden relative group">
-                 <img src={item.imageUrl} className="h-48 w-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                 <img src={item.imageUrl} alt={item.name} className="h-48 w-full object-cover group-hover:scale-105 transition-transform duration-700" />
                  <div className="p-6 space-y-4">
                     <h3 className="font-bold text-white text-lg group-hover:text-[#F5A623] transition-colors">{item.name}</h3>
                     <p className="text-[#F5A623] font-black text-xl">{formatPrice(item.price)}</p>
@@ -141,7 +141,7 @@ export const CustomerDashboard: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-6 items-start">
               <div className="h-24 w-24 rounded-3xl overflow-hidden bg-[#0f172a] border border-[#334155] shrink-0">
                 {profileForm.photoUrl ? (
-                  <img src={profileForm.photoUrl} className="h-full w-full object-cover" />
+                  <img src={profileForm.photoUrl} alt="Profile" className="h-full w-full object-cover" />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <User className="h-8 w-8 text-[#334155]" />

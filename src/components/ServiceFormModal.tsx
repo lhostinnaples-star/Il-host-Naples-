@@ -127,9 +127,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
               <p className="text-xs text-neutral-500 font-medium">Step {currentStep} of 3</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
-            <X className="h-6 w-6 text-neutral-400" />
-          </button>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors" aria-label="Close"><X className="h-6 w-6 text-neutral-400" /></button>
         </div>
 
         {/* Content */}

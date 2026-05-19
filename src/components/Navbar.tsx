@@ -63,7 +63,7 @@ export const Navbar: React.FC = () => {
 
           <div className="flex items-center gap-1.5 md:gap-3">
             <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+               aria-label="Open menu"onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden h-9 w-9 flex items-center justify-center rounded-xl bg-white/10 text-[#fbbf24] transition-all active:scale-95"
             >
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -124,7 +124,7 @@ export const Navbar: React.FC = () => {
                 <div className="flex items-center justify-between p-6 border-b border-white/10">
                   <span className="text-xl font-serif font-bold text-[#fbbf24]">Menu</span>
                   <button 
-                    onClick={() => setIsMenuOpen(false)}
+                     aria-label="Open menu"onClick={() => setIsMenuOpen(false)}
                     className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 text-white"
                   >
                     <X className="h-6 w-6" />

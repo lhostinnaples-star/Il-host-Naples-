@@ -236,10 +236,18 @@ export const HotelDetailsPage: React.FC = () => {
   };
 
   const [bookingRef, setBookingRef] = useState('');
+  const [requestValidationErrors, setRequestValidationErrors] = useState<any>({});
 
   const handleSendRequest = async () => {
-    if (!requestDetails.name || !requestDetails.email || !requestDetails.phone) {
-      toast.error('Please fill in all required fields');
+    const errors: any = {};
+    if (!requestDetails.name) errors.name = "Full Name is required";
+    if (!requestDetails.email) errors.email = "Email is required";
+    if (!requestDetails.phone) errors.phone = "Phone is required";
+    
+    setRequestValidationErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      toast.error('Please fix the errors before proceeding');
       return;
     }
 
@@ -360,14 +368,14 @@ export const HotelDetailsPage: React.FC = () => {
 
       {/* Breadcrumbs */}
       <nav className="mx-auto max-w-7xl px-6 py-4">
-        <ol className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
-          <li><Link to="/" className="hover:text-black transition-colors">Home</Link></li>
-          <li><ChevronRight className="h-3 w-3" /></li>
-          <li><Link to="/search" className="hover:text-black transition-colors">Naples</Link></li>
-          <li><ChevronRight className="h-3 w-3" /></li>
-          <li><Link to={`/naples/${areaSlug}`} className="hover:text-black transition-colors">{hotel.area || 'Naples'}</Link></li>
-          <li><ChevronRight className="h-3 w-3 text-neutral-300" /></li>
-          <li className="text-black truncate max-w-[150px] md:max-w-none">{hotel.name}</li>
+        <ol className="flex items-center space-x-2 text-sm text-[#94a3b8]">
+          <li><Link to="/" className="hover:text-[#F5A623] transition-colors">Home</Link></li>
+          <li>/</li>
+          <li><Link to="/search" className="hover:text-[#F5A623] transition-colors">Naples</Link></li>
+          <li>/</li>
+          <li><Link to={`/naples/${areaSlug}`} className="hover:text-[#F5A623] transition-colors">{hotel.area || 'Naples'}</Link></li>
+          <li>/</li>
+          <li className="text-white truncate max-w-[150px] md:max-w-none">{hotel.name}</li>
         </ol>
       </nav>
 
@@ -1130,16 +1138,17 @@ export const HotelDetailsPage: React.FC = () => {
                 {/* Left: Form */}
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Full Name</label>
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Full Name <span className="text-red-500">*</span></label>
                     <Input 
                       value={requestDetails.name} 
                       onChange={(e) => setRequestDetails({...requestDetails, name: e.target.value})}
                       placeholder="Your Name"
                       className="h-12 border-neutral-200 rounded-xl"
                     />
+                    {requestValidationErrors.name && <p className="text-xs text-red-500">{requestValidationErrors.name}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Email Address</label>
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Email Address <span className="text-red-500">*</span></label>
                     <Input 
                       type="email"
                       value={requestDetails.email} 
@@ -1147,15 +1156,17 @@ export const HotelDetailsPage: React.FC = () => {
                       placeholder="email@example.com"
                       className="h-12 border-neutral-200 rounded-xl"
                     />
+                    {requestValidationErrors.email && <p className="text-xs text-red-500">{requestValidationErrors.email}</p>}
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Phone Number</label>
+                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Phone Number <span className="text-red-500">*</span></label>
                     <Input 
                       value={requestDetails.phone} 
                       onChange={(e) => setRequestDetails({...requestDetails, phone: e.target.value})}
                       placeholder="+39 ..."
                       className="h-12 border-neutral-200 rounded-xl"
                     />
+                    {requestValidationErrors.phone && <p className="text-xs text-red-500">{requestValidationErrors.phone}</p>}
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Special Requests</label>

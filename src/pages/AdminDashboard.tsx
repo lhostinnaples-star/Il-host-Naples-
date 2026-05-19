@@ -298,7 +298,7 @@ export const AdminDashboard: React.FC = () => {
               <Card key={h.id} className="p-4 border-[#334155] bg-[#1e293b] space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-[#F5A623]/10 flex items-center justify-center text-[#F5A623] font-bold uppercase overflow-hidden">
-                    {h.imageUrl ? <img src={h.imageUrl} className="w-full h-full object-cover" /> : h.name[0]}
+                    {h.imageUrl ? <img src={h.imageUrl} alt={h.name} className="w-full h-full object-cover" /> : h.name[0]}
                   </div>
                   <div>
                     <p className="text-sm font-bold text-white leading-none">{h.name}</p>
@@ -482,7 +482,7 @@ export const AdminDashboard: React.FC = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-[#0f172a] border border-[#334155] flex items-center justify-center font-bold text-[#F5A623] overflow-hidden">
-                        {u.roleDetails?.photoUrl ? <img src={u.roleDetails.photoUrl} className="h-full w-full object-cover" /> : u.name[0]}
+                        {u.roleDetails?.photoUrl ? <img src={u.roleDetails.photoUrl} alt={u.name} className="h-full w-full object-cover" /> : u.name[0]}
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">{u.name}</p>
@@ -526,12 +526,13 @@ export const AdminDashboard: React.FC = () => {
                           Approve
                         </Button>
                       )}
-                      <Button variant="ghost" size="icon" onClick={() => handleEditUser(u)} className="h-8 w-8 hover:text-white hover:bg-[#1e293b]"><Edit2 className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleEditUser(u)} className="h-8 w-8 hover:text-white hover:bg-[#1e293b]" aria-label="Edit"><Edit2 className="h-4 w-4" /></Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={() => u.status === UserStatus.PENDING_APPROVAL ? handleRejectUser(u.id) : null}
                         className="h-8 w-8 hover:text-red-500 hover:bg-red-500/10"
+                        aria-label="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -780,7 +781,7 @@ export const AdminDashboard: React.FC = () => {
                 {r.status === 'pending' && (
                   <Button size="sm" variant="outline" onClick={() => updateReview(r.id, { status: 'rejected' })} className="flex-1 h-8 text-[10px] font-black uppercase border-red-500/30 text-red-500">Reject</Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => deleteReview(r.id)} className="flex-none h-8 w-8 p-0 border-[#334155] text-[#94a3b8] hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
+                <Button size="sm" variant="outline" onClick={() => deleteReview(r.id)} className="flex-none h-8 w-8 p-0 border-[#334155] text-[#94a3b8] hover:text-red-500" aria-label="Delete"><Trash2 className="h-4 w-4" /></Button>
              </div>
           </Card>
         ))}
@@ -939,7 +940,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {settings.cityGuide.map(guide => (
             <div key={guide.id} className="flex flex-col bg-[#0f172a] rounded-xl overflow-hidden border border-[#334155]">
-              <img src={guide.imageUrl} className="h-40 w-full object-cover" />
+              <img src={guide.imageUrl} alt={guide.title} className="h-40 w-full object-cover" />
               <div className="p-4 space-y-2 flex-1">
                 <h4 className="font-bold text-white text-sm">{guide.title}</h4>
                 <p className="text-xs text-[#94a3b8] line-clamp-2">{guide.description}</p>
@@ -1073,7 +1074,7 @@ export const AdminDashboard: React.FC = () => {
                 {settings.areas.map(area => (
                   <div key={area.id} className="flex items-center justify-between p-4 bg-[#0f172a] rounded-xl border border-[#334155]">
                     <div className="flex items-center gap-4">
-                      <img src={area.imageUrl} className="h-10 w-10 object-cover rounded-lg" />
+                      <img src={area.imageUrl} alt={area.name} className="h-10 w-10 object-cover rounded-lg" />
                       <div>
                         <p className="text-sm font-bold text-white">{area.name}</p>
                         <p className="text-xs text-[#94a3b8]">{area.tagline}</p>
@@ -1324,7 +1325,7 @@ export const AdminDashboard: React.FC = () => {
                       <tr key={h.id} className="hover:bg-[#0f172a]/50 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <img src={h.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-[#0f172a] border border-[#334155]" alt="" />
+                            <img src={h.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-[#0f172a] border border-[#334155]" alt={h.name} />
                             <div>
                               <p className="text-sm font-bold text-white leading-tight">{h.name}</p>
                               <p className="text-[10px] text-[#64748b] uppercase font-black tracking-tighter">{h.city}</p>
@@ -1375,6 +1376,7 @@ export const AdminDashboard: React.FC = () => {
                               size="icon" 
                               onClick={() => handleDeleteProperty(h.id)}
                               className="h-8 w-8 text-[#64748b] hover:text-red-500"
+                              aria-label="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1479,7 +1481,7 @@ export const AdminDashboard: React.FC = () => {
                       <tr key={s.id} className="hover:bg-[#0f172a]/50 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <img src={s.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-[#0f172a] border border-[#334155]" alt="" />
+                            <img src={s.imageUrl} className="h-10 w-10 rounded-lg object-cover bg-[#0f172a] border border-[#334155]" alt={s.name} />
                             <div>
                               <p className="text-sm font-bold text-white">{s.name}</p>
                               <p className="text-[10px] text-[#64748b] uppercase font-black tracking-tighter">{s.category}</p>
@@ -1521,6 +1523,7 @@ export const AdminDashboard: React.FC = () => {
                               size="icon" 
                               onClick={() => handleDeleteServiceItem(s.id)}
                               className="h-8 w-8 text-[#64748b] hover:text-red-500"
+                              aria-label="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -1670,6 +1673,7 @@ export const AdminDashboard: React.FC = () => {
                               size="icon" 
                               onClick={() => handleDeleteServiceItem(s.id)}
                               className="h-8 w-8 text-[#64748b] hover:text-red-500"
+                              aria-label="Delete"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

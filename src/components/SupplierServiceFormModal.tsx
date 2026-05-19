@@ -114,9 +114,7 @@ export const SupplierServiceFormModal: React.FC<SupplierServiceFormModalProps> =
               <p className="text-xs text-neutral-500 font-medium">B2B Portal - Step {currentStep} of 3</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
-            <X className="h-6 w-6 text-neutral-400" />
-          </button>
+          <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors" aria-label="Close"><X className="h-6 w-6 text-neutral-400" /></button>
         </div>
 
         {/* Content */}

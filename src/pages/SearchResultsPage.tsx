@@ -224,6 +224,22 @@ export const SearchResultsPage: React.FC = () => {
         title={`${typeLabel} in ${areaLabel} Naples`}
         canonical={canonical}
       />
+      {/* Breadcrumbs */}
+      <nav className="mx-auto max-w-7xl px-6 pt-4">
+        <ol className="flex items-center space-x-2 text-sm text-[#94a3b8]">
+          <li><Link to="/" className="hover:text-[#F5A623] transition-colors">Home</Link></li>
+          <li>/</li>
+          {areaLabel && areaLabel !== 'Naples' ? (
+            <>
+              <li><Link to="/search" className="hover:text-[#F5A623] transition-colors">Search</Link></li>
+              <li>/</li>
+              <li className="text-white">{areaLabel}</li>
+            </>
+          ) : (
+            <li className="text-white">Search</li>
+          )}
+        </ol>
+      </nav>
       <section className="mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>

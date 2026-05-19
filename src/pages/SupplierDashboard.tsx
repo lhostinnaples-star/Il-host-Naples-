@@ -591,8 +591,8 @@ export const SupplierDashboard: React.FC = () => {
                    <div className="text-right">
                       <p className="font-black text-[#F5A623]">{formatPrice(service.price)}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#94a3b8] hover:text-white"><Edit2 className="h-3.5 w-3.5" /></Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#94a3b8] hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#94a3b8] hover:text-white" aria-label="Edit"><Edit2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-[#94a3b8] hover:text-red-500" aria-label="Delete"><Trash2 className="h-3.5 w-3.5" /></Button>
                       </div>
                    </div>
                 </div>

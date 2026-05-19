@@ -56,9 +56,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               <h2 className="text-2xl font-bold text-[#1e293b]">Share your experience</h2>
               <p className="text-neutral-500 font-medium italic">"{item?.itemName}"</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
-              <X className="h-6 w-6 text-neutral-400" />
-            </button>
+            <button onClick={onClose} className="p-2 hover:bg-neutral-100 rounded-full transition-colors" aria-label="Close"><X className="h-6 w-6 text-neutral-400" /></button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
