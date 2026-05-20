@@ -56,7 +56,8 @@ jobs:
           npm install -g firebase-tools
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
           firebase deploy --only functions \
-          --project ilhost-naples
+          --project ilhost-naples \
+          --force
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
           SMTP_USER: ${{ secrets.SMTP_USER }}
