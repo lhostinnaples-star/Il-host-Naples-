@@ -21,8 +21,8 @@ const transporter = nodemailer.createTransport({
   port: 465,
   secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
+    user: process.env.SMTP_USER || '',
+    pass: process.env.SMTP_PASS || ''
   }
 });
 
@@ -30,6 +30,10 @@ const transporter = nodemailer.createTransport({
 export const onUserCreated = functions.firestore
   .document('users/{uid}')
   .onCreate(async (snap) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return null;
+    }
     const user = snap.data();
     
     if (user.role === 'customer') {
@@ -62,6 +66,10 @@ export const onUserCreated = functions.firestore
 export const onUserUpdated = functions.firestore
   .document('users/{uid}')
   .onUpdate(async (change) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return null;
+    }
     const before = change.before.data();
     const after = change.after.data();
     
@@ -89,6 +97,10 @@ export const onUserUpdated = functions.firestore
 export const onBookingCreated = functions.firestore
   .document('bookings/{bookingId}')
   .onCreate(async (snap) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return null;
+    }
     const booking = snap.data();
     
     if (booking.guestEmail) {
@@ -116,6 +128,10 @@ export const onBookingCreated = functions.firestore
 export const onBookingUpdated = functions.firestore
   .document('bookings/{bookingId}')
   .onUpdate(async (change) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return null;
+    }
     const before = change.before.data();
     const after = change.after.data();
     
@@ -143,6 +159,10 @@ export const onBookingUpdated = functions.firestore
 export const onServiceRequest = functions.firestore
   .document('global_requests/{requestId}')
   .onCreate(async (snap) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return null;
+    }
     const request = snap.data();
     
     // Get all suppliers
