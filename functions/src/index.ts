@@ -32,7 +32,7 @@ export const onUserCreated = functions.firestore
   .onCreate(async (snap) => {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error('SMTP credentials not configured');
-      return null;
+      return;
     }
     const user = snap.data();
     
@@ -68,7 +68,7 @@ export const onUserUpdated = functions.firestore
   .onUpdate(async (change) => {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error('SMTP credentials not configured');
-      return null;
+      return;
     }
     const before = change.before.data();
     const after = change.after.data();
@@ -99,7 +99,7 @@ export const onBookingCreated = functions.firestore
   .onCreate(async (snap) => {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error('SMTP credentials not configured');
-      return null;
+      return;
     }
     const booking = snap.data();
     
@@ -130,7 +130,7 @@ export const onBookingUpdated = functions.firestore
   .onUpdate(async (change) => {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error('SMTP credentials not configured');
-      return null;
+      return;
     }
     const before = change.before.data();
     const after = change.after.data();
@@ -161,7 +161,7 @@ export const onServiceRequest = functions.firestore
   .onCreate(async (snap) => {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error('SMTP credentials not configured');
-      return null;
+      return;
     }
     const request = snap.data();
     
