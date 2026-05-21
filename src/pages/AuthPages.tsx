@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, UserRole, UserStatus } from '../contexts/AuthContext';
 import { Button, Input, Card } from '../components/UI';
 import { motion, AnimatePresence } from 'motion/react';
-import { Hotel, User, Home, Wrench, Car, ArrowRight, ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle, Shield, Settings } from 'lucide-react';
+import { Hotel, User, Home, Wrench, Car, ArrowRight, ArrowLeft, CheckCircle2, Mail, Loader2, AlertCircle, Shield, Settings, Eye, EyeOff } from 'lucide-react';
 import { ImageUpload } from '../components/ImageUpload';
 import { toast } from 'sonner';
 import { SEOHead } from '../components/SEOHead';
@@ -14,6 +14,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<{email?: string, password?: string}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const { login, signIn, loginAsDemo } = useAuth();
   const navigate = useNavigate();
 
@@ -86,20 +87,29 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]"
+                className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623]"
               />
               {validationErrors.email && <p className="text-xs text-red-500">{validationErrors.email}</p>}
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-neutral-400">Password <span className="text-red-400">*</span></label>
-              <Input 
-                type="password" 
-                placeholder="••••••••" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]"
-              />
+              <div className="relative">
+                <Input 
+                  type={showLoginPassword ? 'text' : 'password'} 
+                  placeholder="••••••••" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-white"
+                >
+                  {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               {validationErrors.password && <p className="text-xs text-red-500">{validationErrors.password}</p>}
             </div>
             <Button className="w-full bg-[#fbbf24] text-black hover:bg-yellow-400 font-bold h-12" type="submit" disabled={isLoading}>
@@ -179,6 +189,8 @@ export const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<any>({});
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -324,7 +336,7 @@ export const RegisterPage: React.FC = () => {
                         <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Full Name <span className="text-red-500">*</span></label>
                         <Input 
                             placeholder="John Doe" 
-                            className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
+                            className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623]" 
                             value={formData.name}
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
                             required
@@ -335,7 +347,7 @@ export const RegisterPage: React.FC = () => {
                         <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Phone Number <span className="text-red-500">*</span></label>
                         <Input 
                             placeholder="+39 333..." 
-                            className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
+                            className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623]" 
                             value={formData.phone}
                             onChange={(e) => setFormData({...formData, phone: e.target.value})}
                             required
@@ -348,7 +360,7 @@ export const RegisterPage: React.FC = () => {
                       <Input 
                         type="email"
                         placeholder="john@example.com" 
-                        className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
+                        className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623]" 
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                         required
@@ -358,26 +370,44 @@ export const RegisterPage: React.FC = () => {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                         <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Password <span className="text-red-500">*</span></label>
-                        <Input 
-                            type="password"
-                            placeholder="••••••••" 
-                            className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
-                            value={formData.password}
-                            onChange={(e) => setFormData({...formData, password: e.target.value})}
-                            required
-                        />
+                        <div className="relative">
+                          <Input 
+                              type={showRegisterPassword ? 'text' : 'password'}
+                              placeholder="••••••••" 
+                              className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] pr-10" 
+                              value={formData.password}
+                              onChange={(e) => setFormData({...formData, password: e.target.value})}
+                              required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-white"
+                          >
+                            {showRegisterPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                         {validationErrors.password && <p className="text-xs text-red-500">{validationErrors.password}</p>}
                     </div>
                     <div className="space-y-2">
                         <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Confirm Password <span className="text-red-500">*</span></label>
-                        <Input 
-                            type="password"
-                            placeholder="••••••••" 
-                            className="bg-white/5 border-white/10 text-white placeholder:text-neutral-600 focus:border-[#fbbf24]" 
-                            value={formData.confirmPassword}
-                            onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                            required
-                        />
+                        <div className="relative">
+                          <Input 
+                              type={showConfirmPassword ? 'text' : 'password'}
+                              placeholder="••••••••" 
+                              className="bg-[#1e293b] border-[#334155] text-white placeholder:text-[#64748b] focus:border-[#F5A623] pr-10" 
+                              value={formData.confirmPassword}
+                              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                              required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748b] hover:text-white"
+                          >
+                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
                         {validationErrors.confirmPassword && <p className="text-xs text-red-500">{validationErrors.confirmPassword}</p>}
                     </div>
                   </div>
@@ -430,7 +460,7 @@ export const RegisterPage: React.FC = () => {
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Property Type</label>
                                     <select 
-                                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[#fbbf24]"
+                                        className="w-full rounded-xl border border-[#334155] bg-[#1e293b] px-4 py-3 text-sm text-white outline-none focus:border-[#F5A623]"
                                         onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, propertyType: e.target.value}})}
                                     >
                                         <option value="BnB">BnB (Bed & Breakfast)</option>
@@ -441,7 +471,7 @@ export const RegisterPage: React.FC = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">CIR Code</label>
                                     <Input 
                                         placeholder="12345678" 
-                                        className="bg-white/5 border-white/10 text-white focus:border-[#fbbf24]" 
+                                        className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                         onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, cirCode: e.target.value}})}
                                     />
                                 </div>
@@ -450,14 +480,14 @@ export const RegisterPage: React.FC = () => {
                                 <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Property Address (Naples)</label>
                                 <Input 
                                     placeholder="Via Toledo, 12, Napoli" 
-                                    className="bg-white/5 border-white/10 text-white focus:border-[#fbbf24]" 
+                                    className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                     onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, address: e.target.value}})}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Short Bio / Description</label>
                                 <textarea 
-                                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[#fbbf24]"
+                                    className="w-full rounded-xl border border-[#334155] bg-[#1e293b] px-4 py-3 text-sm text-white outline-none focus:border-[#F5A623]"
                                     rows={3}
                                     placeholder="Tell us about yourself and your property"
                                     onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, bio: e.target.value}})}
@@ -489,7 +519,7 @@ export const RegisterPage: React.FC = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Company Name</label>
                                     <Input 
                                         placeholder="Supplier SpA" 
-                                        className="bg-white/5 border-white/10 text-white focus:border-[#fbbf24]" 
+                                        className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                         onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, companyName: e.target.value}})}
                                     />
                                 </div>
@@ -497,7 +527,7 @@ export const RegisterPage: React.FC = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">VAT Number (P. IVA)</label>
                                     <Input 
                                         placeholder="IT12345678901" 
-                                        className="bg-white/5 border-white/10 text-white focus:border-[#fbbf24]" 
+                                        className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                         onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, vatNumber: e.target.value}})}
                                     />
                                 </div>
@@ -538,14 +568,14 @@ export const RegisterPage: React.FC = () => {
                                     <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Business / Personal Name</label>
                                     <Input 
                                         placeholder="Naples Tours" 
-                                        className="bg-white/5 border-white/10 text-white focus:border-[#fbbf24]" 
+                                        className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                         onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, businessName: e.target.value}})}
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Service Type</label>
                                     <select 
-                                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm outline-none focus:border-[#fbbf24]"
+                                        className="w-full rounded-xl border border-[#334155] bg-[#1e293b] px-4 py-3 text-sm text-white outline-none focus:border-[#F5A623]"
                                         onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, serviceType: e.target.value}})}
                                     >
                                         <option value="Car Rental">Car Rental</option>
@@ -562,7 +592,7 @@ export const RegisterPage: React.FC = () => {
                                 <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Base Pricing (Starting from)</label>
                                 <Input 
                                     placeholder="€50.00" 
-                                    className="bg-white/5 border-white/10 text-white focus:border-[#fbbf24]" 
+                                    className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                     onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, basePricing: e.target.value}})}
                                 />
                             </div>
