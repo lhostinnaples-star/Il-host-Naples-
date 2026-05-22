@@ -1,5 +1,16 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+};
+
 import { AuthProvider, useAuth, UserRole } from './contexts/AuthContext';
 import { HotelsProvider } from './contexts/HotelsContext';
 import { WishlistProvider } from './contexts/WishlistContext';
@@ -167,6 +178,7 @@ export default function App() {
               <HotelsProvider>
                 <WishlistProvider>
                   <Router>
+                    <ScrollToTop />
                     <Toaster position="top-center" richColors />
                     <AppContent />
                   </Router>
