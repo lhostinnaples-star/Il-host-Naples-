@@ -119,57 +119,59 @@ export const LoginPage: React.FC = () => {
         </Card>
 
         {/* Demo Login Section */}
-        <div className="mt-10">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+        {false && (
+          <div className="mt-10">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-neutral-950 px-2 text-neutral-500 font-bold tracking-widest">Demo Sandbox</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-neutral-950 px-2 text-neutral-500 font-bold tracking-widest">Demo Sandbox</span>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            <button 
-              onClick={() => handleDemoLogin(UserRole.CUSTOMER)}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-blue-500/50 hover:bg-blue-500/5"
-            >
-              <User className="h-5 w-5 text-blue-400" />
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Customer</span>
-            </button>
-            <button 
-              onClick={() => handleDemoLogin(UserRole.HOTEL_OWNER)}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-purple-500/50 hover:bg-purple-500/5"
-            >
-              <Home className="h-5 w-5 text-purple-400" />
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Lister</span>
-            </button>
-            <button 
-              onClick={() => handleDemoLogin(UserRole.SUPPLIER)}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-yellow-500/50 hover:bg-yellow-500/5"
-            >
-              <Wrench className="h-5 w-5 text-yellow-400" />
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Supplier</span>
-            </button>
-            <button 
-              onClick={() => handleDemoLogin(UserRole.SERVICE_PROVIDER)}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-green-500/50 hover:bg-green-500/5"
-            >
-              <Car className="h-5 w-5 text-green-400" />
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Provider</span>
-            </button>
-            <button 
-              onClick={() => handleDemoLogin(UserRole.ADMIN)}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-red-500/50 hover:bg-red-500/5 col-span-2 md:col-span-1"
-            >
-              <Shield className="h-5 w-5 text-red-500" />
-              <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Admin</span>
-            </button>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              <button 
+                onClick={() => handleDemoLogin(UserRole.CUSTOMER)}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-blue-500/50 hover:bg-blue-500/5"
+              >
+                <User className="h-5 w-5 text-blue-400" />
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Customer</span>
+              </button>
+              <button 
+                onClick={() => handleDemoLogin(UserRole.HOTEL_OWNER)}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-purple-500/50 hover:bg-purple-500/5"
+              >
+                <Home className="h-5 w-5 text-purple-400" />
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Lister</span>
+              </button>
+              <button 
+                onClick={() => handleDemoLogin(UserRole.SUPPLIER)}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-yellow-500/50 hover:bg-yellow-500/5"
+              >
+                <Wrench className="h-5 w-5 text-yellow-400" />
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Supplier</span>
+              </button>
+              <button 
+                onClick={() => handleDemoLogin(UserRole.SERVICE_PROVIDER)}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-green-500/50 hover:bg-green-500/5"
+              >
+                <Car className="h-5 w-5 text-green-400" />
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Provider</span>
+              </button>
+              <button 
+                onClick={() => handleDemoLogin(UserRole.ADMIN)}
+                className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:border-red-500/50 hover:bg-red-500/5 col-span-2 md:col-span-1"
+              >
+                <Shield className="h-5 w-5 text-red-500" />
+                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">Admin</span>
+              </button>
+            </div>
+            <p className="mt-4 text-center text-[10px] text-neutral-600 font-medium">
+              Instantly switch accounts to test different roles and features.
+            </p>
           </div>
-          <p className="mt-4 text-center text-[10px] text-neutral-600 font-medium">
-            Instantly switch accounts to test different roles and features.
-          </p>
-        </div>
+        )}
 
         <p className="mt-10 text-center text-sm text-neutral-500">
           Don't have an account? <Link to="/register" className="font-bold text-[#fbbf24] hover:underline">Sign up</Link>
