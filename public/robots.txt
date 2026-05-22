@@ -15,4 +15,4 @@ Disallow: /suppliers/
 Disallow: /shared-pool/
 Disallow: /supplier-directory/
 
-Sitemap: https://www.ilhostinnaples.com/sitemap.xml
+Sitemap: https://www.lhostinnaples.com/sitemap.xml
