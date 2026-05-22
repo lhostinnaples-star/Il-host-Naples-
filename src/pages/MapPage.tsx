@@ -7,6 +7,17 @@ import { useHotels } from '../contexts/HotelsContext';
 import { ArrowRight, CheckCircle2, Clock, Briefcase, Luggage, Activity, Car, ShoppingBag } from 'lucide-react';
 import { SEOHead } from '../components/SEOHead';
 
+const AREA_COORDINATES: Record<string, [number, number]> = {
+  'Islands (Ischia & Procida)': [40.7311, 13.8973],
+  'Center (Centro Storico)': [40.8518, 14.2681],
+  'Seafront (Chiaia - Posillipo)': [40.8322, 14.2195],
+  'Station (Piazza Garibaldi)': [40.8533, 14.2731],
+  'Stadium (Fuorigrotta - Fair)': [40.8279, 14.1932],
+  'Vomero': [40.8554, 14.2407],
+  'Mergellina': [40.8277, 14.2159],
+  'Pozzuoli': [40.8267, 14.1207],
+};
+
 const areas = [
   { id: 'Everyone', label: 'Everyone', activeBg: 'bg-[#1e293b]', activeText: 'text-[#fbbf24]' },
   { id: 'Center (Centro Storico)', label: 'Center', activeBg: 'bg-[#fbbf24]', activeText: 'text-[#1e293b]' },
@@ -124,11 +135,12 @@ export const MapPage: React.FC = () => {
             />
             <MarkerClusterGroup chunkedLoading>
               {filteredHotels.map(hotel => {
-                if (!hotel.lat || !hotel.lng) return null;
+                const lat = hotel.lat || AREA_COORDINATES[hotel.area || '']?.[0] || 40.8518;
+                const lng = hotel.lng || AREA_COORDINATES[hotel.area || '']?.[1] || 14.2681;
                 return (
                   <Marker 
                     key={hotel.id} 
-                    position={[hotel.lat, hotel.lng]}
+                    position={[lat, lng]}
                     icon={createMarkerIcon(hotel.area || 'Everyone')}
                   >
                     <Popup className="rounded-xl border-0 shadow-xl">

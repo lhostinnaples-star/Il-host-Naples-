@@ -22,6 +22,7 @@ interface Hotel {
   area?: string;
   lat?: number;
   lng?: number;
+  gmbLink?: string;
   policies?: string[];
   badges?: string[];
   // Premium Details

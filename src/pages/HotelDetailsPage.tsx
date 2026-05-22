@@ -802,12 +802,24 @@ export const HotelDetailsPage: React.FC = () => {
             <div className="mb-8 md:mb-12">
               <div className="flex items-center justify-between mb-6 md:mb-8">
                 <h2 className="font-display text-xl md:text-2xl font-bold text-[#1e293b]">Where you'll be</h2>
-                <button 
-                  onClick={() => setShowFullScreenMap(true)}
-                  className="lg:hidden text-[10px] font-black uppercase tracking-widest text-[#fbbf24] bg-[#fbbf24]/10 px-3 py-1.5 rounded-lg"
-                >
-                  Full Screen
-                </button>
+                <div className="flex items-center gap-2 md:gap-4">
+                  {hotel.gmbLink && (
+                    <a 
+                      href={hotel.gmbLink} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-[#F5A623] text-[#0f172a] px-4 py-2 rounded-xl text-xs sm:text-sm font-bold hover:bg-[#e09400] transition-colors whitespace-nowrap shadow-sm"
+                    >
+                      View on Google Maps
+                    </a>
+                  )}
+                  <button 
+                    onClick={() => setShowFullScreenMap(true)}
+                    className="lg:hidden text-[10px] font-black uppercase tracking-widest text-[#fbbf24] bg-[#fbbf24]/10 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                  >
+                    Full Screen
+                  </button>
+                </div>
               </div>
               <div 
                 onClick={() => { if(window.innerWidth < 1024) setShowFullScreenMap(true); }}
