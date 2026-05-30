@@ -194,18 +194,34 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleApproveSupplierRequest = (req: any) => {
-    updateSupplierAccessRequest(req.id, 'approved');
-    setAllUsers(prev => prev.map(u => u.id === req.userId ? { ...u, supplierAccess: 'approved' } : u));
-    updateUserSupplierAccess(req.userId, 'approved');
-    toast.success('Supplier access approved!');
+  const handleApproveSupplierRequest = async (req: any) => {
+    try {
+      await updateDoc(doc(db, 'users', req.userId), {
+        supplierAccess: 'approved'
+      });
+      updateSupplierAccessRequest(req.id, 'approved');
+      setAllUsers(prev => prev.map(u => u.id === req.userId ? { ...u, supplierAccess: 'approved' } : u));
+      updateUserSupplierAccess(req.userId, 'approved');
+      toast.success('Supplier access approved!');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to approve');
+    }
   };
 
-  const handleRejectSupplierRequest = (req: any) => {
-    updateSupplierAccessRequest(req.id, 'rejected');
-    setAllUsers(prev => prev.map(u => u.id === req.userId ? { ...u, supplierAccess: 'rejected' } : u));
-    updateUserSupplierAccess(req.userId, 'rejected');
-    toast.error('Supplier access rejected!');
+  const handleRejectSupplierRequest = async (req: any) => {
+    try {
+      await updateDoc(doc(db, 'users', req.userId), {
+        supplierAccess: 'rejected'
+      });
+      updateSupplierAccessRequest(req.id, 'rejected');
+      setAllUsers(prev => prev.map(u => u.id === req.userId ? { ...u, supplierAccess: 'rejected' } : u));
+      updateUserSupplierAccess(req.userId, 'rejected');
+      toast.error('Supplier access rejected!');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to reject');
+    }
   };
 
   const handleRejectUser = async (userId: string) => {
