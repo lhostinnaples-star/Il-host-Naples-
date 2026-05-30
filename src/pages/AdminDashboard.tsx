@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 import { useAuth, UserRole, UserStatus } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useHotels } from '../contexts/HotelsContext';
@@ -122,7 +124,25 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     if (isDemoMode) {
       setAllUsers(Object.values(MOCK_USERS));
+      return;
     }
+    
+    // Load real users from Firestore
+    const unsubscribe = onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        const users = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setAllUsers(users);
+      },
+      (error) => {
+        console.error('Error loading users:', error);
+      }
+    );
+    
+    return () => unsubscribe();
   }, [isDemoMode]);
 
   const handleApprove = (id: string) => {
@@ -163,11 +183,15 @@ export const AdminDashboard: React.FC = () => {
     setEditingUser(null);
   };
 
-  const handleApproveUser = (userId: string) => {
-    updateUserStatus(userId, UserStatus.ACTIVE);
-    toast.success('User account approved!');
-    // Update local state if needed
-    setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, status: UserStatus.ACTIVE } : u));
+  const handleApproveUser = async (userId: string) => {
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        status: 'ACTIVE'
+      });
+      toast.success('User approved!');
+    } catch (error) {
+      console.error('Error approving user:', error);
+    }
   };
 
   const handleApproveSupplierRequest = (req: any) => {
@@ -184,13 +208,18 @@ export const AdminDashboard: React.FC = () => {
     toast.error('Supplier access rejected!');
   };
 
-  const handleRejectUser = (userId: string) => {
+  const handleRejectUser = async (userId: string) => {
     const reason = prompt('Reason for rejection?');
     if (!reason) return;
-    updateUserStatus(userId, UserStatus.REJECTED, reason);
-    toast.error('User account rejected');
-    // Update local state
-    setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, status: UserStatus.REJECTED, rejectionReason: reason } : u));
+    try {
+      await updateDoc(doc(db, 'users', userId), {
+        status: 'REJECTED',
+        rejectionReason: reason
+      });
+      toast.success('User rejected!');
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+    }
   };
 
   const handleToggleFeatured = (id: string, isFeatured: boolean) => {
