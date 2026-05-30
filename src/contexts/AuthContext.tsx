@@ -220,12 +220,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       idDocument: roleDetails?.idDocument || '',
       propertyPhotos: roleDetails?.propertyPhotos || [],
       description: roleDetails?.bio || '',
-      licenseNumber: roleDetails?.licenseNumber || '',
+      bookingComUrl: roleDetails?.bookingComUrl || '',
+      propertyCount: roleDetails?.propertyCount || '',
+      businessName: roleDetails?.businessName || '',
+      basePricing: roleDetails?.basePricing || '',
+      license: roleDetails?.license || '',
       serviceType: roleDetails?.serviceType || '',
       companyName: roleDetails?.companyName || '',
       vatNumber: roleDetails?.vatNumber || '',
-      bookingComUrl: roleDetails?.bookingComUrl || '',
-      propertyCount: roleDetails?.propertyCount || '',
+      categories: roleDetails?.categories || [],
+      businessLicense: roleDetails?.businessLicense || '',
     });
   }, []);
 
