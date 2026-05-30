@@ -43,7 +43,7 @@ interface AuthContextType {
   token: string | null;
   login: (token: string, user: User) => void;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string, role: UserRole, phone?: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, role: UserRole, phone?: string, roleDetails?: any) => Promise<void>;
   loginAsDemo: (role: UserRole) => void;
   updateUser: (updates: Partial<User>) => void;
   updateUserStatus: (userId: string, status: UserStatus, reason?: string) => void;
@@ -197,7 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signInWithEmailAndPassword(auth, email, password);
   }, []);
 
-  const signUp = React.useCallback(async (email: string, password: string, name: string, role: UserRole, phone: string = '') => {
+  const signUp = React.useCallback(async (email: string, password: string, name: string, role: UserRole, phone: string = '', roleDetails?: any) => {
     setIsDemoMode(false);
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, { displayName: name });
@@ -213,7 +213,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: serverTimestamp(),
       supplierAccess: 'none',
       profilePhoto: '',
-      bio: ''
+      bio: '',
+      cirCode: roleDetails?.cirCode || '',
+      propertyType: roleDetails?.propertyType || '',
+      propertyAddress: roleDetails?.address || '',
+      idDocument: roleDetails?.idDocument || '',
+      propertyPhotos: roleDetails?.propertyPhotos || [],
+      description: roleDetails?.bio || '',
+      licenseNumber: roleDetails?.licenseNumber || '',
+      serviceType: roleDetails?.serviceType || '',
+      companyName: roleDetails?.companyName || '',
+      vatNumber: roleDetails?.vatNumber || '',
+      bookingComUrl: roleDetails?.bookingComUrl || '',
+      propertyCount: roleDetails?.propertyCount || '',
     });
   }, []);
 

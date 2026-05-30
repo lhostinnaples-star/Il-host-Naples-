@@ -244,7 +244,7 @@ export const RegisterPage: React.FC = () => {
     setIsLoading(true);
     setError('');
     try {
-      await signUp(formData.email, formData.password, formData.name, formData.role, formData.phone);
+      await signUp(formData.email, formData.password, formData.name, formData.role, formData.phone, formData.roleDetails);
       console.log('User signed up with role:', formData.role);
       setStep('verification');
     } catch (err: any) {
@@ -485,6 +485,31 @@ export const RegisterPage: React.FC = () => {
                                     className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
                                     onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, address: e.target.value}})}
                                 />
+                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Booking.com Profile URL (optional)</label>
+                                    <Input 
+                                        placeholder="https://www.booking.com/hotel/..." 
+                                        className="bg-[#1e293b] border-[#334155] text-white focus:border-[#F5A623]" 
+                                        onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, bookingComUrl: e.target.value}})}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">How many properties do you have?</label>
+                                    <select 
+                                        className="w-full rounded-xl border border-[#334155] bg-[#1e293b] px-4 py-3 text-sm text-white outline-none focus:border-[#F5A623]"
+                                        onChange={(e) => setFormData({...formData, roleDetails: {...formData.roleDetails, propertyCount: e.target.value}})}
+                                        required
+                                    >
+                                        <option value="">Select option...</option>
+                                        <option value="1 property">1 property</option>
+                                        <option value="2-3 properties">2-3 properties</option>
+                                        <option value="4-5 properties">4-5 properties</option>
+                                        <option value="6-10 properties">6-10 properties</option>
+                                        <option value="10+ properties">10+ properties</option>
+                                    </select>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Short Bio / Description</label>
