@@ -13,6 +13,8 @@ interface Hotel {
   imageUrl?: string;
   images?: string[];
   ownerId?: string;
+  ownerEmail?: string;
+  userId?: string;
   rating?: number;
   reviews?: number;
   distance?: string;
@@ -65,6 +67,7 @@ export interface Service {
   imageUrl?: string;
   ownerId?: string; // Legacy
   providerId?: string;
+  ownerEmail?: string;
   rating?: number;
   status?: 'pending' | 'approved' | 'rejected' | 'active';
   rejectionReason?: string;
@@ -585,6 +588,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const bookingData = {
            ...booking,
            id: bookingRef.id,
+           ownerId: booking.ownerId || allHotels.find(h => h.id === booking.itemId)?.ownerId || '',
            createdAt: serverTimestamp()
         };
         await setDoc(bookingRef, bookingData);
@@ -600,7 +604,7 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
       return updated;
     });
-  }, []);
+  }, [allHotels]);
 
   const updateBooking = useCallback(async (id: string, updates: Partial<Booking>) => {
     const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
