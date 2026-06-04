@@ -352,6 +352,7 @@ export const OwnerDashboard: React.FC = () => {
     lastName: user?.name?.split(' ').slice(1).join(' ') || '',
     phone: user?.phone || '',
     photoUrl: user?.roleDetails?.photoUrl || '',
+    coverImage: user?.roleDetails?.coverImage || '',
     bio: user?.roleDetails?.bio || '',
     languages: user?.roleDetails?.languages || [] as string[],
     responseTime: user?.roleDetails?.responseTime || 'Within few hours',
@@ -485,6 +486,32 @@ export const OwnerDashboard: React.FC = () => {
                     }}
                   />
                   <p className="text-[10px] text-[#64748b] font-medium mt-2">Upload your host profile image (max 5MB).</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-2 space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] ml-1">Cover Image</label>
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                <div className="h-32 w-48 rounded-xl overflow-hidden bg-black/20 border border-white/5 shrink-0">
+                  {profileForm.coverImage ? (
+                    <img src={profileForm.coverImage} alt="Cover Photo" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <ImageIcon className="h-8 w-8 text-[#334155]" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 w-full">
+                  <ImageUpload 
+                    maxImages={1}
+                    storagePath="profiles/owners/covers"
+                    initialImages={profileForm.coverImage ? [profileForm.coverImage] : []}
+                    onImagesChange={(imgs) => {
+                      setProfileForm({ ...profileForm, coverImage: imgs[0] || '' });
+                    }}
+                  />
+                  <p className="text-[10px] text-[#64748b] font-medium mt-2">Upload a cover image for your host profile.</p>
                 </div>
               </div>
             </div>

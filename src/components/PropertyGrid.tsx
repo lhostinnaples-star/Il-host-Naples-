@@ -91,10 +91,9 @@ export const PropertyGrid: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col items-end">
-                  <p className="text-xs text-neutral-500">Starting from</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-neutral-900">
-                      {formatPrice(property.price)}
+                    <span className="text-lg font-bold text-neutral-900">
+                      Starting from {formatPrice(property.price)}/night
                     </span>
                   </div>
                 </div>

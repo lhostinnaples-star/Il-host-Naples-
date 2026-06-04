@@ -25,6 +25,7 @@ import { WishlistButton } from '../components/WishlistButton';
 import { ReviewCard } from '../components/ReviewCard';
 import { BackButton } from '../components/BackButton';
 import { BookingWidget } from '../components/BookingWidget';
+import { ContactForm } from '../components/ContactForm';
 import { SEOHead } from '../components/SEOHead';
 import { generatePropertySchema, generateSlug, generateBreadcrumbSchema } from '../utils/seo';
 import { Input } from '../components/UI';
@@ -1009,6 +1010,9 @@ export const HotelDetailsPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Contact Form */}
+            <ContactForm entityId={hotel.id} entityName={hotel.name} entityType="hotel" />
+
             {/* Legal Info */}
             <div className="flex flex-wrap items-center gap-3 md:gap-4 border-t border-neutral-100 pt-8 text-[10px] md:text-xs text-neutral-400">
               <Info className="h-3 w-3 md:h-4 md:w-4" />
@@ -1065,7 +1069,7 @@ export const HotelDetailsPage: React.FC = () => {
                 </div>
                 <h3 className="font-bold text-[#1e293b] line-clamp-1 group-hover:text-[#fbbf24] transition-colors">{smHotel.name}</h3>
                 <p className="text-sm text-neutral-500">{smHotel.city}</p>
-                <p className="mt-1 font-bold text-[#1e293b]">{formatPrice(smHotel.price)} <span className="text-xs font-normal text-neutral-500">/ night</span></p>
+                <p className="mt-1 font-bold text-[#1e293b]">Starting from {formatPrice(smHotel.price)} <span className="text-xs font-normal text-neutral-500">/ night</span></p>
               </div>
             ))}
           </div>

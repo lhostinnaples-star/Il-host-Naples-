@@ -8,6 +8,7 @@ import {
   Calendar, Info, ArrowLeft, Send, ChevronRight
 } from 'lucide-react';
 import { Card, Button, Input } from '../components/UI';
+import { ContactForm } from '../components/ContactForm';
 import { useNavigate } from 'react-router-dom';
 import { useHotels } from '../contexts/HotelsContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -229,8 +230,7 @@ export const ServiceDirectory: React.FC = () => {
                 
                 <div className="flex items-center justify-between pt-6 border-t border-neutral-100">
                   <div>
-                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Starting from</p>
-                    <p className="text-2xl font-bold text-[#1e293b]">{formatPrice(service.price)} <span className="text-sm text-neutral-400 font-medium">/{service.priceUnit}</span></p>
+                    <p className="text-xl font-bold text-[#1e293b]">Starting from {formatPrice(service.price)} <span className="text-sm text-neutral-400 font-medium">/{service.priceUnit}</span></p>
                   </div>
                   <Button className="rounded-2xl bg-neutral-100 text-[#1e293b] hover:bg-[#fbbf24] font-bold px-6 border-none transition-all group-hover:shadow-lg group-hover:shadow-[#fbbf24]/20">
                     Request to Book
@@ -341,6 +341,8 @@ export const ServiceDirectory: React.FC = () => {
                         The service provider will receive your request and contact you via email to finalize the booking.
                       </p>
                     </form>
+
+                    <ContactForm entityId={selectedService.id} entityName={selectedService.name} entityType="service" />
                   </div>
                 </div>
               </motion.div>

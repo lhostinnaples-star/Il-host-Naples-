@@ -42,6 +42,7 @@ export const SupplierServiceFormModal: React.FC<SupplierServiceFormModalProps> =
     areas: [],
     images: [],
     imageUrl: '',
+    coverImage: '',
     notes: ''
   });
 
@@ -220,6 +221,18 @@ export const SupplierServiceFormModal: React.FC<SupplierServiceFormModalProps> =
 
               {currentStep === 3 && (
                 <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Cover Image (Required)</label>
+                    <ImageUpload 
+                      maxImages={1}
+                      storagePath="suppliers/covers"
+                      initialImages={formData.coverImage ? [formData.coverImage] : []}
+                      onImagesChange={(imgs) => setFormData({
+                        ...formData, 
+                        coverImage: imgs[0] || ''
+                      })}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Portfolio/Product Images (Max 5)</label>
                     <ImageUpload 

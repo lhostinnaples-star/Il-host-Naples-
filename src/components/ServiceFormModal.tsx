@@ -45,6 +45,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
     availableDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     images: [],
     imageUrl: '',
+    coverImage: '',
     included: '',
     notIncluded: ''
   });
@@ -279,6 +280,18 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
 
               {currentStep === 3 && (
                 <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Cover Image (Required)</label>
+                    <ImageUpload 
+                      maxImages={1}
+                      storagePath="services/covers"
+                      initialImages={formData.coverImage ? [formData.coverImage] : []}
+                      onImagesChange={(imgs) => setFormData({
+                        ...formData, 
+                        coverImage: imgs[0] || ''
+                      })}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Service Images (Max 3)</label>
                     <ImageUpload 

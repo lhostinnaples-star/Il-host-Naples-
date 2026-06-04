@@ -8,6 +8,7 @@ import {
   Calendar, Building2
 } from 'lucide-react';
 import { Card, Button, Input } from '../components/UI';
+import { ContactForm } from '../components/ContactForm';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useHotels } from '../contexts/HotelsContext';
@@ -556,6 +557,7 @@ export const SupplierDirectory: React.FC = () => {
                       >
                         Request Service
                       </Button>
+                      <ContactForm entityId={selectedSupplier.id} entityName={selectedSupplier.name} entityType="supplier" theme="dark" />
                     </div>
                   </div>
 
