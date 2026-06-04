@@ -4,6 +4,8 @@ import { Search, ChevronDown, MessageSquare, Phone as WhatsApp, Mail, Send } fro
 import { SEOHead } from '../components/SEOHead';
 import { BackButton } from '../components/BackButton';
 import { toast } from 'sonner';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 interface FAQItemProps {
   question: string;
@@ -47,11 +49,22 @@ export const HelpCenterPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [formState, setFormState] = useState({ name: '', email: '', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Help Center Contact Form Submitted:', formState);
-    toast.success('Message sent! Our team will contact you soon.');
-    setFormState({ name: '', email: '', message: '' });
+    try {
+      await addDoc(collection(db, 'contact_requests'), {
+        name: formState.name,
+        email: formState.email,
+        message: formState.message,
+        createdAt: serverTimestamp(),
+        status: 'unread'
+      });
+      toast.success('Message sent! Our team will contact you soon.');
+      setFormState({ name: '', email: '', message: '' });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Failed to send message. Please try again later.');
+    }
   };
 
   const sections = [

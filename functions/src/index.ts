@@ -152,6 +152,138 @@ export const onBookingUpdated = functions.firestore
           html: bookingCancelledTemplate(after)
         });
       }
+      if (after.status === 'SHARED') {
+        const listersSnapshot = await admin
+          .firestore()
+          .collection('users')
+          .where('role', '==', 'hotel_owner')
+          .where('status', '==', 'ACTIVE')
+          .get();
+        
+        const emailPromises = listersSnapshot.docs
+          .map(doc => {
+            const lister = doc.data();
+            return transporter.sendMail({
+              from: 'noreply@lhostinnaples.com',
+              to: lister.email,
+              subject: '🏨 New Booking Available in Pool!',
+              html: `
+                <div style="font-family:sans-serif;
+                background:#0f172a;color:#fff;
+                padding:32px;border-radius:12px">
+                  <h2 style="color:#F5A623">
+                    New Booking in Sharing Pool
+                  </h2>
+                  <p>A new booking is available.</p>
+                  <p><strong>Property Type:</strong> 
+                  ${after.propertyType || 'Any'}</p>
+                  <p><strong>Guest:</strong> 
+                  ${after.customerName}</p>
+                  <p><strong>Dates:</strong> 
+                  ${after.startDate} - ${after.endDate}</p>
+                  <p><strong>Guests:</strong> 
+                  ${after.guests}</p>
+                  <p><strong>Area:</strong> 
+                  ${after.area || 'Naples'}</p>
+                  <a href="https://lhostinnaples.com/shared-pool"
+                  style="background:#F5A623;color:#0f172a;
+                  padding:12px 24px;border-radius:8px;
+                  text-decoration:none;font-weight:bold">
+                    View Booking Pool
+                  </a>
+                </div>
+              `
+            });
+          });
+        await Promise.all(emailPromises);
+
+        // Email admin
+        await transporter.sendMail({
+          from: 'admin@lhostinnaples.com',
+          to: 'info@lhostinnaples.com',
+          subject: 'Booking Shared to Pool',
+          html: `
+            <p><strong>Property:</strong> ${after.itemName}</p>
+            <p><strong>Guest:</strong> ${after.customerName}</p>
+            <p><strong>Dates:</strong> 
+            ${after.startDate} - ${after.endDate}</p>
+          `
+        });
+      }
+
+      if (after.status === 'ACCEPTED') {
+        // Email original lister
+        if (after.originalListerEmail) {
+          await transporter.sendMail({
+            from: 'noreply@lhostinnaples.com',
+            to: after.originalListerEmail,
+            subject: '✅ Your Pool Booking Found a Host!',
+            html: `
+              <div style="font-family:sans-serif;
+              background:#0f172a;color:#fff;
+              padding:32px;border-radius:12px">
+                <h2 style="color:#F5A623">
+                  Great News!
+                </h2>
+                <p>Your booking in the pool 
+                has been accepted by another host.</p>
+                <p><strong>Booking:</strong> 
+                ${after.itemName}</p>
+                <p><strong>Guest:</strong> 
+                ${after.customerName}</p>
+              </div>
+            `
+          });
+        }
+
+        // Email guest
+        if (after.guestEmail) {
+          await transporter.sendMail({
+            from: 'bookings@lhostinnaples.com',
+            to: after.guestEmail,
+            subject: '🎉 Your Booking Has Been Transferred!',
+            html: `
+              <div style="font-family:sans-serif;
+              background:#0f172a;color:#fff;
+              padding:32px;border-radius:12px">
+                <h2 style="color:#F5A623">
+                  Good News, ${after.customerName}!
+                </h2>
+                <p>Your booking request has been 
+                accepted by a new host in Naples.</p>
+                <p><strong>Dates:</strong> 
+                ${after.startDate} - ${after.endDate}</p>
+                <p>The host will contact you soon.</p>
+              </div>
+            `
+          });
+        }
+      }
+
+      if (after.status === 'CLOSED') {
+        if (after.guestEmail) {
+          await transporter.sendMail({
+            from: 'bookings@lhostinnaples.com',
+            to: after.guestEmail,
+            subject: '🏠 Booking Confirmed in Naples!',
+            html: `
+              <div style="font-family:sans-serif;
+              background:#0f172a;color:#fff;
+              padding:32px;border-radius:12px">
+                <h2 style="color:#F5A623">
+                  Booking Confirmed!
+                </h2>
+                <p>Dear ${after.customerName},</p>
+                <p>Your booking has been 
+                successfully confirmed.</p>
+                <p><strong>Dates:</strong> 
+                ${after.startDate} - ${after.endDate}</p>
+                <p>Enjoy your stay in Naples! 🇮🇹</p>
+              </div>
+            `
+          });
+        }
+      }
     }
   });
 
@@ -189,4 +321,37 @@ export const onServiceRequest = functions.firestore
       });
     
     await Promise.all(emailPromises);
+  });
+
+// 6. Contact Request
+export const onContactRequest = functions.firestore
+  .document('contact_requests/{requestId}')
+  .onCreate(async (snap) => {
+    const request = snap.data();
+    
+    // Notify admin
+    await transporter.sendMail({
+      from: 'info@lhostinnaples.com',
+      to: 'info@lhostinnaples.com',
+      subject: 'New Contact Request',
+      html: `
+        <h2>New Contact Request</h2>
+        <p><strong>Name:</strong> ${request.name}</p>
+        <p><strong>Email:</strong> ${request.email}</p>
+        <p><strong>Message:</strong> ${request.message}</p>
+      `
+    });
+    
+    // Confirm to user
+    await transporter.sendMail({
+      from: 'info@lhostinnaples.com',
+      to: request.email,
+      subject: 'We received your message!',
+      html: `
+        <h2>Thank you ${request.name}!</h2>
+        <p>We received your message and 
+        will get back to you soon.</p>
+        <p>Il Host in Naples Team</p>
+      `
+    });
   });
