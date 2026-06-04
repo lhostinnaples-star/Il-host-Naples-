@@ -181,7 +181,7 @@ export function ImageUpload({ maxImages = 5, onImagesChange, storagePath, initia
             <>
               <ArrowUpCircle className="h-10 w-10 md:h-12 md:w-12 mx-auto mb-4 text-[#334155] group-hover:text-[#F5A623] transition-colors" />
               <p className="font-black text-white uppercase tracking-widest text-[10px]">Upload from Phone or Computer</p>
-              <p className="text-[10px] font-bold text-[#64748b] mt-2 group-hover:text-[#94a3b8]">Tap to browse or drag and drop images (No size limit)</p>
+              <p className="text-[10px] font-bold text-[#64748b] mt-2 group-hover:text-[#94a3b8]">Tap to browse or drag and drop images (JPG, PNG, WebP accepted • Auto optimized)</p>
             </>
           )}
           <input
