@@ -16,7 +16,7 @@ export const currencies: Currency[] = [
 interface CurrencyContextType {
   currentCurrency: Currency;
   setCurrency: (code: string) => void;
-  formatPrice: (priceInUsd: number) => string;
+  formatPrice: (priceInEur: number) => string;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
@@ -31,8 +31,12 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, []);
 
-  const formatPrice = useCallback((priceInUsd: number) => {
-    const convertedPrice = priceInUsd * currentCurrency.rate;
+  const formatPrice = useCallback((priceInEur: number) => {
+    const eurRate = currencies.find(c => c.code === 'EUR')?.rate || 0.92;
+    let convertedPrice = priceInEur;
+    if (currentCurrency.code !== 'EUR') {
+      convertedPrice = (priceInEur / eurRate) * currentCurrency.rate;
+    }
     return `${currentCurrency.symbol}${convertedPrice.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,

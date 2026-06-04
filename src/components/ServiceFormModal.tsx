@@ -62,6 +62,12 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
         return;
       }
     }
+    if (currentStep === 2) {
+      if (!formData.duration && !formData.meetingPoint && formData.availableDays.length === 0 && formData.areas.length === 0 && !formData.maxPeople) {
+        toast.error('Please fill in at least one service detail');
+        return;
+      }
+    }
     if (currentStep < 3) setCurrentStep(currentStep + 1);
   };
 
@@ -236,6 +242,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
                       {weekDays.map(day => (
                         <button
                           key={day}
+                          type="button"
                           onClick={() => handleToggleDay(day)}
                           className={`px-4 py-2 rounded-xl border-2 font-bold text-xs transition-all ${
                             formData.availableDays.includes(day)
@@ -254,6 +261,7 @@ export const ServiceFormModal: React.FC<ServiceFormModalProps> = ({
                       {PROPERTY_AREAS.map(area => (
                         <button
                           key={area}
+                          type="button"
                           onClick={() => handleToggleArea(area)}
                           className={`px-3 py-2 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all ${
                             formData.areas.includes(area)

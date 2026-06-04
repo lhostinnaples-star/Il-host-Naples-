@@ -71,7 +71,11 @@ body {
 /* react-date-range custom styling */
 .rdrCalendarWrapper {
   font-family: inherit;
-  color: #1e293b;
+  color: #ffffff;
+}
+
+.rdrWeekDay {
+  color: #94a3b8;
 }
 
 .rdrDateDisplayWrapper {
@@ -80,6 +84,7 @@ body {
 
 .rdrDayNumber span {
   font-weight: 500;
+  color: #ffffff;
 }
 
 .rdrDayToday .rdrDayNumber span:after {
@@ -165,7 +170,7 @@ body {
 }
 
 .custom-date-range .rdrMonthAndYearPickers select {
-  color: #0f172a !important;
+  color: #ffffff !important;
 }
 
 .custom-date-range .rdrNextPrevButton {

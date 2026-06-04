@@ -15,6 +15,7 @@ export const SUPPLIER_CATEGORIES = [
   { id: 'interior_design', label: 'Interior Design', icon: Paintbrush },
   { id: 'plumber', label: 'Plumber & Electrician', icon: HardHat },
   { id: 'sos', label: 'SOS Emergency', icon: ShieldAlert, priority: true },
+  { id: 'parking', label: 'Parking', icon: Car },
   { id: 'other', label: 'Other', icon: Sparkles }
 ];
 
@@ -77,6 +78,15 @@ export const SERVICE_CATEGORIES = [
       { id: 'cooking_class', label: 'Cooking Class', icon: Utensils },
       { id: 'spa_massage', label: 'Spa & Massage', icon: Sparkles },
       { id: 'lifestyle_other', label: 'Other', icon: Sparkles }
+    ]
+  },
+  {
+    id: 'Parking',
+    label: 'Parking',
+    icon: Car,
+    subCategories: [
+      { id: 'private_parking', label: 'Private Parking', icon: Car },
+      { id: 'parking_other', label: 'Other', icon: Sparkles }
     ]
   }
 ];

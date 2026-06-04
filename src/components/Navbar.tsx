@@ -50,15 +50,19 @@ export const Navbar: React.FC = () => {
 
         <div className="flex items-center gap-2 md:gap-6">
           <div className="hidden items-center gap-4 md:flex">
-            <Link to="/owner" className="text-sm font-medium hover:bg-white/10 px-3 py-2 rounded-md transition-colors text-neutral-300">
-              List your Property
-            </Link>
-            <Link to="/service-dashboard" className="text-sm font-medium text-[#fbbf24] hover:bg-white/10 px-3 py-2 rounded-md transition-colors">
-              List your Service
-            </Link>
-            <Link to="/supplier" className="text-sm font-medium hover:bg-white/10 px-3 py-2 rounded-md transition-colors text-neutral-300">
-              Join as Supplier
-            </Link>
+            {(!user || user.role === UserRole.CUSTOMER) && (
+              <>
+                <Link to="/owner" className="text-sm font-medium hover:bg-white/10 px-3 py-2 rounded-md transition-colors text-neutral-300">
+                  List your Property
+                </Link>
+                <Link to="/service-dashboard" className="text-sm font-medium text-[#fbbf24] hover:bg-white/10 px-3 py-2 rounded-md transition-colors">
+                  List your Service
+                </Link>
+                <Link to="/supplier" className="text-sm font-medium hover:bg-white/10 px-3 py-2 rounded-md transition-colors text-neutral-300">
+                  Join as Supplier
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-3">
@@ -132,47 +136,51 @@ export const Navbar: React.FC = () => {
                 </div>
                 
                 <div className="flex-1 px-4 py-8 space-y-4">
-                  <Link 
-                    to="/owner" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24] shrink-0">
-                      <Home className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-white">List your Property</p>
-                      <p className="text-xs text-neutral-400">For BnB and Holiday House owners</p>
-                    </div>
-                  </Link>
+                  {(!user || user.role === UserRole.CUSTOMER) && (
+                    <>
+                      <Link 
+                        to="/owner" 
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
+                      >
+                        <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24] shrink-0">
+                          <Home className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-base font-bold text-white">List your Property</p>
+                          <p className="text-xs text-neutral-400">For BnB and Holiday House owners</p>
+                        </div>
+                      </Link>
 
-                  <Link 
-                    to="/service-dashboard" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-[#fbbf24]/5 border border-[#fbbf24]/20 hover:border-[#fbbf24] transition-all"
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-[#fbbf24] flex items-center justify-center text-[#1e293b] shrink-0">
-                      <Sparkles className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-white">List your Service</p>
-                      <p className="text-xs text-[#fbbf24]">Transport, Tours & Food</p>
-                    </div>
-                  </Link>
+                      <Link 
+                        to="/service-dashboard" 
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-4 w-full p-4 rounded-2xl bg-[#fbbf24]/5 border border-[#fbbf24]/20 hover:border-[#fbbf24] transition-all"
+                      >
+                        <div className="h-12 w-12 rounded-xl bg-[#fbbf24] flex items-center justify-center text-[#1e293b] shrink-0">
+                          <Sparkles className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-base font-bold text-white">List your Service</p>
+                          <p className="text-xs text-[#fbbf24]">Transport, Tours & Food</p>
+                        </div>
+                      </Link>
 
-                  <Link 
-                    to="/supplier" 
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
-                  >
-                    <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24] shrink-0">
-                      <Briefcase className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-white">Join as Supplier</p>
-                      <p className="text-xs text-neutral-400">Services for property owners</p>
-                    </div>
-                  </Link>
+                      <Link 
+                        to="/supplier" 
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-[#fbbf24] transition-all"
+                      >
+                        <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-[#fbbf24] shrink-0">
+                          <Briefcase className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <p className="text-base font-bold text-white">Join as Supplier</p>
+                          <p className="text-xs text-neutral-400">Services for property owners</p>
+                        </div>
+                      </Link>
+                    </>
+                  )}
 
                   <div className="pt-8 space-y-4 border-t border-white/10">
                     {user ? (

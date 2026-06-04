@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UserStatus } from '../contexts/AuthContext';
 import { PendingApprovalScreen } from '../components/PendingApprovalScreen';
 import { SEOHead } from '../components/SEOHead';
+import { deleteField } from 'firebase/firestore';
 
 const CountdownTimer: React.FC<{ acceptedAt: string, onExpire: () => void }> = ({ acceptedAt, onExpire }) => {
   const [timeLeft, setTimeLeft] = useState<{h: number, m: number, s: number} | null>(null);
@@ -851,7 +852,7 @@ export const OwnerDashboard: React.FC = () => {
                            updateBooking(booking.id, {
                              status: 'SHARED',
                              ownerId: booking.originalListerId || 'demo-owner',
-                             acceptedAt: undefined
+                             acceptedAt: deleteField()
                            });
                            toast.error('Pool booking acceptance expired');
                         }} 
@@ -864,7 +865,7 @@ export const OwnerDashboard: React.FC = () => {
                              updateBooking(booking.id, {
                                status: 'SHARED',
                                ownerId: booking.originalListerId || 'demo-owner',
-                               acceptedAt: undefined
+                               acceptedAt: deleteField()
                              });
                              toast.success('Booking returned to pool');
                           }}

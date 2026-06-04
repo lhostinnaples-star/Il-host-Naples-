@@ -202,6 +202,7 @@ export const SupplierServiceFormModal: React.FC<SupplierServiceFormModalProps> =
                       {PROPERTY_AREAS.map(area => (
                         <button
                           key={area}
+                          type="button"
                           onClick={() => handleToggleArea(area)}
                           className={`px-3 py-2 rounded-xl border-2 font-bold text-[10px] uppercase tracking-widest transition-all ${
                             formData.areas.includes(area)
