@@ -242,6 +242,40 @@ export const onBookingUpdated = functions.firestore
       }
 
       if (after.status === 'ACCEPTED') {
+        if (after.acceptingListerEmail || after.ownerEmail) {
+          await transporter.sendMail({
+            from: 'bookings@lhostinnaples.com',
+            to: after.acceptingListerEmail || after.ownerEmail,
+            subject: '✅ Booking Successfully Claimed!',
+            html: `
+              <div style="font-family:sans-serif;
+              background:#0f172a;color:#fff;
+              padding:32px;border-radius:12px">
+                <h2 style="color:#F5A623">
+                  You claimed a booking!
+                </h2>
+                <p>You have 6 hours to contact 
+                the guest and confirm.</p>
+                <p><strong>Guest:</strong> 
+                ${after.customerName}</p>
+                <p><strong>Phone:</strong> 
+                ${after.customerPhone}</p>
+                <p><strong>Dates:</strong> 
+                ${after.startDate} - 
+                ${after.endDate}</p>
+                <a href="https://lhostinnaples.com/owner"
+                style="background:#F5A623;
+                color:#0f172a;padding:12px 24px;
+                border-radius:8px;
+                text-decoration:none;
+                font-weight:bold">
+                  Go to Dashboard
+                </a>
+              </div>
+            `
+          });
+        }
+
         // Email original lister
         if (after.originalListerEmail) {
           await transporter.sendMail({
@@ -357,6 +391,10 @@ export const onServiceRequest = functions.firestore
 export const onContactRequest = functions.firestore
   .document('contact_requests/{requestId}')
   .onCreate(async (snap) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP credentials not configured');
+      return;
+    }
     const request = snap.data();
     
     // Notify admin
