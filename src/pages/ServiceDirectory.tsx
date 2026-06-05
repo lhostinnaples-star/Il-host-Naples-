@@ -294,7 +294,7 @@ export const ServiceDirectory: React.FC = () => {
                       <p className="text-neutral-600 leading-relaxed">{selectedService.description}</p>
                       <div className="mt-8 flex items-center justify-between p-6 bg-neutral-50 rounded-3xl border border-neutral-100">
                         <div>
-                           <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Price</p>
+                           <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Starting Price</p>
                            <p className="text-2xl font-bold text-[#1e293b]">{formatPrice(selectedService.price)}</p>
                         </div>
                         <div className="text-right">

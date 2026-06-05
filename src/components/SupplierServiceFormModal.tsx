@@ -158,7 +158,7 @@ export const SupplierServiceFormModal: React.FC<SupplierServiceFormModalProps> =
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Price (€)</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Starting Price (€)</label>
                     <Input 
                       type="number"
                       placeholder="0.00"

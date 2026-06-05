@@ -33,14 +33,16 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({
 
   const nightsCount = Math.max(1, Math.ceil((dates[0].endDate.getTime() - dates[0].startDate.getTime()) / (1000 * 60 * 60 * 24)));
   const basePrice = pricePerNight * nightsCount;
-  const extraTotal = extraServices.reduce((sum, s) => sum + s.price, 0);
-  const totalPrice = basePrice + extraTotal;
+  const totalPrice = basePrice;
 
   return (
     <div className="rounded-3xl border border-neutral-100 bg-white p-6 shadow-xl w-full">
-      <div className="mb-6 flex items-baseline gap-2">
-        <span className="text-3xl font-bold text-[#1e293b]">{formatPrice(pricePerNight)}</span>
-        <span className="text-sm font-medium text-neutral-500">/ night</span>
+      <div className="mb-6">
+        <p className="text-sm font-medium text-neutral-500 mb-1">Starting from</p>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-bold text-[#1e293b]">{formatPrice(pricePerNight)}</span>
+          <span className="text-sm font-medium text-neutral-500">/ night</span>
+        </div>
       </div>
 
       <div className="mb-6 rounded-2xl border border-neutral-200 overflow-hidden divide-y divide-neutral-200">
@@ -135,12 +137,6 @@ export const BookingWidget: React.FC<BookingWidgetProps> = ({
           <span className="underline decoration-neutral-300 underline-offset-4">{formatPrice(pricePerNight)} x {nightsCount} nights</span>
           <span>{formatPrice(basePrice)}</span>
         </div>
-        {extraTotal > 0 && (
-          <div className="flex justify-between">
-            <span className="underline decoration-neutral-300 underline-offset-4">Extra Services</span>
-            <span>{formatPrice(extraTotal)}</span>
-          </div>
-        )}
         <div className="flex justify-between border-t border-neutral-100 pt-4 font-bold text-[#1e293b] text-base">
           <span>Total estimated value</span>
           <span>{formatPrice(totalPrice)}</span>

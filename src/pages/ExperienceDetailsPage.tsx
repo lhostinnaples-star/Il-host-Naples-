@@ -235,10 +235,10 @@ export const ExperienceDetailsPage: React.FC = () => {
           <div className="hidden lg:block lg:col-span-1">
             <Card className="sticky top-32 p-8 shadow-2xl border-neutral-100 bg-white rounded-[32px]">
               <div className="mb-8">
-                <p className="text-neutral-500 text-sm mb-1 uppercase tracking-widest font-bold">From</p>
+                <p className="text-neutral-500 text-sm mb-1 uppercase tracking-widest font-bold">Starting from</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold text-neutral-900">{formatPrice(service.price)}</span>
-                  <span className="text-neutral-500 font-medium">/ person</span>
+                  <span className="text-neutral-500 font-medium">/ {service.priceUnit}</span>
                 </div>
               </div>
 

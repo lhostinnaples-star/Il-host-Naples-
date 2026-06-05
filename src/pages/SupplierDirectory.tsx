@@ -12,6 +12,7 @@ import { ContactForm } from '../components/ContactForm';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useHotels } from '../contexts/HotelsContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import { toast } from 'sonner';
 
 import { SUPPLIER_CATEGORIES } from '../constants';
@@ -99,6 +100,7 @@ export const SupplierDirectory: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { allServices, allHotels, addBooking } = useHotels();
+  const { formatPrice } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
@@ -420,7 +422,7 @@ export const SupplierDirectory: React.FC = () => {
               <div className="p-6 pt-0 flex-1">
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#334155]">
                   <div className="flex flex-col">
-                    <span className="text-lg font-bold text-[#F5A623]">€{supplier.price}</span>
+                    <span className="text-lg font-bold text-[#F5A623]">Starting from {formatPrice(supplier.price)}</span>
                     <span className="text-[10px] text-[#94a3b8] font-bold uppercase tracking-widest">{supplier.priceUnit}</span>
                   </div>
                   <div className="flex items-center gap-1 text-[10px] font-black text-white/40 uppercase tracking-widest">
@@ -609,7 +611,7 @@ export const SupplierDirectory: React.FC = () => {
                     <div>
                       <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Service Total</label>
                       <div className="h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center px-4 font-bold text-[#F5A623]">
-                        €{selectedSupplier.price} {selectedSupplier.priceUnit}
+                        {formatPrice(selectedSupplier.price)} {selectedSupplier.priceUnit}
                       </div>
                     </div>
 

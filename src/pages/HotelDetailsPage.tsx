@@ -257,8 +257,7 @@ export const HotelDetailsPage: React.FC = () => {
     const { startDate, endDate } = dateRange[0];
     const nights = nightsCount;
     const pricePerNight = hotel.rooms?.[selectedRoomIdx]?.price || hotel.price;
-    const extraTotal = selectedExtraServices.length * 50; // Simple calc for now
-    const totalPrice = (pricePerNight * nights) + extraTotal;
+    const totalPrice = (pricePerNight * nights);
     const reference = 'BE-' + Math.random().toString(36).substr(2, 9).toUpperCase();
     setBookingRef(reference);
 
@@ -1225,7 +1224,7 @@ export const HotelDetailsPage: React.FC = () => {
                       <div className="flex justify-between pt-3 border-t border-neutral-200">
                         <span className="font-bold text-[#1e293b]">Total Estimated</span>
                         <span className="font-bold text-xl text-[#fbbf24]">
-                          {formatPrice((hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount + (selectedExtraServices.length * 50))}
+                          {formatPrice((hotel.rooms?.[selectedRoomIdx]?.price || hotel.price) * nightsCount)}
                         </span>
                       </div>
                     </div>

@@ -282,7 +282,7 @@ export const PropertyFormModal: React.FC<PropertyFormModalProps> = ({
               {currentStep === 2 && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Price per Night (€)</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-neutral-400">Starting Price per Night (€)</label>
                     <Input 
                       type="number"
                       placeholder="0.00"
