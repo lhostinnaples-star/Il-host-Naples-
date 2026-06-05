@@ -152,6 +152,36 @@ export const onBookingUpdated = functions.firestore
           html: bookingCancelledTemplate(after)
         });
       }
+      if (after.status === 'REJECTED' && after.guestEmail) {
+        await transporter.sendMail({
+          from: 'bookings@lhostinnaples.com',
+          to: after.guestEmail,
+          subject: 'Booking Request Update',
+          html: `
+            <div style="font-family:sans-serif;
+            background:#0f172a;color:#fff;
+            padding:32px;border-radius:12px">
+              <h2 style="color:#F5A623">
+                Booking Update
+              </h2>
+              <p>Dear ${after.customerName},</p>
+              <p>Unfortunately your booking request 
+              for <strong>${after.itemName}</strong> 
+              could not be accommodated.</p>
+              <p><strong>Dates:</strong> 
+              ${after.startDate} - ${after.endDate}</p>
+              <p>Please search for other available 
+              properties in Naples.</p>
+              <a href="https://lhostinnaples.com/search"
+              style="background:#F5A623;color:#0f172a;
+              padding:12px 24px;border-radius:8px;
+              text-decoration:none;font-weight:bold">
+                Search Properties
+              </a>
+            </div>
+          `
+        });
+      }
       if (after.status === 'SHARED') {
         const listersSnapshot = await admin
           .firestore()
