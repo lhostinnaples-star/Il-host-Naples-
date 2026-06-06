@@ -512,6 +512,8 @@ export const SupplierDashboard: React.FC = () => {
         ...data,
         id: `supply-${Date.now()}`,
         providerId: user?.id,
+        ownerId: user?.id || '',
+        ownerEmail: user?.email || '',
         status: 'approved' as const,
         serviceType: 'B2B',
         rating: 5

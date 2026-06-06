@@ -389,6 +389,8 @@ export const ServiceProviderDashboard: React.FC = () => {
         ...data,
         id: `service-${Date.now()}`,
         providerId: user?.id,
+        ownerId: user?.id || '',
+        ownerEmail: user?.email || '',
         status: 'approved' as const,
         rating: 5
       };

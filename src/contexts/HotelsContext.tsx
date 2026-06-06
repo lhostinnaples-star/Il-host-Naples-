@@ -181,6 +181,7 @@ import { toast } from 'sonner';
 import { 
   collection,
   getDocs,
+  getDoc,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -191,10 +192,12 @@ import {
   where
 } from 'firebase/firestore';
 import { db, auth, handleFirestoreError, OperationType } from '../config/firebase';
+import { useAuth } from './AuthContext';
 
 const HotelsContext = createContext<HotelsContextType | undefined>(undefined);
 
 export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [allHotels, setAllHotels] = useState<Hotel[]>(MOCK_PROPERTIES as any);
   const [allServices, setAllServices] = useState<Service[]>(MOCK_SERVICES as any);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -833,6 +836,57 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setPriceRange,
     setSearchDates
   ]);
+
+  useEffect(() => {
+    if (!user || user.role !== 'admin') return;
+
+    const fixOwnerEmails = async () => {
+      // Fix properties
+      const propertiesSnap = await getDocs(
+        collection(db, 'properties')
+      );
+      
+      for (const propertyDoc of propertiesSnap.docs) {
+        const property = propertyDoc.data();
+        if (!property.ownerEmail && property.ownerId) {
+          const userDoc = await getDoc(
+            doc(db, 'users', property.ownerId)
+          );
+          if (userDoc.exists()) {
+            await updateDoc(
+              doc(db, 'properties', propertyDoc.id),
+              { ownerEmail: userDoc.data().email }
+            );
+          }
+        }
+      }
+      
+      // Fix services
+      const servicesSnap = await getDocs(
+        collection(db, 'services')
+      );
+      
+      for (const serviceDoc of servicesSnap.docs) {
+        const service = serviceDoc.data();
+        const userId = service.ownerId || service.providerId;
+        if (!service.ownerEmail && userId) {
+          const userDoc = await getDoc(
+            doc(db, 'users', userId)
+          );
+          if (userDoc.exists()) {
+            await updateDoc(
+              doc(db, 'services', serviceDoc.id),
+              { ownerEmail: userDoc.data().email }
+            );
+          }
+        }
+      }
+      
+      console.log('Owner emails migration complete!');
+    };
+    
+    fixOwnerEmails();
+  }, [user]);
 
   console.log('--- Homepage Diagnostics ---');
   console.log('Featured Properties Filtered:', allHotels.filter(h => h.status === 'approved' && h.isFeatured).length);

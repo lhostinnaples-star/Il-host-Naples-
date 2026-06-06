@@ -695,6 +695,7 @@ export const OwnerDashboard: React.FC = () => {
         ...data,
         id: `prop-${Date.now()}`,
         ownerId: user?.id,
+        ownerEmail: user?.email || '',
         status: 'pending' as const,
         rating: 5,
         reviews: 0
