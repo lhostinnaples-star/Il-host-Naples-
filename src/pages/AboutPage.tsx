@@ -16,13 +16,13 @@ export const AboutPage: React.FC = () => {
     { icon: <Heart className="text-red-500" />, title: 'Authenticity', description: 'Real Naples experiences that connect you with the local culture and soul of the city.' },
     { icon: <Shield className="text-blue-500" />, title: 'Trust', description: 'Strict verification for every host and property to ensure your safety and comfort.' },
     { icon: <Users className="text-green-500" />, title: 'Community', description: 'A collaborative ecosystem where hosts help hosts to provide better service.' },
-    { icon: <Star className="text-amber-500" />, title: 'Quality', description: 'The "Il Host Verified" standard means premium hospitality in every neighborhood.' }
+    { icon: <Star className="text-amber-500" />, title: 'Quality', description: 'The "L Host Verified" standard means premium hospitality in every neighborhood.' }
   ];
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-24">
       <SEOHead 
-        title="About Us - Il Host in Naples" 
+        title="About Us - L Host in Naples" 
         description="Discover the story, mission, and values behind the first Neapolitan hospitality ecosystem." 
       />
       
@@ -31,7 +31,7 @@ export const AboutPage: React.FC = () => {
         
         <header className="max-w-4xl mb-24">
           <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tight mb-8 italic">
-            About <span className="text-amber-500">Il Host</span> <br />
+            About <span className="text-amber-500">L Host</span> <br />
             in Naples
           </h1>
           <p className="text-xl md:text-2xl text-[#94a3b8] leading-relaxed font-medium">
@@ -46,7 +46,7 @@ export const AboutPage: React.FC = () => {
             </h2>
             <div className="space-y-6 text-[#94a3b8] text-lg leading-relaxed font-medium">
               <p>
-                Il Host in Naples was created with a clear vision: to connect travelers with authentic Neapolitan hospitality through a network of trusted professionals.
+                L Host in Naples was created with a clear vision: to connect travelers with authentic Neapolitan hospitality through a network of trusted professionals.
               </p>
               <p>
                 We believe that every guest deserves a truly local experience, every host deserves professional support, and Naples deserves to be discovered properly—not just as a destination, but as a community.

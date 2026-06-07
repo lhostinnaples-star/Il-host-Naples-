@@ -32,7 +32,7 @@ export const getDefaultMetaTags = (path: string): MetaTagsProps => {
   const isSearchWithParams = path.startsWith('/search') && path.includes('?');
 
   return {
-    title: 'Il Host in Naples - Holiday Houses, B&Bs & Experiences in Naples',
+    title: 'L Host in Naples - Holiday Houses, B&Bs & Experiences in Naples',
     description: 'Find and book the best holiday houses, B&Bs and experiences in Naples. Compare prices, read reviews and book instantly.',
     image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945',
     url: `https://www.ilhostinnaples.com${path}`,
@@ -83,7 +83,7 @@ export const generateOrganizationSchema = () => {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "Il Host in Naples",
+    "name": "L Host in Naples",
     "url": "https://www.ilhostinnaples.com",
     "logo": "https://www.ilhostinnaples.com/logo.png",
     "sameAs": [

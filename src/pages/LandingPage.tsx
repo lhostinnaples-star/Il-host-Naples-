@@ -800,7 +800,7 @@ export const LandingPage: React.FC = () => {
                   />
                   <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                     <span className="px-3 py-1 rounded-full bg-green-500/90 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-widest border border-white/20 flex items-center gap-1 shadow-sm">
-                      <ShieldCheck className="h-3 w-3" /> Il Host Verified
+                      <ShieldCheck className="h-3 w-3" /> L Host Verified
                     </span>
                   </div>
                   <div className="absolute top-4 right-4 z-10">
@@ -1022,7 +1022,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* Il Host Verified Section */}
+      {/* L Host Verified Section */}
       <motion.section 
         initial={{ opacity: 0, y: 30 }} 
         whileInView={{ opacity: 1, y: 0 }} 

@@ -41,7 +41,7 @@ export const onUserCreated = functions.firestore
       await transporter.sendMail({
         from: 'noreply@lhostinnaples.com',
         to: user.email,
-        subject: 'Welcome to Il Host in Naples!',
+        subject: 'Welcome to L Host in Naples!',
         html: welcomeEmailTemplate(user.name)
       });
     } else {
@@ -419,7 +419,7 @@ export const onContactRequest = functions.firestore
         <h2>Thank you ${request.name}!</h2>
         <p>We received your message and 
         will get back to you soon.</p>
-        <p>Il Host in Naples Team</p>
+        <p>L Host in Naples Team</p>
       `
     });
   });

@@ -36,8 +36,8 @@ export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = ({ st
           
           <p className="text-[#94a3b8] font-medium leading-relaxed mb-8">
             {status === UserStatus.PENDING_APPROVAL 
-              ? "Welcome to the Il Host network! Our team is currently reviewing your registration to maintain our premium quality standards. This usually takes 24-48 hours."
-              : "We're sorry, but your application to join the Il Host network has been declined at this time."
+              ? "Welcome to the L Host network! Our team is currently reviewing your registration to maintain our premium quality standards. This usually takes 24-48 hours."
+              : "We're sorry, but your application to join the L Host network has been declined at this time."
             }
           </p>
 
@@ -51,7 +51,7 @@ export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = ({ st
           <div className="space-y-4">
             <div className="flex items-center gap-3 justify-center text-[10px] font-black uppercase tracking-widest text-[#64748b] bg-[#0f172a] py-3 rounded-xl border border-[#334155]">
               <ShieldAlert className="h-4 w-4 text-[#fbbf24]" />
-              Il Host Trust & Safety Team
+              L Host Trust & Safety Team
             </div>
             
             <Button 

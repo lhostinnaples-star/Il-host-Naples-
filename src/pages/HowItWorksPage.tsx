@@ -88,7 +88,7 @@ export const HowItWorksPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-24">
       <SEOHead 
-        title="How it Works - Il Host in Naples" 
+        title="How it Works - L Host in Naples" 
         description="Learn how to search properties, list your home, or offer services in Naples." 
       />
       

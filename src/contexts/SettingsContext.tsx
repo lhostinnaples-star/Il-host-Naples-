@@ -82,7 +82,7 @@ interface SiteSettings {
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
-  siteName: 'Il Host in Naples',
+  siteName: 'L Host in Naples',
   tagline: 'Made with ❤️ in Naples',
   logo: '',
   primaryColor: '#fbbf24',
@@ -99,7 +99,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
     experiencesSubtitle: 'Discover what Naples...',
     bookingPoolTitle: 'Never Lose a Booking Again',
     bookingPoolSubtitle: '...',
-    verifiedTitle: 'Every Stay is Il Host Verified',
+    verifiedTitle: 'Every Stay is L Host Verified',
     testimonialsTitle: 'What Our Community Says',
     cityGuideTitle: 'Naples City Guide',
     joinTitle: 'Become Part of the Ecosystem'
@@ -200,7 +200,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
     tagline: 'The first comprehensive ecosystem for Neapolitan hospitality...',
     facebookUrl: 'https://facebook.com',
     instagramUrl: 'https://instagram.com',
-    copyrightText: '© 2026 IL HOST IN NAPLES. MADE WITH LOVE IN NAPLES.'
+    copyrightText: '© 2026 L HOST IN NAPLES. MADE WITH LOVE IN NAPLES.'
   },
   cityGuide: [
     {
@@ -228,7 +228,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   joinSection: [
     {
       id: '1',
-      title: 'Become an Il Host Lister',
+      title: 'Become an L Host Lister',
       description: 'List your property...',
       buttonText: 'Start Listing',
       role: 'lister'
@@ -256,7 +256,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
     newsletter: true,
   },
   seo: {
-    title: 'Il Host in Naples - Luxury Property Management',
+    title: 'L Host in Naples - Luxury Property Management',
     description: 'Find authentic holiday houses, B&Bs and experiences in Naples, Italy',
     allowIndexing: true,
   }

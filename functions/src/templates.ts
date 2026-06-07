@@ -37,30 +37,30 @@ const wrapEmail = (title: string, content: string) => `
   <div style="${baseStyles}">
     <div style="${containerStyles}">
       <div style="${headerStyles}">
-        Il Host in Naples
+        L Host in Naples
       </div>
       <div style="${contentStyles}">
         <h2 style="color: #0f172a;">${title}</h2>
         ${content}
       </div>
       <div style="${footerStyles}">
-        &copy; ${new Date().getFullYear()} Il Host in Naples. All rights reserved.
+        &copy; ${new Date().getFullYear()} L Host in Naples. All rights reserved.
       </div>
     </div>
   </div>
 `;
 
 export const welcomeEmailTemplate = (name: string) => wrapEmail(
-  'Welcome to Il Host!',
+  'Welcome to L Host!',
   `<p>Hello ${name},</p>
-   <p>Welcome to Il Host in Naples. We're thrilled to have you here.</p>
+   <p>Welcome to L Host in Naples. We're thrilled to have you here.</p>
    <p>You can now browse our exclusive properties and book your next stay.</p>`
 );
 
 export const pendingApprovalTemplate = (name: string) => wrapEmail(
   'Application Received',
   `<p>Hello ${name},</p>
-   <p>Thank you for submitting your application to Il Host in Naples.</p>
+   <p>Thank you for submitting your application to L Host in Naples.</p>
    <p>Our team is currently reviewing your details. We will notify you once your account has been approved.</p>`
 );
 
@@ -86,7 +86,7 @@ export const accountApprovedTemplate = (name: string) => wrapEmail(
 export const accountRejectedTemplate = (name: string) => wrapEmail(
   'Application Update',
   `<p>Hello ${name},</p>
-   <p>Thank you for your interest in Il Host in Naples.</p>
+   <p>Thank you for your interest in L Host in Naples.</p>
    <p>Unfortunately, after careful review, we are unable to approve your account application at this time.</p>
    <p>If you have any questions, please contact our support team.</p>`
 );

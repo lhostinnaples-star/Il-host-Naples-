@@ -28,7 +28,7 @@ export const SEOHead: React.FC<SEOHeadProps> = ({
   const { settings } = useSettings();
   const defaults = getDefaultMetaTags(location.pathname + location.search);
 
-  const finalTitle = title ? `${title} | Il Host in Naples` : defaults.title;
+  const finalTitle = title ? `${title} | L Host in Naples` : defaults.title;
   const finalDescription = description || defaults.description;
   const finalImage = image || defaults.image;
   const finalType = type || defaults.type;

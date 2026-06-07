@@ -6,11 +6,11 @@ export const TermsPage: React.FC = () => {
   const sections = [
     {
       title: '1. Acceptance of Terms',
-      content: 'By accessing or using the Il Host in Naples platform, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our services.'
+      content: 'By accessing or using the L Host in Naples platform, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use our services.'
     },
     {
       title: '2. Platform Description',
-      content: 'Il Host in Naples acts as a marketplace and ecosystem connecting property owners (Listers), service providers, and guests. We do not own the properties or provide the services directly, except where explicitly stated.'
+      content: 'L Host in Naples acts as a marketplace and ecosystem connecting property owners (Listers), service providers, and guests. We do not own the properties or provide the services directly, except where explicitly stated.'
     },
     {
       title: '3. User Responsibilities',
@@ -38,7 +38,7 @@ export const TermsPage: React.FC = () => {
     },
     {
       title: '9. Limitation of Liability',
-      content: 'Il Host in Naples is not liable for disputes between users, property damage, or service quality issues, though we will provide assistance in dispute resolution where possible.'
+      content: 'L Host in Naples is not liable for disputes between users, property damage, or service quality issues, though we will provide assistance in dispute resolution where possible.'
     },
     {
       title: '10. Governing Law',
@@ -53,8 +53,8 @@ export const TermsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-24">
       <SEOHead 
-        title="Terms & Conditions - Il Host in Naples" 
-        description="Read the terms and conditions for using the Il Host in Naples platform." 
+        title="Terms & Conditions - L Host in Naples" 
+        description="Read the terms and conditions for using the L Host in Naples platform." 
       />
       
       <div className="max-w-4xl mx-auto px-6">

@@ -45,7 +45,7 @@ export const PrivacyPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-24">
       <SEOHead 
-        title="Privacy Policy - Il Host in Naples" 
+        title="Privacy Policy - L Host in Naples" 
         description="Learn how we protect your information and comply with GDPR standards." 
       />
       

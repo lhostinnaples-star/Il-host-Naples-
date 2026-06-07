@@ -43,14 +43,14 @@ export const HostGuidelinesPage: React.FC = () => {
     {
       icon: <AlertCircle className="h-5 w-5 text-red-500" />,
       title: '8. Violation Consequences',
-      content: 'Failure to adhere to these guidelines can result in listing suspension, lowered ranking, or permanent removal from the Il Host in Naples platform.'
+      content: 'Failure to adhere to these guidelines can result in listing suspension, lowered ranking, or permanent removal from the L Host in Naples platform.'
     }
   ];
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-24">
       <SEOHead 
-        title="Host Guidelines - Il Host in Naples" 
+        title="Host Guidelines - L Host in Naples" 
         description="Professional standards and community guidelines for hosts in Naples." 
       />
       

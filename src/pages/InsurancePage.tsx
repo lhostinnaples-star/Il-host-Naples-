@@ -11,7 +11,7 @@ export const InsurancePage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Insurance Interest Form Submitted:', formState);
-    toast.success("Interest registered! We'll notify you when Il Host Protection launches.");
+    toast.success("Interest registered! We'll notify you when L Host Protection launches.");
     setFormState({ name: '', email: '' });
   };
 
@@ -37,7 +37,7 @@ export const InsurancePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-24">
       <SEOHead 
-        title="Host Protection - Il Host in Naples" 
+        title="Host Protection - L Host in Naples" 
         description="Coming Soon: Comprehensive insurance and protection for Neapolitan hosts." 
       />
       
@@ -79,7 +79,7 @@ export const InsurancePage: React.FC = () => {
                 Register <span className="text-white">Interest</span>
               </h2>
               <p className="text-[#0f172a]/80 mb-0 font-medium">
-                Be the first to know when Il Host Protection launches. Early adopters will receive special introductory rates on all coverage packages.
+                Be the first to know when L Host Protection launches. Early adopters will receive special introductory rates on all coverage packages.
               </p>
             </div>
             

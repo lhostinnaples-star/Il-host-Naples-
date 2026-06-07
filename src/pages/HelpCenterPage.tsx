@@ -116,7 +116,7 @@ export const HelpCenterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-12">
       <SEOHead 
-        title="Help Center - Il Host in Naples" 
+        title="Help Center - L Host in Naples" 
         description="Find answers to common questions and contact our support team." 
       />
       

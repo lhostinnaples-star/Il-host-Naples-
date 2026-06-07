@@ -20,7 +20,7 @@ export const SafetyCenterPage: React.FC = () => {
       icon: <CheckCircle2 className="h-6 w-6 text-amber-500" />,
       title: 'VERIFIED HOSTS',
       points: [
-        'All hosts verified by Il Host Naples team',
+        'All hosts verified by L Host Naples team',
         'CIR code checked',
         'ID document verified',
         'In-person property inspection'
@@ -51,7 +51,7 @@ export const SafetyCenterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white pt-24 pb-12">
       <SEOHead 
-        title="Safety Center - Il Host in Naples" 
+        title="Safety Center - L Host in Naples" 
         description="Your safety is our priority. Learn about our verification process and safety standards." 
       />
       
