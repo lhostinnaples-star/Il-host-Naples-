@@ -105,14 +105,115 @@ export const bookingReceivedTemplate = (booking: any) => wrapEmail(
 
 export const newBookingListerTemplate = (booking: any) => wrapEmail(
   'New Booking Request',
-  `<p>You have a new booking request for your property.</p>
-   <ul>
-     <li><strong>Guest Name:</strong> ${booking.customerName || booking.guestName || 'Guest'}</li>
-     <li><strong>Property:</strong> ${booking.itemName || 'Property'}</li>
-     <li><strong>Check-in:</strong> ${booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : (booking.checkIn || 'N/A')}</li>
-     <li><strong>Check-out:</strong> ${booking.endDate ? new Date(booking.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : (booking.checkOut || 'N/A')}</li>
-   </ul>
-   <p>Please log in to your dashboard to review and confirm.</p>`
+  `<p>You have a new booking request!</p>
+   
+   <div style="background:#1e293b;padding:20px;
+   border-radius:8px;margin:16px 0">
+     <h3 style="color:#F5A623;margin:0 0 16px">
+       Booking Details
+     </h3>
+     <ul style="list-style:none;padding:0;margin:0">
+       <li style="margin-bottom:8px">
+         <strong>Reference:</strong> 
+         ${booking.reference || 'N/A'}
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Property:</strong> 
+         ${booking.itemName || 'N/A'}
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Check-in:</strong> 
+         ${booking.startDate ? 
+           new Date(booking.startDate)
+           .toLocaleDateString('en-GB', {
+             day: 'numeric', 
+             month: 'long', 
+             year: 'numeric'
+           }) : 'N/A'}
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Check-out:</strong> 
+         ${booking.endDate ? 
+           new Date(booking.endDate)
+           .toLocaleDateString('en-GB', {
+             day: 'numeric', 
+             month: 'long', 
+             year: 'numeric'
+           }) : 'N/A'}
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Guests:</strong> 
+         ${booking.guests || 'N/A'}
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Total Price:</strong> 
+         €${booking.totalPrice || 'N/A'}
+       </li>
+       ${booking.notes ? 
+         `<li style="margin-bottom:8px">
+           <strong>Special Notes:</strong> 
+           ${booking.notes}
+         </li>` : ''}
+     </ul>
+   </div>
+
+   <div style="background:#1e293b;padding:20px;
+   border-radius:8px;margin:16px 0">
+     <h3 style="color:#F5A623;margin:0 0 16px">
+       Guest Contact Details
+     </h3>
+     <ul style="list-style:none;padding:0;margin:0">
+       <li style="margin-bottom:8px">
+         <strong>Name:</strong> 
+         ${booking.customerName || 'Guest'}
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Email:</strong> 
+         <a href="mailto:${booking.customerEmail}"
+         style="color:#F5A623">
+           ${booking.customerEmail || 'N/A'}
+         </a>
+       </li>
+       <li style="margin-bottom:8px">
+         <strong>Phone:</strong> 
+         <a href="tel:${booking.customerPhone}"
+         style="color:#F5A623">
+           ${booking.customerPhone || 'N/A'}
+         </a>
+       </li>
+     </ul>
+     <div style="margin-top:16px">
+       <a href="tel:${booking.customerPhone}"
+       style="background:#16a34a;color:#fff;
+       padding:8px 16px;border-radius:8px;
+       text-decoration:none;font-weight:bold;
+       display:inline-block;margin-right:8px">
+         📞 Call
+       </a>
+       <a href="mailto:${booking.customerEmail}"
+       style="background:#2563eb;color:#fff;
+       padding:8px 16px;border-radius:8px;
+       text-decoration:none;font-weight:bold;
+       display:inline-block;margin-right:8px">
+         ✉️ Email
+       </a>
+       <a href="https://wa.me/${booking.customerPhone}"
+       style="background:#25D366;color:#fff;
+       padding:8px 16px;border-radius:8px;
+       text-decoration:none;font-weight:bold;
+       display:inline-block">
+         💬 WhatsApp
+       </a>
+     </div>
+   </div>
+
+   <a href="https://lhostinnaples.com/owner"
+   style="background:#F5A623;color:#0f172a;
+   padding:12px 24px;border-radius:8px;
+   text-decoration:none;font-weight:bold;
+   display:inline-block;margin-top:8px">
+     Go to Dashboard
+   </a>`
 );
 
 export const bookingConfirmedTemplate = (booking: any) => wrapEmail(
