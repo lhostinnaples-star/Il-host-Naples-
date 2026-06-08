@@ -20,8 +20,8 @@ export const SharedBookingPool: React.FC = () => {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Filter for real shared bookings NOT owned by the current user
-  const poolBookings = allBookings.filter(b => b.status === 'SHARED' && b.ownerId !== user?.id);
+  // Filter for real shared bookings
+  const poolBookings = allBookings.filter(b => b.status === 'SHARED');
 
   const handleAccept = async (booking: any) => {
     try {
@@ -188,24 +188,32 @@ export const SharedBookingPool: React.FC = () => {
                 </div>
 
                 <div className="lg:border-l border-[#334155] lg:pl-6 shrink-0 space-y-3">
-                  <Button 
-                    onClick={() => {
-                      setSelectedBooking(booking);
-                      setShowModal(true);
-                    }}
-                    className="w-full bg-[#F5A623] text-black hover:bg-white hover:text-black font-black uppercase tracking-widest h-14 px-8 rounded-2xl transition-all shadow-lg shadow-[#F5A623]/10 flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle2 className="h-5 w-5" />
-                    Review Details
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleRelease(booking.id)}
-                    className="w-full border-[#334155] text-[#94a3b8] font-bold h-10 px-8 rounded-2xl transition-all flex items-center justify-center text-[10px] uppercase tracking-widest hover:bg-white/5"
-                  >
-                    Release Referral
-                  </Button>
-                  <p className="text-[10px] text-center text-[#64748b] italic">No penalty for not closing within 6h</p>
+                  {(booking.ownerId === user?.id || booking.originalListerId === user?.id || booking.sharedBy === user?.id) ? (
+                    <div className="flex items-center justify-center h-full p-4">
+                      <p className="text-sm text-[#F5A623] font-bold uppercase tracking-widest text-center">You shared this booking</p>
+                    </div>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setShowModal(true);
+                        }}
+                        className="w-full bg-[#F5A623] text-black hover:bg-white hover:text-black font-black uppercase tracking-widest h-14 px-8 rounded-2xl transition-all shadow-lg shadow-[#F5A623]/10 flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle2 className="h-5 w-5" />
+                        Review Details
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleRelease(booking.id)}
+                        className="w-full border-[#334155] text-[#94a3b8] font-bold h-10 px-8 rounded-2xl transition-all flex items-center justify-center text-[10px] uppercase tracking-widest hover:bg-white/5"
+                      >
+                        Release Referral
+                      </Button>
+                      <p className="text-[10px] text-center text-[#64748b] italic">No penalty for not closing within 6h</p>
+                    </>
+                  )}
                 </div>
               </Card>
             ))}

@@ -785,8 +785,8 @@ export const OwnerDashboard: React.FC = () => {
             if (activeBookingTab === 'past') return b.ownerId === user?.id && b.status === 'CLOSED';
             if (activeBookingTab === 'pool_accepted') return b.ownerId === user?.id && b.status === 'ACCEPTED';
             
-            // Pool tab: bookings shared by OTHERS
-            if (activeBookingTab === 'pool') return b.ownerId !== user?.id && b.status === 'SHARED';
+            // Pool tab
+            if (activeBookingTab === 'pool') return b.status === 'SHARED';
             
             return false;
           })
@@ -865,24 +865,30 @@ export const OwnerDashboard: React.FC = () => {
                       </Button>
                     </>
                   )}
-                  {booking.status === 'SHARED' && booking.ownerId !== user?.id && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => {
-                        updateBooking(booking.id, { 
-                          status: 'ACCEPTED', 
-                          ownerId: user?.id, 
-                          originalListerId: booking.ownerId,
-                          acceptedAt: new Date().toISOString()
-                        });
-                        toast.success('You have accepted this pool booking!');
-                        console.log('POOL ACTION:', `Booking ${booking.reference} taken from pool by ${user?.name}`);
-                        console.log('EMAIL TO CUSTOMER:', `Your booking ${booking.reference} is now being handled by ${user?.name}. New details incoming.`);
-                      }}
-                      className="bg-[#F5A623] text-[#0f172a] font-black uppercase text-[10px] tracking-widest h-9"
-                    >
-                      Accept from Pool
-                    </Button>
+                  {booking.status === 'SHARED' && (
+                    (booking.ownerId === user?.id || booking.originalListerId === user?.id || booking.sharedBy === user?.id) ? (
+                      <div className="flex items-center justify-center p-2 bg-[#F5A623]/10 border border-[#F5A623]/20 rounded-xl">
+                        <p className="text-[10px] text-[#F5A623] font-black uppercase tracking-widest text-center">You shared this booking</p>
+                      </div>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        onClick={() => {
+                          updateBooking(booking.id, { 
+                            status: 'ACCEPTED', 
+                            ownerId: user?.id, 
+                            originalListerId: booking.ownerId,
+                            acceptedAt: new Date().toISOString()
+                          });
+                          toast.success('You have accepted this pool booking!');
+                          console.log('POOL ACTION:', `Booking ${booking.reference} taken from pool by ${user?.name}`);
+                          console.log('EMAIL TO CUSTOMER:', `Your booking ${booking.reference} is now being handled by ${user?.name}. New details incoming.`);
+                        }}
+                        className="bg-[#F5A623] text-[#0f172a] font-black uppercase text-[10px] tracking-widest h-9"
+                      >
+                        Accept from Pool
+                      </Button>
+                    )
                   )}
                   {booking.status === 'ACCEPTED' && booking.acceptedAt && (
                     <div className="flex flex-col gap-2 items-end">
@@ -938,7 +944,7 @@ export const OwnerDashboard: React.FC = () => {
             if (activeBookingTab === 'confirmed') return b.ownerId === user?.id && b.status === 'CONFIRMED';
             if (activeBookingTab === 'past') return b.ownerId === user?.id && b.status === 'CLOSED';
             if (activeBookingTab === 'pool_accepted') return b.ownerId === user?.id && b.status === 'ACCEPTED';
-            if (activeBookingTab === 'pool') return b.ownerId !== user?.id && b.status === 'SHARED';
+            if (activeBookingTab === 'pool') return b.status === 'SHARED';
             return false;
           }).length === 0 && (
           <div className="py-12 text-center border-2 border-dashed border-[#334155] rounded-2xl">
