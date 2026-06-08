@@ -89,6 +89,8 @@ export interface Booking {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  listerEmail?: string;
+  guestEmail?: string;
   ownerId: string; // listerId or providerId
   startDate: string; // ISO (also used for service date)
   endDate?: string; // ISO (optional for services)

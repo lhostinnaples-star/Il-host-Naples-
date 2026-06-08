@@ -880,7 +880,7 @@ export const OwnerDashboard: React.FC = () => {
                            updateBooking(booking.id, {
                              status: 'SHARED',
                              ownerId: booking.originalListerId || 'demo-owner',
-                             acceptedAt: deleteField()
+                             acceptedAt: deleteField() as any
                            });
                            toast.error('Pool booking acceptance expired');
                         }} 
@@ -893,7 +893,7 @@ export const OwnerDashboard: React.FC = () => {
                              updateBooking(booking.id, {
                                status: 'SHARED',
                                ownerId: booking.originalListerId || 'demo-owner',
-                               acceptedAt: deleteField()
+                               acceptedAt: deleteField() as any
                              });
                              toast.success('Booking returned to pool');
                           }}
