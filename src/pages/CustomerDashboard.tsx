@@ -302,14 +302,26 @@ export const CustomerDashboard: React.FC = () => {
                   <h3 className="text-lg font-bold text-white group-hover:text-[#fbbf24] transition-colors">{booking.itemName}</h3>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#334155]">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Dates</p>
-                    <p className="text-xs font-bold text-white">{new Date(booking.startDate).toLocaleDateString()} {booking.endDate ? `— ${new Date(booking.endDate).toLocaleDateString()}` : ''}</p>
+                <div className="flex flex-col gap-4 pt-4 border-t border-[#334155]">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Dates</p>
+                      <p className="text-xs font-bold text-white">{new Date(booking.startDate).toLocaleDateString()} {booking.endDate ? `— ${new Date(booking.endDate).toLocaleDateString()}` : ''}</p>
+                    </div>
+                    <div className="space-y-1 text-right">
+                      <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Reference</p>
+                      <p className="text-xs font-bold text-white">#{booking.reference}</p>
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-[#94a3b8] uppercase tracking-widest">Total</p>
-                    <p className="text-sm font-black text-[#F5A623]">{formatPrice(booking.totalPrice)}</p>
+                  <div className="space-y-2 pt-2 border-t border-[#334155]/50">
+                    <div className="flex justify-between items-center text-xs text-[#94a3b8]">
+                      <span>Base price</span>
+                      <span>{formatPrice(booking.totalPrice / (booking.endDate ? Math.max(1, Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24))) : 1))} × {booking.endDate ? Math.max(1, Math.ceil((new Date(booking.endDate).getTime() - new Date(booking.startDate).getTime()) / (1000 * 60 * 60 * 24))) : 1} nights</span>
+                    </div>
+                    <div className="flex justify-between items-center font-black">
+                      <span className="text-[10px] text-[#94a3b8] uppercase tracking-widest">Total Price</span>
+                      <span className="text-sm text-[#F5A623]">{formatPrice(booking.totalPrice)}</span>
+                    </div>
                   </div>
                 </div>
 

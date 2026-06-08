@@ -4,7 +4,7 @@ import {
   Users, Calendar, MapPin, Share2, 
   MessageCircle, ArrowLeft, Info,
   Search, ClipboardList, CheckCircle2,
-  Clock
+  Clock, Phone, Mail, MessageSquare
 } from 'lucide-react';
 import { Card, Button } from '../components/UI';
 import { useNavigate } from 'react-router-dom';
@@ -248,8 +248,23 @@ export const SharedBookingPool: React.FC = () => {
 
                <div className="mt-8 p-4 rounded-xl bg-[#F5A623]/10 border border-[#F5A623]/20 text-xs text-[#F5A623]">
                  <p className="font-black uppercase tracking-widest flex items-center gap-2 mb-2"><Info className="h-4 w-4" /> Professional Handover</p>
-                 <p className="leading-relaxed">By accepting this booking, you agree to contact the referring party quickly. Customer satisfaction is paramount for community trust.</p>
+                 <p className="leading-relaxed mb-4">By accepting this booking, you agree to contact the referring party quickly. Customer satisfaction is paramount for community trust.</p>
                </div>
+               
+               {selectedBooking.status === 'ACCEPTED' && (
+                 <div className="mt-6 border-t border-[#334155] pt-6">
+                    <h4 className="text-white font-bold mb-4">Customer Contact Info Revealed</h4>
+                    <div className="flex flex-col gap-2 text-xs font-medium text-white mb-4">
+                       <span className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#F5A623]" /> {selectedBooking.customerEmail || 'Guest Email'}</span>
+                       <span className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#F5A623]" /> {selectedBooking.customerPhone || 'Guest Phone'}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                       <a href={`tel:${selectedBooking.customerPhone || ''}`} className="bg-green-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Phone className="h-4 w-4" /> Call</a>
+                       <a href={`mailto:${selectedBooking.customerEmail || ''}`} className="bg-blue-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Mail className="h-4 w-4" /> Email</a>
+                       <a href={`https://wa.me/${selectedBooking.customerPhone || ''}`} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><MessageSquare className="h-4 w-4" /> WhatsApp</a>
+                    </div>
+                 </div>
+               )}
             </div>
             <div className="flex gap-4">
               <Button onClick={() => setShowModal(false)} variant="outline" className="flex-1 border-[#334155] text-white rounded-xl h-12 uppercase tracking-widest text-[10px] font-black">Cancel</Button>

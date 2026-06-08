@@ -483,6 +483,17 @@ export const ServiceProviderDashboard: React.FC = () => {
                         <p className="text-[10px] text-[#94a3b8] italic leading-tight">"{booking.notes}"</p>
                       </div>
                     )}
+                    {booking.status !== 'PENDING' && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="w-full flex gap-4 text-xs font-medium text-white mb-2">
+                           <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.customerEmail}</span>
+                           <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.customerPhone}</span>
+                        </div>
+                        <a href={`tel:${booking.customerPhone}`} className="bg-green-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Phone className="h-4 w-4" /> Call</a>
+                        <a href={`mailto:${booking.customerEmail}`} className="bg-blue-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Mail className="h-4 w-4" /> Email</a>
+                        <a href={`https://wa.me/${booking.customerPhone}`} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><MessageSquare className="h-4 w-4" /> WhatsApp</a>
+                      </div>
+                    )}
                   </div>
                 </div>
 

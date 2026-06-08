@@ -444,6 +444,15 @@ export const SupplierDashboard: React.FC = () => {
                 </div>
               </div>
               
+              <div className="mt-4 flex flex-wrap gap-2">
+                <div className="w-full flex gap-4 text-[10px] font-medium text-[#94a3b8] mb-2">
+                   <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {order.listerEmail || 'host@example.com'}</span>
+                   <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {order.listerPhone || '+39 081 123 4567'}</span>
+                </div>
+                <a href={`tel:${order.listerPhone || '+390811234567'}`} className="bg-green-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Phone className="h-4 w-4" /> Call</a>
+                <a href={`mailto:${order.listerEmail || 'host@example.com'}`} className="bg-blue-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Mail className="h-4 w-4" /> Email</a>
+              </div>
+              
               {order.status === 'PENDING' && (
                 <div className="flex gap-3 mt-4">
                   <Button 
@@ -631,6 +640,14 @@ export const SupplierDashboard: React.FC = () => {
                        <p className="text-white font-medium">{order.customerName}</p>
                        <p className="text-[#94a3b8]">Due: {new Date(order.startDate).toLocaleDateString()}</p>
                      </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <div className="w-full flex gap-4 text-[10px] font-medium text-[#94a3b8] mb-2">
+                       <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {order.listerEmail || 'host@example.com'}</span>
+                       <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {order.listerPhone || '+39 081 123 4567'}</span>
+                    </div>
+                    <a href={`tel:${order.listerPhone || '+390811234567'}`} className="bg-green-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Phone className="h-4 w-4" /> Call</a>
+                    <a href={`mailto:${order.listerEmail || 'host@example.com'}`} className="bg-blue-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Mail className="h-4 w-4" /> Email</a>
                   </div>
                   {order.status === 'PENDING' && (
                     <Button 

@@ -10,7 +10,7 @@ import {
   MoreVertical, ExternalLink, Filter, Search, ChevronRight,
   TrendingUp, ArrowUpRight, ArrowDownRight, MapPin, Users as UsersIcon,
   Package, LayoutGrid, AlertCircle, Mail, Phone, Image as ImageIcon,
-  FileText, Globe, ShieldCheck, Languages, Check, X, Map
+  FileText, Globe, ShieldCheck, Languages, Check, X, Map, MessageSquare
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -817,6 +817,17 @@ export const OwnerDashboard: React.FC = () => {
                       <div className="mt-3 p-3 rounded-lg bg-[#0f172a] border border-[#334155]">
                         <p className="text-[10px] font-bold text-[#F5A623] uppercase mb-1">Notes:</p>
                         <p className="text-xs text-[#94a3b8] italic">"{booking.notes}"</p>
+                      </div>
+                    )}
+                    {booking.status !== 'PENDING' && booking.status !== 'SHARED' && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="w-full flex gap-4 text-xs font-medium text-white mb-2">
+                           <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.customerEmail}</span>
+                           <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.customerPhone}</span>
+                        </div>
+                        <a href={`tel:${booking.customerPhone}`} className="bg-green-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Phone className="h-4 w-4" /> Call</a>
+                        <a href={`mailto:${booking.customerEmail}`} className="bg-blue-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Mail className="h-4 w-4" /> Email</a>
+                        <a href={`https://wa.me/${booking.customerPhone}`} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><MessageSquare className="h-4 w-4" /> WhatsApp</a>
                       </div>
                     )}
                   </div>
