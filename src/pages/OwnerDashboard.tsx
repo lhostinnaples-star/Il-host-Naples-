@@ -819,7 +819,7 @@ export const OwnerDashboard: React.FC = () => {
                         <p className="text-xs text-[#94a3b8] italic">"{booking.notes}"</p>
                       </div>
                     )}
-                    {booking.status !== 'PENDING' && booking.status !== 'SHARED' && (
+                    {booking.status !== 'SHARED' && (
                       <div className="mt-4 flex flex-wrap gap-2">
                         <div className="w-full flex gap-4 text-xs font-medium text-white mb-2">
                            <p className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.customerEmail}</p>
