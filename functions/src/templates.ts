@@ -117,14 +117,14 @@ export const newBookingListerTemplate = (booking: any) => wrapEmail(
 
 export const bookingConfirmedTemplate = (booking: any) => wrapEmail(
   'Booking Confirmed!',
-  `<p>Hello ${booking.guestName},</p>
+  `<p>Hello ${booking.customerName || booking.guestName || 'Guest'},</p>
    <p>Your booking for <strong>${booking.itemName || 'property'}</strong> has been confirmed!</p>
    <p>We look forward to hosting you.</p>`
 );
 
 export const bookingCancelledTemplate = (booking: any) => wrapEmail(
   'Booking Cancelled',
-  `<p>Hello ${booking.guestName},</p>
+  `<p>Hello ${booking.customerName || booking.guestName || 'Guest'},</p>
    <p>We are writing to confirm that your booking for <strong>${booking.itemName || 'property'}</strong> has been cancelled.</p>
    <p>If you think this is a mistake, please contact our support team.</p>`
 );
