@@ -736,11 +736,16 @@ export const OwnerDashboard: React.FC = () => {
       console.log('POOL NOTIFICATION:', `Booking ${booking.reference} shared to pool`);
     }
 
-    updateBooking(bookingId, { 
-      status: action as any,
-      rejectionReason: reason,
-      sharedAt: action === 'SHARED' ? new Date().toISOString() : undefined
-    });
+    const updates: any = { 
+      status: action 
+    };
+    if (reason) {
+      updates.rejectionReason = reason;
+    }
+    if (action === 'SHARED') {
+      updates.sharedAt = new Date().toISOString();
+    }
+    updateBooking(bookingId, updates);
 
     toast.success(`Booking ${action.toLowerCase()} successfully`);
   };

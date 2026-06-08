@@ -616,16 +616,22 @@ export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!isDemoMode) {
       try {
         await updateDoc(doc(db, 'bookings', id), updates);
+        setBookings(prev => {
+          const updated = prev.map(b => b.id === id ? { ...b, ...updates } : b);
+          localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
+          return updated;
+        });
       } catch (err) {
-        console.error('Error updating booking in Firestore:', err);
+        console.error('Error updating booking:', err);
+        toast.error('Failed to update booking');
       }
+    } else {
+      setBookings(prev => {
+        const updated = prev.map(b => b.id === id ? { ...b, ...updates } : b);
+        localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
+        return updated;
+      });
     }
-
-    setBookings(prev => {
-      const updated = prev.map(b => b.id === id ? { ...b, ...updates } : b);
-      localStorage.setItem('stay_ease_bookings', JSON.stringify(updated));
-      return updated;
-    });
   }, []);
 
   const deleteBooking = useCallback(async (id: string) => {
