@@ -122,6 +122,72 @@ export const onBookingCreated = functions.firestore
         html: newBookingListerTemplate(booking)
       });
     }
+
+    // If booking is manually shared to pool
+    if (booking.status === 'SHARED') {
+      // Email all active listers
+      const listersSnapshot = await admin
+        .firestore()
+        .collection('users')
+        .where('role', '==', 'hotel_owner')
+        .where('status', '==', 'ACTIVE')
+        .get();
+      
+      const emailPromises = listersSnapshot.docs
+        .map(doc => {
+          const lister = doc.data();
+          return transporter.sendMail({
+            from: 'noreply@lhostinnaples.com',
+            to: lister.email,
+            subject: '🏨 New Booking Available in Pool!',
+            html: `
+              <div style="font-family:sans-serif;
+              background:#0f172a;color:#fff;
+              padding:32px;border-radius:12px">
+                <h2 style="color:#F5A623">
+                  New Booking in Sharing Pool
+                </h2>
+                <p>A new booking is available.</p>
+                <p><strong>Type:</strong> 
+                ${booking.itemName || 'Property'}</p>
+                <p><strong>Guest:</strong> 
+                ${booking.customerName}</p>
+                <p><strong>Dates:</strong> 
+                ${booking.startDate} - ${booking.endDate}</p>
+                <p><strong>Guests:</strong> 
+                ${booking.guests}</p>
+                <p><strong>Area:</strong> 
+                ${booking.area || 'Naples'}</p>
+                <a href="https://lhostinnaples.com/shared-pool"
+                style="background:#F5A623;color:#0f172a;
+                padding:12px 24px;border-radius:8px;
+                text-decoration:none;font-weight:bold;
+                display:inline-block;margin-top:16px">
+                  View Booking Pool
+                </a>
+              </div>
+            `
+          });
+        });
+      
+      await Promise.all(emailPromises);
+
+      // Email admin
+      await transporter.sendMail({
+        from: 'admin@lhostinnaples.com',
+        to: 'info@lhostinnaples.com',
+        subject: '📋 New Manual Pool Booking',
+        html: `
+          <h2>New Manual Pool Booking</h2>
+          <p><strong>Type:</strong> ${booking.itemName}</p>
+          <p><strong>Guest:</strong> ${booking.customerName}</p>
+          <p><strong>Dates:</strong> 
+          ${booking.startDate} - ${booking.endDate}</p>
+          <p><strong>Area:</strong> 
+          ${booking.area || 'Naples'}</p>
+        `
+      });
+    }
   });
 
 // 4. Booking Status Changed
