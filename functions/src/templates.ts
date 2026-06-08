@@ -93,12 +93,12 @@ export const accountRejectedTemplate = (name: string) => wrapEmail(
 
 export const bookingReceivedTemplate = (booking: any) => wrapEmail(
   'Booking Request Received',
-  `<p>Hello ${booking.guestName},</p>
+  `<p>Hello ${booking.customerName || 'Guest'},</p>
    <p>We have received your booking request for <strong>${booking.itemName || 'property'}</strong>.</p>
    <ul>
-     <li><strong>Check-in:</strong> ${booking.startDate || booking.checkIn}</li>
-     <li><strong>Check-out:</strong> ${booking.endDate || booking.checkOut}</li>
-     <li><strong>Guests:</strong> ${booking.guests}</li>
+     <li><strong>Check-in:</strong> ${booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : (booking.checkIn || 'N/A')}</li>
+     <li><strong>Check-out:</strong> ${booking.endDate ? new Date(booking.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : (booking.checkOut || 'N/A')}</li>
+     <li><strong>Guests:</strong> ${booking.guests || 'N/A'}</li>
    </ul>
    <p>We are processing your request and will send a confirmation shortly.</p>`
 );
@@ -107,10 +107,10 @@ export const newBookingListerTemplate = (booking: any) => wrapEmail(
   'New Booking Request',
   `<p>You have a new booking request for your property.</p>
    <ul>
-     <li><strong>Guest Name:</strong> ${booking.guestName}</li>
+     <li><strong>Guest Name:</strong> ${booking.customerName || booking.guestName || 'Guest'}</li>
      <li><strong>Property:</strong> ${booking.itemName || 'Property'}</li>
-     <li><strong>Check-in:</strong> ${booking.startDate || booking.checkIn}</li>
-     <li><strong>Check-out:</strong> ${booking.endDate || booking.checkOut}</li>
+     <li><strong>Check-in:</strong> ${booking.startDate ? new Date(booking.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : (booking.checkIn || 'N/A')}</li>
+     <li><strong>Check-out:</strong> ${booking.endDate ? new Date(booking.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : (booking.checkOut || 'N/A')}</li>
    </ul>
    <p>Please log in to your dashboard to review and confirm.</p>`
 );

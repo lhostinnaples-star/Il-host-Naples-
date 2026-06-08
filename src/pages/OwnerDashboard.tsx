@@ -808,9 +808,9 @@ export const OwnerDashboard: React.FC = () => {
                     </div>
                     <p className="text-xs text-[#e2e8f0] mb-2">{booking.itemName}</p>
                     <div className="flex flex-wrap gap-4 text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest">
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(booking.startDate).toLocaleDateString()} {booking.endDate ? `- ${new Date(booking.endDate).toLocaleDateString()}` : ''}</span>
-                      {booking.time && <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {booking.time}</span>}
-                      <span className="flex items-center gap-1"><UsersIcon className="h-3 w-3" /> {booking.guests} {booking.bookingType === 'SERVICE' ? 'People' : 'Guests'}</span>
+                      <span className="flex items-center gap-1 text-white"><Calendar className="h-3 w-3" /> {new Date(booking.startDate).toLocaleDateString()} {booking.endDate ? `- ${new Date(booking.endDate).toLocaleDateString()}` : ''}</span>
+                      {booking.time && <span className="flex items-center gap-1 text-white"><Clock className="h-3 w-3" /> {booking.time}</span>}
+                      <span className="flex items-center gap-1 text-white"><UsersIcon className="h-3 w-3" /> {booking.guests} {booking.bookingType === 'SERVICE' ? 'People' : 'Guests'}</span>
                       <span className="font-black text-[#F5A623]">{formatPrice(booking.totalPrice)}</span>
                     </div>
                     {booking.notes && (
@@ -822,8 +822,8 @@ export const OwnerDashboard: React.FC = () => {
                     {booking.status !== 'PENDING' && booking.status !== 'SHARED' && (
                       <div className="mt-4 flex flex-wrap gap-2">
                         <div className="w-full flex gap-4 text-xs font-medium text-white mb-2">
-                           <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.customerEmail}</span>
-                           <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.customerPhone}</span>
+                           <p className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.customerEmail}</p>
+                           <p className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.customerPhone}</p>
                         </div>
                         <a href={`tel:${booking.customerPhone}`} className="bg-green-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Phone className="h-4 w-4" /> Call</a>
                         <a href={`mailto:${booking.customerEmail}`} className="bg-blue-600 text-white rounded-xl px-3 py-1 text-sm flex items-center gap-1 font-bold"><Mail className="h-4 w-4" /> Email</a>
