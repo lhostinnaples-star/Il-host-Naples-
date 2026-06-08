@@ -12,7 +12,7 @@ import {
   Package, LayoutGrid, AlertCircle, Mail, Phone, Image as ImageIcon,
   FileText, Globe, ShieldCheck, Languages, Check, X, Map, MessageSquare
 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../components/DashboardLayout';
 import { PropertyFormModal } from '../components/PropertyFormModal';
@@ -224,6 +224,7 @@ export const OwnerDashboard: React.FC = () => {
   }
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const section = searchParams.get('section') || 'overview';
   
   const myHotels = allHotels.filter(h => h.ownerId === user?.id || (isDemoMode && !h.ownerId));
@@ -1033,6 +1034,42 @@ export const OwnerDashboard: React.FC = () => {
         </div>
 
           <div className="space-y-6">
+            {(!user?.supplierAccess || user.supplierAccess === 'none') && (
+              <div className="bg-[#1e293b] rounded-2xl p-6 border border-[#334155]">
+                <h3 className="text-white font-bold text-lg mb-2">🏪 Join Supplier Network</h3>
+                <p className="text-[#94a3b8] text-sm mb-4">
+                  Get access to our exclusive supplier directory and connect with trusted service providers in Naples.
+                </p>
+                <button
+                  onClick={() => navigate('/owner?supplier_modal=true')}
+                  className="bg-[#F5A623] text-[#0f172a] px-4 py-2 rounded-xl font-bold text-sm"
+                >
+                  Request Access
+                </button>
+              </div>
+            )}
+            
+            {user?.supplierAccess === 'pending' && (
+              <div className="bg-[#1e293b] rounded-2xl p-6 border border-yellow-500/30">
+                <h3 className="text-yellow-400 font-bold">⏳ Supplier Access Pending</h3>
+                <p className="text-[#94a3b8] text-sm">
+                  Your request is under review. We'll notify you when approved.
+                </p>
+              </div>
+            )}
+            
+            {user?.supplierAccess === 'approved' && (
+              <div className="bg-[#1e293b] rounded-2xl p-6 border border-green-500/30">
+                <h3 className="text-green-400 font-bold">✅ Supplier Network Access</h3>
+                <button
+                  onClick={() => navigate('/supplier-directory')}
+                  className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm mt-2"
+                >
+                  View Supplier Directory
+                </button>
+              </div>
+            )}
+
             <h2 className="text-xl font-bold text-white">Recent Inquiries</h2>
             <Card className="border-[#334155] bg-[#1e293b] divide-y divide-[#334155] overflow-hidden rounded-[2rem]">
               {myBookings.filter(b => b.status === 'PENDING').slice(0, 4).map(booking => (

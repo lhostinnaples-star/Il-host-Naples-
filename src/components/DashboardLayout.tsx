@@ -96,15 +96,12 @@ export const DashboardSidebar: React.FC<{
           { id: 'settings', label: 'Settings', icon: Settings, href: '/admin?section=settings' },
         ];
       case UserRole.HOTEL_OWNER:
-        const items = [
+        return [
           { id: 'overview', label: 'My Properties', icon: Home, href: '/owner' },
-          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' }
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' },
+          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/supplier-directory' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' }
         ];
-        if (user?.supplierAccess === 'approved') {
-          items.push({ id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/supplier-directory' });
-        }
-        items.push({ id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' });
-        return items;
       case UserRole.CUSTOMER:
         return [
           { id: 'overview', label: 'Overview', icon: Home, href: '/dashboard' },
@@ -361,15 +358,12 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode, title: strin
           { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/admin?section=suppliers' },
         ];
       case UserRole.HOTEL_OWNER:
-        const items = [
+        return [
           { id: 'overview', label: 'Home', icon: Home, href: '/owner' },
-          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' }
+          { id: 'bookings', label: 'Bookings', icon: Calendar, href: '/owner?section=bookings' },
+          { id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/supplier-directory' },
+          { id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' }
         ];
-        if (user?.supplierAccess === 'approved') {
-          items.push({ id: 'suppliers', label: 'Suppliers', icon: Wrench, href: '/supplier-directory' });
-        }
-        items.push({ id: 'profile', label: 'Profile', icon: UserIcon, href: '/owner?section=profile' });
-        return items;
       case UserRole.CUSTOMER:
         return [
           { id: 'overview', label: 'Overview', icon: Home, href: '/dashboard' },
