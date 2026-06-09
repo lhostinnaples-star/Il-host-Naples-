@@ -108,74 +108,76 @@ export const newBookingListerTemplate = (booking: any) => wrapEmail(
   `<p>You have a new booking request!</p>
    
    <div style="background:#1e293b;padding:20px;
-   border-radius:8px;margin:16px 0">
+   border-radius:8px;margin:16px 0;
+   color:#ffffff">
      <h3 style="color:#F5A623;margin:0 0 16px">
        Booking Details
      </h3>
      <ul style="list-style:none;padding:0;margin:0">
        <li style="margin-bottom:8px">
-         <strong>Reference:</strong> 
-         ${booking.reference || 'N/A'}
+         <strong style="color:#94a3b8">Reference:</strong> 
+         <span style="color:#ffffff">${booking.reference || 'N/A'}</span>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Property:</strong> 
-         ${booking.itemName || 'N/A'}
+         <strong style="color:#94a3b8">Property:</strong> 
+         <span style="color:#ffffff">${booking.itemName || 'N/A'}</span>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Check-in:</strong> 
-         ${booking.startDate ? 
+         <strong style="color:#94a3b8">Check-in:</strong> 
+         <span style="color:#ffffff">${booking.startDate ? 
            new Date(booking.startDate)
            .toLocaleDateString('en-GB', {
              day: 'numeric', 
              month: 'long', 
              year: 'numeric'
-           }) : 'N/A'}
+           }) : 'N/A'}</span>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Check-out:</strong> 
-         ${booking.endDate ? 
+         <strong style="color:#94a3b8">Check-out:</strong> 
+         <span style="color:#ffffff">${booking.endDate ? 
            new Date(booking.endDate)
            .toLocaleDateString('en-GB', {
              day: 'numeric', 
              month: 'long', 
              year: 'numeric'
-           }) : 'N/A'}
+           }) : 'N/A'}</span>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Guests:</strong> 
-         ${booking.guests || 'N/A'}
+         <strong style="color:#94a3b8">Guests:</strong> 
+         <span style="color:#ffffff">${booking.guests || 'N/A'}</span>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Total Price:</strong> 
-         €${booking.totalPrice || 'N/A'}
+         <strong style="color:#94a3b8">Total Price:</strong> 
+         <span style="color:#ffffff">€${booking.totalPrice || 'N/A'}</span>
        </li>
        ${booking.notes ? 
          `<li style="margin-bottom:8px">
-           <strong>Special Notes:</strong> 
-           ${booking.notes}
+           <strong style="color:#94a3b8">Special Notes:</strong> 
+           <span style="color:#ffffff">${booking.notes}</span>
          </li>` : ''}
      </ul>
    </div>
 
    <div style="background:#1e293b;padding:20px;
-   border-radius:8px;margin:16px 0">
+   border-radius:8px;margin:16px 0;
+   color:#ffffff">
      <h3 style="color:#F5A623;margin:0 0 16px">
        Guest Contact Details
      </h3>
      <ul style="list-style:none;padding:0;margin:0">
        <li style="margin-bottom:8px">
-         <strong>Name:</strong> 
-         ${booking.customerName || 'Guest'}
+         <strong style="color:#94a3b8">Name:</strong> 
+         <span style="color:#ffffff">${booking.customerName || 'Guest'}</span>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Email:</strong> 
+         <strong style="color:#94a3b8">Email:</strong> 
          <a href="mailto:${booking.customerEmail}"
          style="color:#F5A623">
            ${booking.customerEmail || 'N/A'}
          </a>
        </li>
        <li style="margin-bottom:8px">
-         <strong>Phone:</strong> 
+         <strong style="color:#94a3b8">Phone:</strong> 
          <a href="tel:${booking.customerPhone}"
          style="color:#F5A623">
            ${booking.customerPhone || 'N/A'}
