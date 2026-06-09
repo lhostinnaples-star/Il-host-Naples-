@@ -804,7 +804,7 @@ export const OwnerDashboard: React.FC = () => {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-white">{booking.customerName}</h3>
+                      <h3 className="font-bold text-[#0f172a]">{booking.customerName}</h3>
                       <span className="text-[10px] font-bold text-[#64748b] bg-[#0f172a] border border-[#334155] px-2 py-0.5 rounded">#{booking.reference}</span>
                       {activeBookingTab === 'pool' && (
                         <span className="text-[10px] font-black text-[#F5A623] bg-[#F5A623]/10 px-2 py-0.5 rounded uppercase tracking-widest flex items-center gap-1">
@@ -812,11 +812,11 @@ export const OwnerDashboard: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#e2e8f0] mb-2">{booking.itemName}</p>
+                    <p className="text-xs text-[#0f172a] mb-2">{booking.itemName}</p>
                     <div className="flex flex-wrap gap-4 text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest">
-                      <span className="flex items-center gap-1 text-white"><Calendar className="h-3 w-3" /> {new Date(booking.startDate).toLocaleDateString()} {booking.endDate ? `- ${new Date(booking.endDate).toLocaleDateString()}` : ''}</span>
-                      {booking.time && <span className="flex items-center gap-1 text-white"><Clock className="h-3 w-3" /> {booking.time}</span>}
-                      <span className="flex items-center gap-1 text-white"><UsersIcon className="h-3 w-3" /> {booking.guests} {booking.bookingType === 'SERVICE' ? 'People' : 'Guests'}</span>
+                      <span className="flex items-center gap-1 text-[#0f172a]"><Calendar className="h-3 w-3" /> {new Date(booking.startDate).toLocaleDateString()} {booking.endDate ? `- ${new Date(booking.endDate).toLocaleDateString()}` : ''}</span>
+                      {booking.time && <span className="flex items-center gap-1 text-[#0f172a]"><Clock className="h-3 w-3" /> {booking.time}</span>}
+                      <span className="flex items-center gap-1 text-[#0f172a]"><UsersIcon className="h-3 w-3" /> {booking.guests} {booking.bookingType === 'SERVICE' ? 'People' : 'Guests'}</span>
                       <span className="font-black text-[#F5A623]">{formatPrice(booking.totalPrice)}</span>
                     </div>
                     {booking.notes && (
@@ -827,7 +827,7 @@ export const OwnerDashboard: React.FC = () => {
                     )}
                     {booking.status !== 'SHARED' && (
                       <div className="mt-4 flex flex-wrap gap-2">
-                        <div className="w-full flex gap-4 text-xs font-medium text-white mb-2">
+                        <div className="w-full flex gap-4 text-xs font-medium text-[#0f172a] mb-2">
                            <p className="flex items-center gap-1"><Mail className="h-3 w-3" /> {booking.customerEmail}</p>
                            <p className="flex items-center gap-1"><Phone className="h-3 w-3" /> {booking.customerPhone}</p>
                         </div>
