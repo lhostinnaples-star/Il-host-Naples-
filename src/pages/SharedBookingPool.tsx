@@ -26,7 +26,7 @@ export const SharedBookingPool: React.FC = () => {
   const handleAccept = async (booking: any) => {
     try {
       // Logic for claiming common pool referral
-      updateBooking(booking.id, { 
+      await updateBooking(booking.id, { 
         status: 'ACCEPTED',
         ownerId: user?.id,
         originalListerId: booking.ownerId,
