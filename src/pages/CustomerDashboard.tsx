@@ -233,7 +233,24 @@ export const CustomerDashboard: React.FC = () => {
 
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-2xl font-bold text-white">{bookingTypeFilter === 'PROPERTY' ? 'My Trips' : 'My Experiences'}</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold text-white">{bookingTypeFilter === 'PROPERTY' ? 'My Trips' : 'My Experiences'}</h2>
+            {bookingTypeFilter === 'PROPERTY' ? (
+              <button
+                onClick={() => navigate('/search')}
+                className="text-[#F5A623] text-sm font-bold hover:underline"
+              >
+                View All Properties →
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/services')}
+                className="text-[#F5A623] text-sm font-bold hover:underline"
+              >
+                View All Experiences →
+              </button>
+            )}
+          </div>
           
           <div className="flex bg-[#1e293b] p-1 rounded-xl border border-[#334155] self-start">
             <button
@@ -356,8 +373,15 @@ export const CustomerDashboard: React.FC = () => {
             <div className="col-span-1 md:col-span-2 py-12 text-center border-2 border-dashed border-white/5 rounded-2xl">
               <Calendar className="h-12 w-12 text-neutral-700 mx-auto mb-4" />
               <p className="text-neutral-500 font-bold uppercase tracking-widest text-xs">No {bookingTypeFilter.toLowerCase().replace('property', 'stay')} bookings found in this category</p>
-              {bookingTypeFilter === 'SERVICE' && (
-                 <Button className="mt-4 bg-[#fbbf24] text-black hover:bg-white" onClick={() => window.location.href='/services'}>Explore Naples Experiences</Button>
+              {bookingTypeFilter === 'SERVICE' ? (
+                 <Button className="mt-4 bg-[#fbbf24] text-black hover:bg-white" onClick={() => navigate('/services')}>Explore Naples Experiences</Button>
+              ) : (
+                 <button
+                   onClick={() => navigate('/search')}
+                   className="bg-[#F5A623] text-[#0f172a] px-4 py-2 rounded-xl font-bold text-sm mt-4"
+                 >
+                   Explore Naples Properties
+                 </button>
               )}
             </div>
           )}
