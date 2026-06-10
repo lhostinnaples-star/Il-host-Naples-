@@ -10,7 +10,7 @@ import {
   Camera, Briefcase, Bell, Mail, Phone, Globe, DollarSign
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useHotels } from '../contexts/HotelsContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { toast } from 'sonner';
@@ -22,6 +22,7 @@ import { ImageUpload } from '../components/ImageUpload';
 import { SEOHead } from '../components/SEOHead';
 
 export const CustomerDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, isDemoMode, updateUser } = useAuth();
   const { formatPrice } = useCurrency();
   const { currentLanguage, setLanguage } = useLanguage();
