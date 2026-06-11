@@ -352,6 +352,17 @@ export const ExperienceDetailsPage: React.FC = () => {
                 {/* Left: Form */}
                 <div className="lg:col-span-3 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="col-span-1 md:col-span-2 space-y-2">
+                      <label className="text-[10px] font-semibold uppercase text-[#0f172a] tracking-widest">
+                        Preferred Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={requestDate}
+                        onChange={(e) => setRequestDate(e.target.value)}
+                        className="h-14 border-[#e2e8f0] rounded-2xl bg-white text-[#0f172a]"
+                      />
+                    </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-semibold uppercase text-[#0f172a] tracking-widest">Your Name</label>
                       <Input 
