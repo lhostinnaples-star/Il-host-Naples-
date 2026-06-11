@@ -192,3 +192,15 @@ body {
   background: rgba(245, 166, 35, 0.2) !important;
   border-color: #F5A623 !important;
 }
+
+input[type="date"] {
+  color: #0f172a;
+}
+
+input[type="date"]::-webkit-datetime-edit {
+  color: #0f172a;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  color: #0f172a;
+}

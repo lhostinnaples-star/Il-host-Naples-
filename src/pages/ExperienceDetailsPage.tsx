@@ -245,30 +245,30 @@ export const ExperienceDetailsPage: React.FC = () => {
               <form onSubmit={handleOpenForm} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Date</label>
+                    <label className="text-xs font-semibold text-[#0f172a] uppercase tracking-widest ml-1">Date</label>
                     <Input 
                       type="date"
                       required
                       value={requestDate}
                       onChange={(e) => setRequestDate(e.target.value)}
-                      className="rounded-2xl border-neutral-200 focus:border-[#fbbf24] h-12"
+                      className="rounded-2xl border-[#e2e8f0] focus:border-[#fbbf24] h-12 bg-white text-[#0f172a] placeholder:text-[#94a3b8] [color-scheme:light]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Time</label>
+                    <label className="text-xs font-semibold text-[#0f172a] uppercase tracking-widest ml-1">Time</label>
                     <Input 
                       type="time"
                       required
                       value={requestTime}
                       onChange={(e) => setRequestTime(e.target.value)}
-                      className="rounded-2xl border-neutral-200 focus:border-[#fbbf24] h-12"
+                      className="rounded-2xl border-[#e2e8f0] focus:border-[#fbbf24] h-12 bg-white text-[#0f172a] placeholder:text-[#94a3b8] [color-scheme:light]"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Guests</label>
-                  <div className="flex items-center justify-between p-3 rounded-2xl border border-neutral-200">
+                  <label className="text-xs font-semibold text-[#0f172a] uppercase tracking-widest ml-1">Guests</label>
+                  <div className="flex items-center justify-between p-3 rounded-2xl border border-[#e2e8f0]">
                     <button 
                       type="button"
                       onClick={() => setNumPeople(Math.max(1, numPeople - 1))}
@@ -288,12 +288,12 @@ export const ExperienceDetailsPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest ml-1">Pickup Location</label>
+                  <label className="text-xs font-semibold text-[#0f172a] uppercase tracking-widest ml-1">Pickup Location</label>
                   <Input 
                     placeholder="Hotel Name or Address"
                     value={pickupLocation}
                     onChange={(e) => setPickupLocation(e.target.value)}
-                    className="rounded-2xl border-neutral-200 focus:border-[#fbbf24] h-12"
+                    className="rounded-2xl border-[#e2e8f0] focus:border-[#fbbf24] h-12 bg-white text-[#0f172a] placeholder:text-[#94a3b8]"
                   />
                 </div>
 
@@ -353,41 +353,41 @@ export const ExperienceDetailsPage: React.FC = () => {
                 <div className="lg:col-span-3 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Your Name</label>
+                      <label className="text-[10px] font-semibold uppercase text-[#0f172a] tracking-widest">Your Name</label>
                       <Input 
                         value={customerDetails.name} 
                         onChange={(e) => setCustomerDetails({...customerDetails, name: e.target.value})}
                         placeholder="John Doe"
-                        className="h-14 border-neutral-200 rounded-2xl"
+                        className="h-14 border-[#e2e8f0] rounded-2xl bg-white text-[#0f172a] placeholder:text-[#94a3b8]"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Phone Number</label>
+                      <label className="text-[10px] font-semibold uppercase text-[#0f172a] tracking-widest">Phone Number</label>
                       <Input 
                         value={customerDetails.phone} 
                         onChange={(e) => setCustomerDetails({...customerDetails, phone: e.target.value})}
                         placeholder="+39 ..."
-                        className="h-14 border-neutral-200 rounded-2xl"
+                        className="h-14 border-[#e2e8f0] rounded-2xl bg-white text-[#0f172a] placeholder:text-[#94a3b8]"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Email Address</label>
+                    <label className="text-[10px] font-semibold uppercase text-[#0f172a] tracking-widest">Email Address</label>
                     <Input 
                       type="email"
                       value={customerDetails.email} 
                       onChange={(e) => setCustomerDetails({...customerDetails, email: e.target.value})}
                       placeholder="email@example.com"
-                      className="h-14 border-neutral-200 rounded-2xl"
+                      className="h-14 border-[#e2e8f0] rounded-2xl bg-white text-[#0f172a] placeholder:text-[#94a3b8]"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Additional Notes</label>
+                    <label className="text-[10px] font-semibold uppercase text-[#0f172a] tracking-widest">Additional Notes</label>
                     <textarea 
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="Any specific requests or info?"
-                      className="w-full h-32 rounded-2xl border border-neutral-200 p-4 text-sm outline-none focus:border-[#fbbf24] transition-all"
+                      className="w-full h-32 rounded-2xl border border-[#e2e8f0] p-4 text-sm outline-none focus:border-[#fbbf24] transition-all bg-white text-[#0f172a] placeholder:text-[#94a3b8]"
                     />
                   </div>
                 </div>
@@ -425,7 +425,7 @@ export const ExperienceDetailsPage: React.FC = () => {
                   <Button 
                     onClick={handleSendRequest}
                     disabled={isSubmitting}
-                    className="w-full h-16 bg-[#fbbf24] text-[#0f172a] font-black uppercase tracking-widest rounded-[1.5rem] hover:bg-[#0f172a] hover:text-white transition-all shadow-xl"
+                    className="w-full h-16 bg-[#0f172a] text-white font-black uppercase tracking-widest rounded-[1.5rem] transition-all shadow-xl hover:bg-neutral-800"
                   >
                     {isSubmitting ? 'Sending...' : 'Send Request Now'}
                   </Button>
