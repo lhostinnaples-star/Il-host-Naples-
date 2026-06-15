@@ -204,3 +204,7 @@ input[type="date"]::-webkit-datetime-edit {
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   color: #0f172a;
 }
+
+.service-date-input {
+  color: #0f172a !important;
+}

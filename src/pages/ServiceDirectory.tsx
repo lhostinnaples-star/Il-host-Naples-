@@ -319,7 +319,7 @@ export const ServiceDirectory: React.FC = () => {
                              type="date"
                              value={requestDate}
                              onChange={e => setRequestDate(e.target.value)}
-                             className="h-14 rounded-2xl pl-12 border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                             className="service-date-input h-14 rounded-2xl pl-12 border-neutral-100 bg-neutral-50 focus:bg-white transition-colors text-[#0f172a] placeholder:text-[#94a3b8]"
                              required
                            />
                         </div>
@@ -334,7 +334,7 @@ export const ServiceDirectory: React.FC = () => {
                           value={customerName}
                           onChange={e => setCustomerName(e.target.value)}
                           placeholder="John Doe"
-                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors text-[#0f172a] placeholder:text-[#94a3b8]"
                           required
                         />
                       </div>
@@ -348,7 +348,7 @@ export const ServiceDirectory: React.FC = () => {
                           value={customerPhone}
                           onChange={e => setCustomerPhone(e.target.value)}
                           placeholder="+39 ..."
-                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors text-[#0f172a] placeholder:text-[#94a3b8]"
                           required
                         />
                       </div>
@@ -362,7 +362,7 @@ export const ServiceDirectory: React.FC = () => {
                           value={customerEmail}
                           onChange={e => setCustomerEmail(e.target.value)}
                           placeholder="email@example.com"
-                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors text-[#0f172a] placeholder:text-[#94a3b8]"
                           required
                         />
                       </div>
@@ -373,7 +373,7 @@ export const ServiceDirectory: React.FC = () => {
                           value={requestDetails}
                           onChange={e => setRequestDetails(e.target.value)}
                           placeholder="Tell us about number of people, specific needs..."
-                          className="w-full min-h-[120px] rounded-2xl border border-neutral-100 bg-neutral-50 p-6 text-sm font-medium outline-none focus:border-[#fbbf24] focus:bg-white transition-all resize-none"
+                          className="w-full min-h-[120px] rounded-2xl border border-neutral-100 bg-neutral-50 p-6 text-sm font-medium outline-none focus:border-[#fbbf24] focus:bg-white transition-all resize-none text-[#0f172a] placeholder:text-[#94a3b8]"
                         />
                       </div>
 
