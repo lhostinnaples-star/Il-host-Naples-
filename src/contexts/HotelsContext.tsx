@@ -201,8 +201,8 @@ const HotelsContext = createContext<HotelsContextType | undefined>(undefined);
 
 export const HotelsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [allHotels, setAllHotels] = useState<Hotel[]>(MOCK_PROPERTIES as any);
-  const [allServices, setAllServices] = useState<Service[]>(MOCK_SERVICES as any);
+  const [allHotels, setAllHotels] = useState<Hotel[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [supplierAccessRequests, setSupplierAccessRequests] = useState<SupplierAccessRequest[]>([]);

@@ -341,8 +341,6 @@ export const ServiceDirectory: React.FC = () => {
                         The service provider will receive your request and contact you via email to finalize the booking.
                       </p>
                     </form>
-
-                    <ContactForm entityId={selectedService.id} entityName={selectedService.name} entityType="service" />
                   </div>
                 </div>
               </motion.div>
