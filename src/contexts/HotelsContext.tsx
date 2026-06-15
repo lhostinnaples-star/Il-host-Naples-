@@ -90,6 +90,7 @@ export interface Booking {
   customerEmail: string;
   customerPhone: string;
   listerEmail?: string;
+  listerPhone?: string;
   guestEmail?: string;
   ownerId: string; // listerId or providerId
   startDate: string; // ISO (also used for service date)
