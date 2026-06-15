@@ -35,6 +35,9 @@ export const ServiceDirectory: React.FC = () => {
   const [selectedService, setSelectedService] = useState<any | null>(null);
   const [requestDetails, setRequestDetails] = useState('');
   const [requestDate, setRequestDate] = useState('');
+  const [customerName, setCustomerName] = useState(user?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -78,7 +81,10 @@ export const ServiceDirectory: React.FC = () => {
         body: JSON.stringify({
           serviceId: selectedService.id,
           details: requestDetails,
-          date: requestDate
+          date: requestDate,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          customerEmail: customerEmail,
         })
       });
 
@@ -317,6 +323,48 @@ export const ServiceDirectory: React.FC = () => {
                              required
                            />
                         </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+                          Your Name
+                        </label>
+                        <Input 
+                          type="text"
+                          value={customerName}
+                          onChange={e => setCustomerName(e.target.value)}
+                          placeholder="John Doe"
+                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+                          Phone Number
+                        </label>
+                        <Input 
+                          type="tel"
+                          value={customerPhone}
+                          onChange={e => setCustomerPhone(e.target.value)}
+                          placeholder="+39 ..."
+                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+                          Email Address
+                        </label>
+                        <Input 
+                          type="email"
+                          value={customerEmail}
+                          onChange={e => setCustomerEmail(e.target.value)}
+                          placeholder="email@example.com"
+                          className="h-14 rounded-2xl border-neutral-100 bg-neutral-50 focus:bg-white transition-colors"
+                          required
+                        />
                       </div>
 
                       <div className="space-y-4">
