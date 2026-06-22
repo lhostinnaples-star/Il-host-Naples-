@@ -21,6 +21,8 @@ const MOCK_SUPPLIERS = [
   {
     id: 'demo-supplier-1',
     name: 'Pulizie Napoli Pro',
+    companyName: 'Pulizie Napoli Srl',
+    email: 'info@pulizienapoli.it',
     category: 'cleaning',
     bio: 'Premium cleaning services specialized in luxury holiday homes and B&Bs in the historic center.',
     area: 'All Naples',
@@ -40,6 +42,8 @@ const MOCK_SUPPLIERS = [
   {
     id: 'demo-supplier-2',
     name: 'Biancheria Luxury',
+    companyName: 'Biancheria Luxury SRL',
+    email: 'contact@biancherialuxury.com',
     category: 'linen',
     bio: 'High-quality bed linen and towel rental with delivery service.',
     area: 'Centro Storico, Chiaia',
@@ -59,6 +63,8 @@ const MOCK_SUPPLIERS = [
   {
     id: 'demo-supplier-3',
     name: 'Welcome Naples Kits',
+    companyName: 'Welcome Naples SRL',
+    email: 'hello@welcomenapleskits.it',
     category: 'welcome_kits',
     bio: 'Curated welcome kits for your guests featuring local products.',
     area: 'All Naples',
@@ -78,6 +84,8 @@ const MOCK_SUPPLIERS = [
   {
     id: 'demo-supplier-4',
     name: 'Falegname Napoli',
+    companyName: 'Falegnameria Artigiana',
+    email: 'info@falegnamenapoli.it',
     category: 'furniture',
     bio: 'Custom furniture and quick repairs for your properties.',
     area: 'Posillipo, Vomero',
@@ -113,6 +121,8 @@ export const SupplierDirectory: React.FC = () => {
       bio: s.description,
       area: s.location || 'Naples',
       phone: '+393330000000', // Provider phone placeholder
+      email: (s as any).email || 'supplier@example.com',
+      companyName: (s as any).companyName,
       price: s.price,
       priceUnit: s.priceUnit,
       rating: s.rating || 5.0,
@@ -132,6 +142,9 @@ export const SupplierDirectory: React.FC = () => {
   const [selectedPropertyId, setSelectedPropertyId] = useState('');
   const [requestDate, setRequestDate] = useState('');
   const [requestNotes, setRequestNotes] = useState('');
+  const [customerName, setCustomerName] = useState(user?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
 
   const myProperties = allHotels.filter(h => h.ownerId === user?.id);
 
@@ -200,9 +213,9 @@ export const SupplierDirectory: React.FC = () => {
       itemName: selectedSupplier.name,
       itemImage: selectedSupplier.portfolio[0],
       customerId: user?.id || 'demo-owner',
-      customerName: user?.name || 'Hotel Owner',
-      customerEmail: user?.email || 'owner@example.com',
-      customerPhone: '+39333000000',
+      customerName: customerName,
+      customerEmail: customerEmail,
+      customerPhone: customerPhone,
       ownerId: selectedSupplier.originalProviderId || 'demo-supplier',
       startDate: new Date(requestDate).toISOString(),
       guests: 1,
@@ -444,25 +457,12 @@ export const SupplierDirectory: React.FC = () => {
 
               {/* Footer / Contact Bar */}
               <div className="p-4 bg-[#0f172a] flex items-center gap-2 border-t border-[#334155]" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center gap-2 pr-2 border-r border-[#334155]">
-                  <a 
-                    href={`https://wa.me/${supplier.phone.replace('+', '')}`}
-                    target="_blank"
-                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-green-500 hover:bg-green-600 text-white transition-all shadow-lg shadow-green-500/10"
-                  >
-                    <MessageCircle className="h-4 w-4" />
+                <div className="flex flex-col gap-1 pr-2 border-r border-[#334155] flex-1 truncate">
+                  <a href={`mailto:${supplier.email}`} className="text-[#F5A623] text-sm truncate block">
+                    {supplier.email}
                   </a>
-                  <a 
-                    href={`tel:${supplier.phone}`}
-                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-white hover:bg-[#F5A623] text-black transition-all shadow-lg shadow-white/10"
-                  >
-                    <Phone className="h-4 w-4" />
-                  </a>
-                  <a 
-                    href={`mailto:supplier@example.com`}
-                    className="w-10 flex items-center justify-center h-10 rounded-xl bg-[#F5A623] hover:bg-[#f59e0b] text-[#1e293b] transition-all shadow-lg shadow-amber-500/10"
-                  >
-                    <Mail className="h-4 w-4" />
+                  <a href={`tel:${supplier.phone}`} className="text-[#F5A623] text-sm truncate block">
+                    {supplier.phone}
                   </a>
                 </div>
                 <Button 
@@ -512,6 +512,11 @@ export const SupplierDirectory: React.FC = () => {
                         <span className="text-xs font-black text-[#F5A623] uppercase tracking-[0.2em]">Verified Partner</span>
                       </div>
                       <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{selectedSupplier.name}</h2>
+                      {selectedSupplier.companyName && 
+                        <p className="text-[#94a3b8] text-sm mb-4">
+                          {selectedSupplier.companyName}
+                        </p>
+                      }
                       <p className="text-[#94a3b8] leading-relaxed text-lg">{selectedSupplier.bio}</p>
                     </div>
 
@@ -628,6 +633,42 @@ export const SupplierDirectory: React.FC = () => {
                           <option key={p.id} value={p.id} className="bg-[#1e293b]">{p.name}</option>
                         ))}
                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Your Name</label>
+                      <Input 
+                        type="text"
+                        value={customerName}
+                        onChange={e => setCustomerName(e.target.value)}
+                        placeholder="John Doe"
+                        className="pl-4 h-14 rounded-2xl bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Phone Number</label>
+                      <Input 
+                        type="tel"
+                        value={customerPhone}
+                        onChange={e => setCustomerPhone(e.target.value)}
+                        placeholder="+39 ..."
+                        className="pl-4 h-14 rounded-2xl bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-black text-[#64748b] uppercase tracking-widest mb-2">Email Address</label>
+                      <Input 
+                        type="email"
+                        value={customerEmail}
+                        onChange={e => setCustomerEmail(e.target.value)}
+                        placeholder="owner@example.com"
+                        className="pl-4 h-14 rounded-2xl bg-[#0f172a] border-[#334155] text-white focus:border-[#F5A623]"
+                        required
+                      />
                     </div>
 
                     <div>
